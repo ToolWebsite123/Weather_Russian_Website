@@ -70,3 +70,9 @@ export function formatWindDir(degrees: number): string {
   const idx = Math.round(degrees / 45) % 8;
   return dirs[idx];
 }
+
+export function formatPressureMmHg(hPa: number): string {
+  const mmHg = Math.round(hPa * 0.750062);
+  return `${mmHg} мм рт. ст.`;
+}
+

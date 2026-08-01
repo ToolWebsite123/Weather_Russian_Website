@@ -1,16 +1,39 @@
 import type { Metadata } from "next";
 import { CityWeatherView } from "@/components/CityWeatherView";
-import { resolveCity } from "@/lib/weather/city-page";
+import { resolveCity, listPopularCities } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
+import { getCityLocative } from "@/lib/i18n/declension";
 
 type Props = { params: { slug: string } };
+
+export async function generateStaticParams() {
+  const cities = await listPopularCities(20).catch(() => []);
+  return cities.map((c) => ({ slug: c.slug }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const city = await resolveCity(params.slug);
   if (!city) return { title: ru.brand };
+
+  const locative = getCityLocative(city.name);
+  const title = `Погода ${locative} сегодня — точный прогноз погоды | WeatherHub`;
+  const description = ru.metaDescription(city.name);
+  const url = `https://weatherhub.ru/pogoda/${city.slug}`;
+
   return {
-    title: `${ru.forecastFor(city.name)} — ${ru.brand}`,
-    description: ru.metaDescription(city.name),
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: ru.brand,
+      locale: "ru_RU",
+      type: "website",
+    },
   };
 }
 
@@ -19,3 +42,4 @@ export default function CityPage({ params }: Props) {
     <CityWeatherView slug={params.slug} active="today" dailyLimit={7} />
   );
 }
+

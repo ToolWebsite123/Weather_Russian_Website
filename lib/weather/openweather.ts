@@ -205,12 +205,12 @@ function aggregateDaily(
   }
 
   const days: DailyForecast[] = [];
-  for (const [date, bucket] of byDate) {
+  for (const [date, bucket] of Array.from(byDate.entries())) {
     let bestCode = 0;
     let description = "";
     let icon = "";
     let bestCount = 0;
-    for (const [code, meta] of bucket.codes) {
+    for (const [code, meta] of Array.from(bucket.codes.entries())) {
       if (meta.count > bestCount) {
         bestCount = meta.count;
         bestCode = code;

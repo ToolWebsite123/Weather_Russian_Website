@@ -1,3 +1,5 @@
+import { getCityLocative, getCityGenitive } from "./declension";
+
 export const ru = {
   brand: "WeatherHub",
   tagline: "Прогноз погоды — ясно и быстро",
@@ -33,9 +35,12 @@ export const ru = {
   homeTitle: "Погода в России и мире",
   homeSubtitle:
     "Актуальный прогноз по городам: сейчас, по часам и на 14 дней вперёд.",
-  forecastFor: (city: string) => `Погода в ${city}`,
+  forecastFor: (city: string) => `Погода ${getCityLocative(city)}`,
+  forecastGenitive: (city: string) => `Погода ${getCityGenitive(city)}`,
   metaDescription: (city: string) =>
-    `Прогноз погоды в ${city}: температура сейчас, по часам и на 14 дней.`,
+    `Точный прогноз погоды ${getCityLocative(city)} на сегодня и 14 дней: температура сейчас, по часам, влажность, давление и ветер.`,
+  daylightDuration: "Долгота дня",
 } as const;
+
 
 export type RuDict = typeof ru;

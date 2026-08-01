@@ -6,9 +6,11 @@ import {
   ForecastTabs,
   HourlyForecast,
   NearbyCities,
+  SunInfoCard,
   WeatherMap,
 } from "@/components/WeatherPanels";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
+import { CityWeatherFaq } from "@/components/CityWeatherFaq";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { PageShell } from "@/components/SiteChrome";
 import { RememberLastCity } from "@/components/RememberLastCity";
@@ -89,6 +91,8 @@ export async function CityWeatherView({
           today={weather.daily[0]}
         />
 
+        <SunInfoCard today={weather.daily[0]} />
+
         {focusDate && (
           <DayPartsGrid hourly={weather.hourly} date={focusDate} />
         )}
@@ -108,6 +112,8 @@ export async function CityWeatherView({
           showPrecip
         />
 
+        <CityWeatherFaq city={city} weather={weather} />
+
         <NearbyCities cities={nearby} />
 
         <RelatedArticles articles={articles} />
@@ -121,3 +127,4 @@ export async function CityWeatherView({
     </PageShell>
   );
 }
+
