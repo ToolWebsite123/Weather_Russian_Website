@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model City {
+  id         Int      @id @default(autoincrement())
+  name       String
+  nameEn     String
+  slug       String   @unique
+  country    String   @default("RU")
+  region     String?
+  latitude   Float
+  longitude  Float
+  population Int?
+  tier       Int
+  timezone   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  cache     WeatherCache?
+  favorites Favorite[]
+
+  @@index([name])
+  @@index([tier])
+  @@index([country])
+}
+
+model WeatherCache {
+  id        String   @id @default(cuid())
+  cityId    Int      @unique
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  payload   Json
+  fetchedAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  sessionId String
+  cityId    Int
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, cityId])
+  @@index([sessionId])
+}
