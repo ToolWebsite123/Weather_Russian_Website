@@ -5,9 +5,10 @@ import { ru } from "@/lib/i18n/ru";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
 import { summarizeDayParts } from "@/lib/weather/day-parts";
 import { WeatherIcon } from "@/components/WeatherIcon";
-import type { CurrentWeather, DailyPoint, HourlyPoint } from "@/types/weather";
+import type { AirQuality, CurrentWeather, DailyPoint, HourlyPoint } from "@/types/weather";
 import { getPressureTrend, type PressureTrendValue } from "@/lib/weather/pressure-trend";
 import { getUvCategory } from "@/lib/weather/uv-scale";
+import { computeComfortPenalties } from "@/lib/weather/activity-index";
 
 export function PressureTrend({ trend }: { trend: PressureTrendValue }) {
   if (trend === "rising") {
@@ -225,13 +226,16 @@ export function DayPartsGrid({
 export function ComfortIndices({
   current,
   hourly,
+  aqi,
 }: {
   current: CurrentWeather;
   hourly?: HourlyPoint[];
+  aqi?: AirQuality | null;
 }) {
   const trend = getPressureTrend(hourly ?? [], current.time);
   const uvCategory =
     typeof current.uvIndex === "number" ? getUvCategory(current.uvIndex) : null;
+  const comfortRes = computeComfortPenalties(current, hourly, aqi);
 
   const windValue =
     current.windGusts && current.windGusts > current.windSpeed + 1
@@ -261,6 +265,16 @@ export function ComfortIndices({
       node: `${current.precipitation.toFixed(1)} мм`,
     },
     { label: ru.clouds, node: `${Math.round(current.cloudCover)}%` },
+    {
+      label: "Комфорт",
+      node: (
+        <span
+          className={`rounded px-1.5 py-0.5 text-xs font-semibold ${comfortRes.comfortLevel.colorClass}`}
+        >
+          {comfortRes.comfortLevel.label}
+        </span>
+      ),
+    },
   ];
 
   if (typeof current.uvIndex === "number") {

@@ -11,6 +11,7 @@ import {
 import { Suspense } from "react";
 import { AstronomyCard } from "@/components/AstronomyCard";
 import { HistoricalComparisonCard } from "@/components/HistoricalComparisonCard";
+import { RecommendationsCard } from "@/components/RecommendationsCard";
 import { AlertBanner } from "@/components/AlertBanner";
 import { HourlyChart } from "@/components/HourlyChart";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
@@ -111,7 +112,17 @@ export async function CityWeatherView({
           <DayPartsGrid hourly={weather.hourly} date={focusDate} />
         )}
 
-        <ComfortIndices current={weather.current} hourly={weather.hourly} />
+        <ComfortIndices current={weather.current} hourly={weather.hourly} aqi={aqi} />
+
+        {active === "today" && (
+          <RecommendationsCard
+            current={weather.current}
+            today={weather.daily[0]}
+            hourly={weather.hourly}
+            aqi={aqi}
+            activeAlerts={alerts}
+          />
+        )}
 
         {aqi && <AirQualityBlock aqi={aqi} />}
 
