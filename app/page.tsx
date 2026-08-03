@@ -13,7 +13,6 @@ import {
 } from "@/lib/weather/city-page";
 import { getCachedWeatherForCity } from "@/lib/weather/cache";
 import { getActiveAlerts } from "@/lib/weather/alerts";
-import { ru } from "@/lib/i18n/ru";
 
 export const revalidate = 900;
 

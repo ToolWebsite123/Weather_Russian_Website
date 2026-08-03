@@ -70,10 +70,19 @@ export async function loadCityWeather(slug: string): Promise<{
   city: City;
   weather: WeatherBundle;
 } | null> {
-  const city = await resolveCity(slug);
-  if (!city) return null;
-  const weather = await getCachedWeatherForCity(city);
-  return { city, weather };
+  try {
+    const city = await resolveCity(slug);
+    if (!city) return null;
+    const weather = await getCachedWeatherForCity(city);
+    return { city, weather };
+  } catch {
+    // Retry once after brief delay if connection pooler timed out under heavy SSG load
+    await new Promise((res) => setTimeout(res, 500));
+    const city = await resolveCity(slug);
+    if (!city) return null;
+    const weather = await getCachedWeatherForCity(city);
+    return { city, weather };
+  }
 }
 
 export { listPopularCities };
