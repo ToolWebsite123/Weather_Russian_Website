@@ -145,9 +145,20 @@ export function getClimateNormal(
   history: HistoricalDailyPoint[],
   month: number,
 ): ClimateNormal {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
   const filtered = history.filter((p) => {
     const parts = p.date.split("-");
-    return Number(parts[1]) === month;
+    const y = Number(parts[0]);
+    const m = Number(parts[1]);
+
+    if (m !== month) return false;
+    // Exclude current calendar year if the requested month is currently in progress
+    if (y === currentYear && m === currentMonth) return false;
+
+    return true;
   });
 
   if (filtered.length === 0) {
