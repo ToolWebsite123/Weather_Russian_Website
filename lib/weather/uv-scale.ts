@@ -1,5 +1,6 @@
 /**
  * Standard WHO UV Index Scale mapping in Russian.
+ * Aligned with the brand design system palette from tailwind.config.ts (sky & sun color scales).
  */
 export function getUvCategory(uvIndex: number): {
   label: string;
@@ -10,27 +11,29 @@ export function getUvCategory(uvIndex: number): {
   if (rounded <= 2) {
     return {
       label: "Низкий",
-      colorClass: "bg-emerald-100 text-emerald-800",
+      colorClass: "bg-sky-100 text-sky-800",
     };
   }
   if (rounded <= 5) {
     return {
       label: "Умеренный",
-      colorClass: "bg-amber-100 text-amber-800",
+      colorClass: "bg-sun-100 text-sun-900",
     };
   }
   if (rounded <= 7) {
     return {
       label: "Высокий",
-      colorClass: "bg-orange-100 text-orange-800",
+      colorClass: "bg-sun-200 text-sun-950",
     };
   }
   if (rounded <= 10) {
     return {
       label: "Очень высокий",
-      colorClass: "bg-red-100 text-red-800",
+      colorClass: "bg-sun-500 text-white",
     };
   }
+  // Generic purple fallback: tailwind.config.ts defines sky, sun, cloud, and storm scales,
+  // but no purple scale for the WHO extreme UV hazard level.
   return {
     label: "Экстремальный",
     colorClass: "bg-purple-100 text-purple-800",

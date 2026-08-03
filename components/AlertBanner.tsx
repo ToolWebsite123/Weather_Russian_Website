@@ -4,10 +4,22 @@ import { useState } from "react";
 import type { WeatherAlert } from "@/lib/weather/alerts";
 
 export function AlertBanner({ alerts }: { alerts?: WeatherAlert[] }) {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissedTitles, setDismissedTitles] = useState<string[]>([]);
 
-  if (dismissed || !alerts || alerts.length === 0) {
+  if (!alerts || alerts.length === 0) {
     return null;
+  }
+
+  const activeAlerts = alerts.filter(
+    (alert) => !dismissedTitles.includes(alert.title),
+  );
+
+  if (activeAlerts.length === 0) {
+    return null;
+  }
+
+  function dismissAlert(title: string) {
+    setDismissedTitles((prev) => [...prev, title]);
   }
 
   return (
@@ -15,7 +27,7 @@ export function AlertBanner({ alerts }: { alerts?: WeatherAlert[] }) {
       role="alert"
       className="w-full space-y-2 transition-all duration-300 animate-in fade-in slide-in-from-top-2"
     >
-      {alerts.map((alert, idx) => {
+      {activeAlerts.map((alert, idx) => {
         const isSevere = alert.severity === "severe";
         return (
           <div
@@ -74,31 +86,29 @@ export function AlertBanner({ alerts }: { alerts?: WeatherAlert[] }) {
               </div>
             </div>
 
-            {idx === 0 && (
-              <button
-                type="button"
-                onClick={() => setDismissed(true)}
-                className={
-                  isSevere
-                    ? "shrink-0 rounded-lg p-1 text-red-200 hover:bg-red-700 hover:text-white transition-colors"
-                    : "shrink-0 rounded-lg p-1 text-amber-700 hover:bg-amber-200/60 hover:text-amber-950 transition-colors"
-                }
-                aria-label="Закрыть предупреждение"
+            <button
+              type="button"
+              onClick={() => dismissAlert(alert.title)}
+              className={
+                isSevere
+                  ? "shrink-0 rounded-lg p-1 text-red-200 hover:bg-red-700 hover:text-white transition-colors"
+                  : "shrink-0 rounded-lg p-1 text-amber-700 hover:bg-amber-200/60 hover:text-amber-950 transition-colors"
+              }
+              aria-label={`Закрыть предупреждение: ${alert.title}`}
+            >
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <svg
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="18" y1="18" x2="6" y2="6" />
-                </svg>
-              </button>
-            )}
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="18" y1="18" x2="6" y2="6" />
+              </svg>
+            </button>
           </div>
         );
       })}
