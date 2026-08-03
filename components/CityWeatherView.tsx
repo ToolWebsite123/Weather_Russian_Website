@@ -10,6 +10,7 @@ import {
   WeatherMap,
 } from "@/components/WeatherPanels";
 import { AlertBanner } from "@/components/AlertBanner";
+import { HourlyChart } from "@/components/HourlyChart";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
 import { CityWeatherFaq } from "@/components/CityWeatherFaq";
 import { FavoriteButton } from "@/components/FavoriteButton";
@@ -108,7 +109,12 @@ export async function CityWeatherView({
 
         {aqi && <AirQualityBlock aqi={aqi} />}
 
-        {showHourly && hours.length > 0 && <HourlyForecast hours={hours} />}
+        {showHourly && hours.length > 0 && (
+          <>
+            <HourlyChart hours={hours} />
+            <HourlyForecast hours={hours} />
+          </>
+        )}
 
         <DailyForecast days={daily} hourly={weather.hourly} />
 

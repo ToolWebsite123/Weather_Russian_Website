@@ -52,24 +52,6 @@ export default async function Home() {
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:space-y-8 sm:py-8 sm:px-6">
         {activeAlerts.length > 0 && <AlertBanner alerts={activeAlerts} />}
 
-        <div className="rounded-2xl bg-white/60 p-5 ring-1 ring-sky-100/80 backdrop-blur sm:p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="shrink-0">
-              <p className="font-serif text-3xl font-semibold tracking-tight text-sky-950 sm:text-4xl">
-                {ru.brand}
-              </p>
-              <h1 className="mt-1 text-sm text-sky-900 sm:text-base">
-                {ru.homeTitle}
-              </h1>
-            </div>
-
-            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center flex-1 max-w-xl md:justify-end">
-              <CitySearch />
-              <UseMyLocation />
-            </div>
-          </div>
-        </div>
-
         {primaryData && (
           <CurrentWeatherCard
             cityName={primaryData.city.name}
@@ -78,6 +60,18 @@ export default async function Home() {
             hourly={primaryData.weather.hourly}
           />
         )}
+
+        <section className="rounded-2xl bg-white/70 p-5 ring-1 ring-sky-100 backdrop-blur sm:p-6">
+          <h2 className="mb-3 text-xs uppercase tracking-wide text-cloud-500 font-semibold sm:text-sm">
+            Выбрать другой город
+          </h2>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex-1 min-w-0 max-w-xl">
+              <CitySearch />
+            </div>
+            <UseMyLocation />
+          </div>
+        </section>
 
         <PopularCitiesGrid items={popularCityItems} />
       </main>

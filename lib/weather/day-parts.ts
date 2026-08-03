@@ -9,6 +9,7 @@ export type DayPartSummary = {
   weatherCode: number;
   precipitation: number;
   windSpeed: number;
+  precipitationProbability?: number;
 };
 
 const PARTS: { key: DayPartKey; label: string; hours: number[] }[] = [
@@ -29,6 +30,7 @@ export function summarizeDayParts(
       const hour = new Date(h.time).getHours();
       return part.hours.includes(hour);
     });
+
     if (points.length === 0) {
       return {
         key: part.key,
@@ -39,12 +41,22 @@ export function summarizeDayParts(
         windSpeed: 0,
       };
     }
+
     const temperature =
       points.reduce((s, p) => s + p.temperature, 0) / points.length;
     const precipitation = points.reduce((s, p) => s + p.precipitation, 0);
     const windSpeed =
       points.reduce((s, p) => s + p.windSpeed, 0) / points.length;
+
+    const probPoints = points
+      .map((p) => p.precipitationProbability)
+      .filter((v): v is number => typeof v === "number");
+
+    const precipitationProbability =
+      probPoints.length > 0 ? Math.max(...probPoints) : undefined;
+
     const mid = points[Math.floor(points.length / 2)];
+
     return {
       key: part.key,
       label: part.label,
@@ -52,6 +64,7 @@ export function summarizeDayParts(
       weatherCode: mid.weatherCode,
       precipitation,
       windSpeed,
+      precipitationProbability,
     };
   }).filter((p) => !Number.isNaN(p.temperature));
 }

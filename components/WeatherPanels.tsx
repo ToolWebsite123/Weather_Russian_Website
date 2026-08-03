@@ -206,8 +206,13 @@ export function DayPartsGrid({
             <p className="mt-1 text-center text-xs text-cloud-500">
               {weatherCodeLabel(p.weatherCode)}
             </p>
-            <p className="mt-1 text-xs tabular-nums text-cloud-400">
-              {p.precipitation.toFixed(1)} мм · {p.windSpeed.toFixed(0)} м/с
+            <p className="mt-1 text-[11px] tabular-nums text-cloud-500 text-center">
+              {p.precipitation.toFixed(1)} мм
+              {typeof p.precipitationProbability === "number" &&
+              p.precipitationProbability > 0
+                ? ` (${Math.round(p.precipitationProbability)}%)`
+                : ""}{" "}
+              · {p.windSpeed.toFixed(0)} м/с
             </p>
           </div>
         ))}
@@ -360,7 +365,6 @@ export function SunInfoCard({ today }: { today?: DailyPoint }) {
   );
 }
 
-
 export function HourlyForecast({ hours }: { hours: HourlyPoint[] }) {
   const next = hours.slice(0, 24);
   return (
@@ -400,6 +404,10 @@ export function DailyForecast({
   limit?: number;
 }) {
   const list = limit ? days.slice(0, limit) : days;
+  const globalMin = Math.min(...list.map((d) => d.tempMin));
+  const globalMax = Math.max(...list.map((d) => d.tempMax));
+  const range = Math.max(1, globalMax - globalMin);
+
   return (
     <section>
       <h2 className="mb-3 font-serif text-xl text-sky-950">{ru.daily}</h2>
@@ -410,20 +418,36 @@ export function DailyForecast({
             { weekday: "short", day: "numeric", month: "short" },
           );
           const parts = hourly ? summarizeDayParts(hourly, d.date) : [];
+          const leftPercent = ((d.tempMin - globalMin) / range) * 100;
+          const widthPercent = Math.max(6, ((d.tempMax - d.tempMin) / range) * 100);
+
           return (
             <li key={d.date} className="px-3 py-3 sm:px-4">
               <div className="flex items-center gap-2 text-sm sm:gap-3 sm:text-base">
-                <span className="w-24 capitalize text-cloud-600 sm:w-36">
+                <span className="w-24 capitalize text-cloud-600 sm:w-32 shrink-0 truncate">
                   {dateLabel}
                 </span>
-                <WeatherIcon code={d.weatherCode} size={28} />
-                <span className="hidden flex-1 text-cloud-600 sm:block">
+                <WeatherIcon code={d.weatherCode} size={28} className="shrink-0" />
+                <span className="hidden flex-1 text-cloud-600 md:block truncate">
                   {weatherCodeLabel(d.weatherCode)}
                 </span>
-                <span className="ml-auto tabular-nums text-sky-950">
+
+                <div className="hidden sm:flex flex-1 items-center mx-2 max-w-[140px]">
+                  <div className="h-2 w-full rounded-full bg-cloud-100 relative overflow-hidden">
+                    <div
+                      className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 to-sun-400"
+                      style={{
+                        left: `${leftPercent}%`,
+                        width: `${widthPercent}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <span className="ml-auto tabular-nums text-sky-950 font-medium shrink-0">
                   {formatTemp(d.tempMin)} / {formatTemp(d.tempMax)}
                 </span>
-                <span className="hidden w-14 text-right tabular-nums text-cloud-500 sm:block">
+                <span className="hidden w-12 text-right tabular-nums text-cloud-500 sm:block shrink-0">
                   {d.precipitationSum.toFixed(1)}
                 </span>
               </div>
