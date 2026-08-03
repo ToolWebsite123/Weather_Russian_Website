@@ -26,6 +26,10 @@ export type CurrentWeather = {
   isDay: boolean;
   precipitation: number;
   cloudCover: number;
+  uvIndex?: number;
+  dewPoint?: number;
+  visibility?: number;
+  windGusts?: number;
 };
 
 export type HourlyPoint = {
@@ -35,6 +39,10 @@ export type HourlyPoint = {
   weatherCode: number;
   windSpeed: number;
   feelsLike?: number;
+  precipitationProbability?: number;
+  dewPoint?: number;
+  windGusts?: number;
+  pressure?: number;
 };
 
 export type DailyPoint = {
@@ -46,6 +54,7 @@ export type DailyPoint = {
   windSpeedMax: number;
   sunrise?: string;
   sunset?: string;
+  uvIndexMax?: number;
 };
 
 export type WeatherBundle = {

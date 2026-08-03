@@ -1,4 +1,5 @@
 import { getCityGenitive, getCityLocative } from "@/lib/i18n/declension";
+import { getCityClimateProfile } from "@/lib/content/city-climate";
 import type { City } from "@prisma/client";
 import type { WeatherBundle } from "@/types/weather";
 import { formatPressureMmHg, formatTemp } from "@/lib/cities";
@@ -10,23 +11,24 @@ interface Props {
 }
 
 export function CityWeatherFaq({ city, weather }: Props) {
-  const locative = getCityLocative(city.name); // e.g. "в Москве"
-  const genitive = getCityGenitive(city.name); // e.g. "Москвы"
+  const locative = getCityLocative(city.name); // e.g. "в Санкт-Петербурге"
+  const genitive = getCityGenitive(city.name); // e.g. "Санкт-Петербурга"
   const current = weather.current;
   const today = weather.daily[0];
 
+  const profile = getCityClimateProfile(city.slug, city.name);
   const pressureStr = formatPressureMmHg(current.pressure);
   const conditionStr = weatherCodeLabel(current.weatherCode);
 
-  // Generate specific FAQ items targeting long-tail searches (e.g. "погода москва", "давление в москве сегодня")
-  const faqs = [
+  // Generate specific FAQ items targeting long-tail searches (e.g. "погода спб", "давление в спб сегодня")
+  const defaultFaqs = [
     {
       question: `Какая погода ${locative} сегодня?`,
       answer: `Сегодня ${locative} температура воздуха составляет ${formatTemp(current.temperature)}, ощущается как ${formatTemp(current.feelsLike)}. Погодные условия: ${conditionStr.toLowerCase()}. Влажность воздуха — ${Math.round(current.humidity)}%, скорость ветра — ${current.windSpeed.toFixed(1)} м/с.`,
     },
     {
       question: `Какое атмосферное давление ${locative} сейчас?`,
-      answer: `Текущее атмосферное давление ${locative} составляет ${pressureStr}. Для ${genitive} нормальным уровнем давления считается диапазон 745–749 мм рт. ст.`,
+      answer: `Текущее атмосферное давление ${locative} составляет ${pressureStr}. Для ${genitive} нормальным уровнем давления считается ${profile.pressureNorm}.`,
     },
     {
       question: `Какая минимальная и максимальная температура ожидается ${locative}?`,
@@ -39,6 +41,8 @@ export function CityWeatherFaq({ city, weather }: Props) {
       answer: `На нашем сервисе WeatherHub доступен точный и регулярно обновляемый прогноз погоды ${locative} на сегодня, завтра, 3, 7, 10 и 14 дней по данным метеорологической модели Open-Meteo.`,
     },
   ];
+
+  const faqs = [...defaultFaqs, ...(profile.faqs ?? [])];
 
   // Schema.org FAQPage JSON-LD
   const faqSchema = {
@@ -97,13 +101,12 @@ export function CityWeatherFaq({ city, weather }: Props) {
         </h2>
         <div className="mt-3 space-y-3 text-sm leading-relaxed text-cloud-700">
           <p>
-            {city.name} находится в зоне умеренно-континентального климата с чётко выраженной сезонностью. 
-            Погода {locative} формируется под влиянием атлантических и арктических воздушных масс, 
-            что может вызывать резкие перепады температуры и смену осадков в течение нескольких дней.
+            {city.name} находится в климатической зоне: <span className="font-medium text-sky-900">{profile.climateType}</span>. 
+            {profile.specialNote}
           </p>
           <p>
-            Актуальный прогноз погоды на нашем сайте обновляется каждые 15 минут, обеспечивая 
-            точную информацию о температуре, скорости ветра, атмосферном давлении ({pressureStr}) и вероятности осадков.
+            Актуальный прогноз погоды на сервисе WeatherHub обновляется каждые 15 минут, обеспечивая 
+            точные данные о температуре, скорости ветра, уровне давления ({pressureStr}) и вероятности осадков.
           </p>
         </div>
       </div>

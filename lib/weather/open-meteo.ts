@@ -25,6 +25,10 @@ type OpenMeteoForecast = {
     pressure_msl: number;
     wind_speed_10m: number;
     wind_direction_10m: number;
+    uv_index?: number;
+    dew_point_2m?: number;
+    visibility?: number;
+    wind_gusts_10m?: number;
   };
   hourly: {
     time: string[];
@@ -33,6 +37,10 @@ type OpenMeteoForecast = {
     weather_code: number[];
     wind_speed_10m: number[];
     apparent_temperature: number[];
+    precipitation_probability?: number[];
+    dew_point_2m?: number[];
+    wind_gusts_10m?: number[];
+    pressure_msl?: number[];
   };
   daily: {
     time: string[];
@@ -43,6 +51,7 @@ type OpenMeteoForecast = {
     wind_speed_10m_max: number[];
     sunrise: string[];
     sunset: string[];
+    uv_index_max?: number[];
   };
 };
 
@@ -116,6 +125,10 @@ export async function fetchOpenMeteoForecast(
       "pressure_msl",
       "wind_speed_10m",
       "wind_direction_10m",
+      "uv_index",
+      "dew_point_2m",
+      "visibility",
+      "wind_gusts_10m",
     ].join(","),
   );
   url.searchParams.set(
@@ -126,6 +139,10 @@ export async function fetchOpenMeteoForecast(
       "weather_code",
       "wind_speed_10m",
       "apparent_temperature",
+      "precipitation_probability",
+      "dew_point_2m",
+      "wind_gusts_10m",
+      "pressure_msl",
     ].join(","),
   );
   url.searchParams.set(
@@ -138,6 +155,7 @@ export async function fetchOpenMeteoForecast(
       "wind_speed_10m_max",
       "sunrise",
       "sunset",
+      "uv_index_max",
     ].join(","),
   );
   url.searchParams.set("wind_speed_unit", "ms");
@@ -155,6 +173,10 @@ export async function fetchOpenMeteoForecast(
     weatherCode: data.hourly.weather_code[i],
     windSpeed: data.hourly.wind_speed_10m[i],
     feelsLike: data.hourly.apparent_temperature[i],
+    precipitationProbability: data.hourly.precipitation_probability?.[i],
+    dewPoint: data.hourly.dew_point_2m?.[i],
+    windGusts: data.hourly.wind_gusts_10m?.[i],
+    pressure: data.hourly.pressure_msl?.[i],
   }));
 
   const daily: DailyPoint[] = data.daily.time.map((date, i) => ({
@@ -166,6 +188,7 @@ export async function fetchOpenMeteoForecast(
     windSpeedMax: data.daily.wind_speed_10m_max[i],
     sunrise: data.daily.sunrise[i],
     sunset: data.daily.sunset[i],
+    uvIndexMax: data.daily.uv_index_max?.[i],
   }));
 
   return {
@@ -185,6 +208,10 @@ export async function fetchOpenMeteoForecast(
       isDay: data.current.is_day === 1,
       precipitation: data.current.precipitation,
       cloudCover: data.current.cloud_cover,
+      uvIndex: data.current.uv_index,
+      dewPoint: data.current.dew_point_2m,
+      visibility: data.current.visibility,
+      windGusts: data.current.wind_gusts_10m,
     },
     hourly,
     daily,

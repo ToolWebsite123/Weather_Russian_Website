@@ -5,16 +5,94 @@ import { weatherCodeLabel } from "@/lib/weather/wmo";
 import { summarizeDayParts } from "@/lib/weather/day-parts";
 import { WeatherIcon } from "@/components/WeatherIcon";
 import type { CurrentWeather, DailyPoint, HourlyPoint } from "@/types/weather";
+import { getPressureTrend, type PressureTrendValue } from "@/lib/weather/pressure-trend";
+import { getUvCategory } from "@/lib/weather/uv-scale";
+
+export function PressureTrend({ trend }: { trend: PressureTrendValue }) {
+  if (trend === "rising") {
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-xs font-medium text-sky-600 whitespace-nowrap"
+        title="Давление растёт"
+      >
+        <svg
+          className="h-3.5 w-3.5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="12" y1="19" x2="12" y2="5" />
+          <polyline points="5 12 12 5 19 12" />
+        </svg>
+        <span>Растёт</span>
+      </span>
+    );
+  }
+  if (trend === "falling") {
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 whitespace-nowrap"
+        title="Давление падает"
+      >
+        <svg
+          className="h-3.5 w-3.5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <polyline points="19 12 12 19 5 12" />
+        </svg>
+        <span>Падает</span>
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-xs font-medium text-cloud-500 whitespace-nowrap"
+      title="Давление стабильно"
+    >
+      <svg
+        className="h-3.5 w-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+      <span>Стабильно</span>
+    </span>
+  );
+}
 
 export function CurrentWeatherCard({
   cityName,
   current,
   today,
+  hourly,
 }: {
   cityName: string;
   current: CurrentWeather;
   today?: DailyPoint;
+  hourly?: HourlyPoint[];
 }) {
+  const trend = getPressureTrend(hourly ?? [], current.time);
+  const uvCategory =
+    typeof current.uvIndex === "number" ? getUvCategory(current.uvIndex) : null;
+
   return (
     <section className="rounded-2xl bg-white/80 p-5 shadow-sm ring-1 ring-sky-100 backdrop-blur sm:p-8">
       <p className="text-xs uppercase tracking-wide text-cloud-500 sm:text-sm">
@@ -43,6 +121,57 @@ export function CurrentWeatherCard({
             </p>
           )}
         </div>
+      </div>
+
+      <div className="mt-6 border-t border-sky-100/80 pt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
+            Давление
+          </p>
+          <p className="mt-0.5 text-sm font-medium tabular-nums text-sky-950 sm:text-base flex items-center flex-wrap gap-1">
+            <span>{formatPressureMmHg(current.pressure)}</span>
+            <PressureTrend trend={trend} />
+          </p>
+        </div>
+        {typeof current.uvIndex === "number" && (
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
+              УФ-индекс
+            </p>
+            <p className="mt-0.5 text-sm font-medium tabular-nums text-sky-950 sm:text-base flex items-center gap-1.5">
+              <span>{current.uvIndex.toFixed(1)}</span>
+              {uvCategory && (
+                <span
+                  className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${uvCategory.colorClass}`}
+                >
+                  {uvCategory.label}
+                </span>
+              )}
+            </p>
+          </div>
+        )}
+        {typeof current.dewPoint === "number" && (
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
+              Точка росы
+            </p>
+            <p className="mt-0.5 text-sm font-medium tabular-nums text-sky-950 sm:text-base">
+              {formatTemp(current.dewPoint)}
+            </p>
+          </div>
+        )}
+        {typeof current.visibility === "number" && (
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
+              Видимость
+            </p>
+            <p className="mt-0.5 text-sm font-medium tabular-nums text-sky-950 sm:text-base">
+              {current.visibility >= 1000
+                ? `${(current.visibility / 1000).toFixed(1)} км`
+                : `${Math.round(current.visibility)} м`}
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -87,21 +216,81 @@ export function DayPartsGrid({
   );
 }
 
-export function ComfortIndices({ current }: { current: CurrentWeather }) {
-  const items = [
-    { label: ru.feelsLike, value: formatTemp(current.feelsLike) },
-    { label: ru.humidity, value: `${Math.round(current.humidity)}%` },
+export function ComfortIndices({
+  current,
+  hourly,
+}: {
+  current: CurrentWeather;
+  hourly?: HourlyPoint[];
+}) {
+  const trend = getPressureTrend(hourly ?? [], current.time);
+  const uvCategory =
+    typeof current.uvIndex === "number" ? getUvCategory(current.uvIndex) : null;
+
+  const windValue =
+    current.windGusts && current.windGusts > current.windSpeed + 1
+      ? `${current.windSpeed.toFixed(1)} м/с ${formatWindDir(current.windDirection)} (порывы ${current.windGusts.toFixed(1)} м/с)`
+      : `${current.windSpeed.toFixed(1)} м/с ${formatWindDir(current.windDirection)}`;
+
+  type ComfortItem = {
+    label: string;
+    node: React.ReactNode;
+  };
+
+  const items: ComfortItem[] = [
+    { label: ru.feelsLike, node: formatTemp(current.feelsLike) },
+    { label: ru.humidity, node: `${Math.round(current.humidity)}%` },
+    { label: ru.wind, node: windValue },
     {
-      label: ru.wind,
-      value: `${current.windSpeed.toFixed(1)} м/с ${formatWindDir(current.windDirection)}`,
+      label: ru.pressure,
+      node: (
+        <span className="inline-flex flex-wrap items-center gap-1.5">
+          <span>{formatPressureMmHg(current.pressure)}</span>
+          <PressureTrend trend={trend} />
+        </span>
+      ),
     },
-    { label: ru.pressure, value: formatPressureMmHg(current.pressure) },
     {
       label: ru.precipitation,
-      value: `${current.precipitation.toFixed(1)} мм`,
+      node: `${current.precipitation.toFixed(1)} мм`,
     },
-    { label: ru.clouds, value: `${Math.round(current.cloudCover)}%` },
+    { label: ru.clouds, node: `${Math.round(current.cloudCover)}%` },
   ];
+
+  if (typeof current.uvIndex === "number") {
+    items.push({
+      label: "УФ-индекс",
+      node: (
+        <span className="inline-flex items-center gap-1.5">
+          <span>{current.uvIndex.toFixed(1)}</span>
+          {uvCategory && (
+            <span
+              className={`rounded px-1.5 py-0.5 text-xs font-semibold ${uvCategory.colorClass}`}
+            >
+              {uvCategory.label}
+            </span>
+          )}
+        </span>
+      ),
+    });
+  }
+
+  if (typeof current.dewPoint === "number") {
+    items.push({
+      label: "Точка росы",
+      node: formatTemp(current.dewPoint),
+    });
+  }
+
+  if (typeof current.visibility === "number") {
+    items.push({
+      label: "Видимость",
+      node:
+        current.visibility >= 1000
+          ? `${(current.visibility / 1000).toFixed(1)} км`
+          : `${Math.round(current.visibility)} м`,
+    });
+  }
 
   return (
     <section className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
@@ -113,9 +302,9 @@ export function ComfortIndices({ current }: { current: CurrentWeather }) {
           <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
             {item.label}
           </p>
-          <p className="mt-1 text-base font-medium tabular-nums text-sky-950 sm:text-lg">
-            {item.value}
-          </p>
+          <div className="mt-1 text-base font-medium tabular-nums text-sky-950 sm:text-lg">
+            {item.node}
+          </div>
         </div>
       ))}
     </section>

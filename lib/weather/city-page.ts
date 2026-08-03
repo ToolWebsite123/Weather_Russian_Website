@@ -34,8 +34,16 @@ export async function isCityFavorited(cityId: number): Promise<boolean> {
   return Boolean(row);
 }
 
+const ALIASES: Record<string, string> = {
+  spb: "saint-petersburg",
+  piter: "saint-petersburg",
+  "st-petersburg": "saint-petersburg",
+  msk: "moscow",
+};
+
 export async function resolveCity(slug: string): Promise<City | null> {
-  const existing = await getCityBySlug(slug);
+  const targetSlug = ALIASES[slug.toLowerCase()] ?? slug;
+  const existing = await getCityBySlug(targetSlug);
   if (existing) return existing;
 
   // Fallback: treat slug tokens as search (e.g. first known seed missing)

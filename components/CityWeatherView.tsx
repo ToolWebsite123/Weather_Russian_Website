@@ -9,6 +9,7 @@ import {
   SunInfoCard,
   WeatherMap,
 } from "@/components/WeatherPanels";
+import { AlertBanner } from "@/components/AlertBanner";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
 import { CityWeatherFaq } from "@/components/CityWeatherFaq";
 import { FavoriteButton } from "@/components/FavoriteButton";
@@ -22,6 +23,7 @@ import {
 } from "@/lib/weather/city-page";
 import { getNearbyCities } from "@/lib/weather/nearby";
 import { fetchAirQuality } from "@/lib/weather/air-quality";
+import { getActiveAlerts } from "@/lib/weather/alerts";
 import { getLatestArticles } from "@/lib/content/articles";
 import { ru } from "@/lib/i18n/ru";
 import { notFound } from "next/navigation";
@@ -48,6 +50,8 @@ export async function CityWeatherView({
   if (!data) notFound();
 
   const { city, weather } = data;
+  const alerts = getActiveAlerts(weather);
+
   const [favorites, favorited, nearby, aqi, articles] = await Promise.all([
     getFavoritesForSession().catch(() => []),
     isCityFavorited(city.id).catch(() => false),
@@ -78,6 +82,8 @@ export async function CityWeatherView({
     <PageShell favorites={favorites}>
       <RememberLastCity slug={city.slug} />
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-4 sm:space-y-8 sm:py-8 sm:px-6">
+        <AlertBanner alerts={alerts} />
+
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <ForecastTabs slug={city.slug} active={active} />
@@ -89,6 +95,7 @@ export async function CityWeatherView({
           cityName={city.name}
           current={weather.current}
           today={weather.daily[0]}
+          hourly={weather.hourly}
         />
 
         <SunInfoCard today={weather.daily[0]} />
@@ -97,7 +104,7 @@ export async function CityWeatherView({
           <DayPartsGrid hourly={weather.hourly} date={focusDate} />
         )}
 
-        <ComfortIndices current={weather.current} />
+        <ComfortIndices current={weather.current} hourly={weather.hourly} />
 
         {aqi && <AirQualityBlock aqi={aqi} />}
 
