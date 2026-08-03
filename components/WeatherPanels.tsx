@@ -317,55 +317,6 @@ export function ComfortIndices({
   );
 }
 
-export function SunInfoCard({ today }: { today?: DailyPoint }) {
-  if (!today?.sunrise || !today?.sunset) return null;
-
-  const sunriseDate = new Date(today.sunrise);
-  const sunsetDate = new Date(today.sunset);
-
-  const sunriseTime = sunriseDate.toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  const sunsetTime = sunsetDate.toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  const diffMs = sunsetDate.getTime() - sunriseDate.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  const durationStr = `${diffHours} ч ${diffMinutes} мин`;
-
-  return (
-    <section className="rounded-xl bg-white/80 p-4 ring-1 ring-sky-100 backdrop-blur">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-cloud-500">
-        Солнце и световой день
-      </h3>
-      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-lg bg-amber-50/70 p-2.5">
-          <p className="text-[11px] font-medium text-amber-800">Восход</p>
-          <p className="mt-1 text-base font-semibold tabular-nums text-amber-950">
-            🌅 {sunriseTime}
-          </p>
-        </div>
-        <div className="rounded-lg bg-orange-50/70 p-2.5">
-          <p className="text-[11px] font-medium text-orange-800">Закат</p>
-          <p className="mt-1 text-base font-semibold tabular-nums text-orange-950">
-            🌇 {sunsetTime}
-          </p>
-        </div>
-        <div className="rounded-lg bg-sky-50/70 p-2.5">
-          <p className="text-[11px] font-medium text-sky-800">Долгота дня</p>
-          <p className="mt-1 text-base font-semibold tabular-nums text-sky-950">
-            ☀️ {durationStr}
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function HourlyForecast({ hours }: { hours: HourlyPoint[] }) {
   const next = hours.slice(0, 24);
   return (

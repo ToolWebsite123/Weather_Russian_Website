@@ -6,9 +6,9 @@ import {
   ForecastTabs,
   HourlyForecast,
   NearbyCities,
-  SunInfoCard,
   WeatherMap,
 } from "@/components/WeatherPanels";
+import { AstronomyCard } from "@/components/AstronomyCard";
 import { AlertBanner } from "@/components/AlertBanner";
 import { HourlyChart } from "@/components/HourlyChart";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
@@ -99,7 +99,11 @@ export async function CityWeatherView({
           hourly={weather.hourly}
         />
 
-        <SunInfoCard today={weather.daily[0]} />
+        <AstronomyCard
+          today={tomorrowOnly ? weather.daily[1] : weather.daily[0]}
+          latitude={city.latitude}
+          longitude={city.longitude}
+        />
 
         {focusDate && (
           <DayPartsGrid hourly={weather.hourly} date={focusDate} />
