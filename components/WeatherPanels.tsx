@@ -1,4 +1,5 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { formatPressureMmHg, formatTemp, formatWindDir } from "@/lib/cities";
 import { ru } from "@/lib/i18n/ru";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
@@ -557,72 +558,20 @@ export function NearbyCities({
   );
 }
 
-export function WeatherMap({
-  latitude,
-  longitude,
-  cityName,
-  showPrecip = false,
-}: {
+const DynamicRadarMap = dynamic(() => import("@/components/RadarMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-80 w-full rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:h-96 sm:p-6 animate-pulse flex items-center justify-center text-xs text-cloud-500">
+      Загрузка карты погоды…
+    </div>
+  ),
+});
+
+export function WeatherMap(props: {
   latitude: number;
   longitude: number;
   cityName: string;
   showPrecip?: boolean;
 }) {
-  const owKey = process.env.NEXT_PUBLIC_OPENWEATHER_MAP_KEY;
-  const zoom = 8;
-  const tile =
-    showPrecip && owKey
-      ? `https://tile.openweathermap.org/map/precipitation_new/${zoom}/{x}/{y}.png?appid=${owKey}`
-      : null;
-
-  // Client overlay map is a separate component; server fallback uses OSM + optional RainViewer link
-  const delta = 0.4;
-  const bbox = [
-    longitude - delta,
-    latitude - delta,
-    longitude + delta,
-    latitude + delta,
-  ].join("%2C");
-  const osmSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latitude}%2C${longitude}`;
-  const rainViewer = `https://www.rainviewer.com/map.html?loc=${latitude},${longitude},8`;
-
-  return (
-    <section>
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-        <h2 className="font-serif text-xl text-sky-950">{ru.map}</h2>
-        <a
-          href={rainViewer}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-sky-700 underline underline-offset-2"
-        >
-          Осадки (RainViewer)
-        </a>
-      </div>
-      <div className="overflow-hidden rounded-xl ring-1 ring-sky-100">
-        <iframe
-          title={`${ru.map}: ${cityName}`}
-          src={osmSrc}
-          className="h-56 w-full border-0 sm:h-80"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
-      </div>
-      {tile && (
-        <p className="mt-2 text-xs text-cloud-500">
-          Слой осадков OpenWeatherMap доступен (ключ настроен).
-        </p>
-      )}
-      <p className="mt-2 text-xs text-cloud-500">
-        <a
-          href={`https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=10/${latitude}/${longitude}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2"
-        >
-          OpenStreetMap
-        </a>
-      </p>
-    </section>
-  );
+  return <DynamicRadarMap {...props} />;
 }

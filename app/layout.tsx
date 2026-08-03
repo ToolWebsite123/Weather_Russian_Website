@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Source_Serif_4 } from "next/font/google";
 import { ru } from "@/lib/i18n/ru";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 
 const outfit = Outfit({
   subsets: ["latin", "latin-ext"],
