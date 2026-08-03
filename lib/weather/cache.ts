@@ -58,9 +58,11 @@ export async function getCachedWeatherForCity(
   });
 
   if (cached && cached.expiresAt > now) {
+    console.log(`[WEATHER CACHE HIT] City: ${city.name} (${city.slug}), ID: ${city.id}`);
     return cached.payload as unknown as WeatherBundle;
   }
 
+  console.log(`[WEATHER CACHE MISS] Fetching fresh weather for City: ${city.name} (${city.slug}), ID: ${city.id}`);
   const bundle = await getWeatherBundle(city.latitude, city.longitude, 14);
   const expiresAt = new Date(Date.now() + CACHE_TTL_MS);
 

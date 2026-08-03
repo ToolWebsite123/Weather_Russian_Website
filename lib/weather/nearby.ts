@@ -25,7 +25,7 @@ export async function getNearbyCities(
   });
 
   return candidates
-    .sort((x, y) => dist(city, x) - dist(city, y))
+    .sort((x: City, y: City) => dist(city, x) - dist(city, y))
     .slice(0, limit)
-    .map((c) => ({ slug: c.slug, name: c.name }));
+    .map((c: City) => ({ slug: c.slug, name: c.name }));
 }

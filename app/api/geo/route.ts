@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { searchPlaces } from "@/lib/weather/open-meteo";
 import { upsertCityFromGeo } from "@/lib/weather/cache";
 import { slugifyCity } from "@/lib/cities";
+import type { City } from "@prisma/client";
+import type { GeocodingResult } from "@/types/weather";
 
 export async function GET(req: NextRequest) {
   const lat = Number(req.nextUrl.searchParams.get("lat"));
@@ -16,7 +18,7 @@ export async function GET(req: NextRequest) {
     const results = await searchPlaces(nearbyName, "ru");
     const match =
       results.sort(
-        (a, b) =>
+        (a: GeocodingResult, b: GeocodingResult) =>
           dist(lat, lon, a.latitude, a.longitude) -
           dist(lat, lon, b.latitude, b.longitude),
       )[0] ?? null;
@@ -51,7 +53,7 @@ async function nearestCityName(lat: number, lon: number): Promise<string> {
   const cities = await prisma.city.findMany({ take: 50 });
   if (cities.length === 0) return "Москва";
   const nearest = cities.sort(
-    (a, b) =>
+    (a: City, b: City) =>
       dist(lat, lon, a.latitude, a.longitude) -
       dist(lat, lon, b.latitude, b.longitude),
   )[0];

@@ -22,7 +22,7 @@ export async function getFavoritesForSession() {
     orderBy: { createdAt: "desc" },
     take: 8,
   });
-  return rows.map((r) => ({ slug: r.city.slug, name: r.city.name }));
+  return rows.map((r: { city: City }) => ({ slug: r.city.slug, name: r.city.name }));
 }
 
 export async function isCityFavorited(cityId: number): Promise<boolean> {
@@ -49,7 +49,7 @@ export async function resolveCity(slug: string): Promise<City | null> {
   // Fallback: treat slug tokens as search (e.g. first known seed missing)
   const guess = slug.replace(/-/g, " ");
   const results = await searchPlaces(guess, "ru");
-  const match = results.find((r) => r.slug === slug) ?? results[0];
+  const match = results.find((r: { slug: string }) => r.slug === slug) ?? results[0];
   if (!match) return null;
 
   return upsertCityFromGeo({
