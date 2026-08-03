@@ -8,7 +8,9 @@ import {
   NearbyCities,
   WeatherMap,
 } from "@/components/WeatherPanels";
+import { Suspense } from "react";
 import { AstronomyCard } from "@/components/AstronomyCard";
+import { HistoricalComparisonCard } from "@/components/HistoricalComparisonCard";
 import { AlertBanner } from "@/components/AlertBanner";
 import { HourlyChart } from "@/components/HourlyChart";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
@@ -121,6 +123,17 @@ export async function CityWeatherView({
         )}
 
         <DailyForecast days={daily} hourly={weather.hourly} />
+
+        {active === "today" && (
+          <Suspense fallback={null}>
+            <HistoricalComparisonCard
+              todayTempMax={weather.daily[0].tempMax}
+              todayDate={weather.daily[0].date}
+              latitude={city.latitude}
+              longitude={city.longitude}
+            />
+          </Suspense>
+        )}
 
         <WeatherMap
           latitude={city.latitude}
