@@ -1,4 +1,4 @@
-import type { AirQuality } from "@/types/weather";
+import type { AirQuality, PollenInfo } from "@/types/weather";
 
 type OpenMeteoAQ = {
   current: {
@@ -7,7 +7,13 @@ type OpenMeteoAQ = {
     pm10?: number | null;
     ozone?: number | null;
     nitrogen_dioxide?: number | null;
+    sulphur_dioxide?: number | null;
+    carbon_monoxide?: number | null;
     european_aqi?: number | null;
+    alder_pollen?: number | null;
+    birch_pollen?: number | null;
+    grass_pollen?: number | null;
+    ragweed_pollen?: number | null;
   };
 };
 
@@ -29,7 +35,20 @@ export async function fetchAirQuality(
   aqUrl.searchParams.set("longitude", String(longitude));
   aqUrl.searchParams.set(
     "current",
-    "us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,european_aqi",
+    [
+      "us_aqi",
+      "pm2_5",
+      "pm10",
+      "ozone",
+      "nitrogen_dioxide",
+      "sulphur_dioxide",
+      "carbon_monoxide",
+      "european_aqi",
+      "alder_pollen",
+      "birch_pollen",
+      "grass_pollen",
+      "ragweed_pollen",
+    ].join(","),
   );
 
   const forecastUrl = new URL("https://api.open-meteo.com/v1/forecast");
@@ -56,16 +75,52 @@ export async function fetchAirQuality(
     uvIndex = raw != null && Number.isFinite(Number(raw)) ? Number(raw) : undefined;
   }
 
+  const hasPollen =
+    aq.current.alder_pollen != null ||
+    aq.current.birch_pollen != null ||
+    aq.current.grass_pollen != null ||
+    aq.current.ragweed_pollen != null;
+
+  const pollen: PollenInfo | undefined = hasPollen
+    ? {
+        alder:
+          aq.current.alder_pollen != null
+            ? num(aq.current.alder_pollen)
+            : undefined,
+        birch:
+          aq.current.birch_pollen != null
+            ? num(aq.current.birch_pollen)
+            : undefined,
+        grass:
+          aq.current.grass_pollen != null
+            ? num(aq.current.grass_pollen)
+            : undefined,
+        ragweed:
+          aq.current.ragweed_pollen != null
+            ? num(aq.current.ragweed_pollen)
+            : undefined,
+      }
+    : undefined;
+
   return {
     usAqi,
     pm25: num(aq.current.pm2_5),
     pm10: num(aq.current.pm10),
     ozone: num(aq.current.ozone),
     nitrogenDioxide: num(aq.current.nitrogen_dioxide),
+    sulphurDioxide:
+      aq.current.sulphur_dioxide != null
+        ? num(aq.current.sulphur_dioxide)
+        : undefined,
+    carbonMonoxide:
+      aq.current.carbon_monoxide != null
+        ? num(aq.current.carbon_monoxide)
+        : undefined,
     europeanAqi:
       aq.current.european_aqi != null && Number.isFinite(Number(aq.current.european_aqi))
         ? Number(aq.current.european_aqi)
         : undefined,
     uvIndex,
+    pollen,
   };
 }

@@ -68,14 +68,24 @@ export type WeatherBundle = {
   fetchedAt: string;
 };
 
+export type PollenInfo = {
+  alder?: number;
+  birch?: number;
+  grass?: number;
+  ragweed?: number;
+};
+
 export type AirQuality = {
   usAqi: number;
   pm25: number;
   pm10: number;
   ozone: number;
   nitrogenDioxide: number;
+  sulphurDioxide?: number;
+  carbonMonoxide?: number;
   europeanAqi?: number;
   uvIndex?: number;
+  pollen?: PollenInfo;
 };
 
 /** OpenWeatherMap One Call — hourly forecast point */

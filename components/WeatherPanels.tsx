@@ -451,6 +451,20 @@ export function DailyForecast({
                   {d.precipitationSum.toFixed(1)}
                 </span>
               </div>
+
+              {/* Mobile range bar row */}
+              <div className="mt-1.5 sm:hidden flex items-center px-1">
+                <div className="h-1.5 w-full rounded-full bg-cloud-100 relative overflow-hidden">
+                  <div
+                    className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 to-sun-400"
+                    style={{
+                      left: `${leftPercent}%`,
+                      width: `${widthPercent}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
               {parts.length > 0 && (
                 <div className="mt-2 grid grid-cols-4 gap-1 sm:hidden">
                   {parts.map((p) => (
