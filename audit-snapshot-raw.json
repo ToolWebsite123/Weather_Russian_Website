@@ -1,0 +1,115 @@
+{
+  "timestamp": "2026-08-04T06:35:21.061Z",
+  "cities": [
+    {
+      "name": "Москва",
+      "slug": "moscow",
+      "coords": {
+        "lat": 55.7558,
+        "lon": 37.6173
+      },
+      "timezone": "Europe/Moscow",
+      "temperature": 21.1,
+      "feelsLike": 22.7,
+      "windSpeed": 0,
+      "windDirection": 270,
+      "humidity": 67,
+      "pressureHpa": 1020.9,
+      "pressureMmHg": 766,
+      "weatherCode": 2,
+      "conditionLabel": "Переменная облачность",
+      "sunriseLocal": "02:40",
+      "sunsetLocal": "18:30",
+      "sunriseIso": "2026-08-04T04:40",
+      "sunsetIso": "2026-08-04T20:30"
+    },
+    {
+      "name": "Санкт-Петербург",
+      "slug": "saint-petersburg",
+      "coords": {
+        "lat": 59.9343,
+        "lon": 30.3351
+      },
+      "timezone": "Europe/Moscow",
+      "temperature": 18.3,
+      "feelsLike": 17.7,
+      "windSpeed": 3.5,
+      "windDirection": 263,
+      "humidity": 74,
+      "pressureHpa": 1018.9,
+      "pressureMmHg": 764,
+      "weatherCode": 2,
+      "conditionLabel": "Переменная облачность",
+      "sunriseLocal": "02:47",
+      "sunsetLocal": "19:22",
+      "sunriseIso": "2026-08-04T04:47",
+      "sunsetIso": "2026-08-04T21:22"
+    },
+    {
+      "name": "Сочи",
+      "slug": "sochi",
+      "coords": {
+        "lat": 43.6028,
+        "lon": 39.7342
+      },
+      "timezone": "Europe/Moscow",
+      "temperature": 24.3,
+      "feelsLike": 29,
+      "windSpeed": 0.94,
+      "windDirection": 122,
+      "humidity": 89,
+      "pressureHpa": 1013.5,
+      "pressureMmHg": 760,
+      "weatherCode": 3,
+      "conditionLabel": "Пасмурно",
+      "sunriseLocal": "03:13",
+      "sunsetLocal": "17:40",
+      "sunriseIso": "2026-08-04T05:13",
+      "sunsetIso": "2026-08-04T19:40"
+    },
+    {
+      "name": "Новосибирск",
+      "slug": "novosibirsk",
+      "coords": {
+        "lat": 55.0084,
+        "lon": 82.9357
+      },
+      "timezone": "Asia/Novosibirsk",
+      "temperature": 29.1,
+      "feelsLike": 31.2,
+      "windSpeed": 1.83,
+      "windDirection": 215,
+      "humidity": 45,
+      "pressureHpa": 1003.2,
+      "pressureMmHg": 752,
+      "weatherCode": 0,
+      "conditionLabel": "Ясно",
+      "sunriseLocal": "07:42",
+      "sunsetLocal": "23:25",
+      "sunriseIso": "2026-08-04T05:42",
+      "sunsetIso": "2026-08-04T21:25"
+    },
+    {
+      "name": "Мурманск",
+      "slug": "murmansk",
+      "coords": {
+        "lat": 68.9585,
+        "lon": 33.0827
+      },
+      "timezone": "Europe/Moscow",
+      "temperature": 12.1,
+      "feelsLike": 9.4,
+      "windSpeed": 3.6,
+      "windDirection": 273,
+      "humidity": 70,
+      "pressureHpa": 1003.7,
+      "pressureMmHg": 753,
+      "weatherCode": 3,
+      "conditionLabel": "Пасмурно",
+      "sunriseLocal": "01:02",
+      "sunsetLocal": "20:44",
+      "sunriseIso": "2026-08-04T03:02",
+      "sunsetIso": "2026-08-04T22:44"
+    }
+  ]
+}

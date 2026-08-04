@@ -2,7 +2,7 @@ import type { DailyPoint } from "@/types/weather";
 import { getMoonData, getSunTimesExtended } from "@/lib/weather/astronomy";
 import { MoonPhaseIcon } from "@/components/MoonPhaseIcon";
 
-function formatTime(isoStr?: string | null): string {
+function formatTime(isoStr?: string | null, timezone?: string): string {
   if (!isoStr) return "—";
   try {
     const d = new Date(isoStr);
@@ -10,13 +10,14 @@ function formatTime(isoStr?: string | null): string {
     return d.toLocaleTimeString("ru-RU", {
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: timezone || "Europe/Moscow",
     });
   } catch {
     return "—";
   }
 }
 
-function formatDateRu(isoStr?: string | null): string {
+function formatDateRu(isoStr?: string | null, timezone?: string): string {
   if (!isoStr) return "—";
   try {
     const d = new Date(isoStr);
@@ -24,6 +25,7 @@ function formatDateRu(isoStr?: string | null): string {
     return d.toLocaleDateString("ru-RU", {
       day: "numeric",
       month: "short",
+      timeZone: timezone || "Europe/Moscow",
     });
   } catch {
     return "—";
@@ -34,10 +36,12 @@ export function AstronomyCard({
   today,
   latitude,
   longitude,
+  timezone,
 }: {
   today?: DailyPoint;
   latitude: number;
   longitude: number;
+  timezone?: string;
 }) {
   if (!today?.sunrise || !today?.sunset) return null;
 
@@ -47,8 +51,8 @@ export function AstronomyCard({
   const moon = getMoonData(dateObj, latitude, longitude);
 
   // Format sunrise/sunset and day duration
-  const sunriseTime = formatTime(today.sunrise || sun.sunrise);
-  const sunsetTime = formatTime(today.sunset || sun.sunset);
+  const sunriseTime = formatTime(today.sunrise || sun.sunrise, timezone);
+  const sunsetTime = formatTime(today.sunset || sun.sunset, timezone);
 
   const diffHours = Math.floor(sun.dayLengthMinutes / 60);
   const diffMinutes = Math.round(sun.dayLengthMinutes % 60);

@@ -14,6 +14,7 @@ type OpenMeteoForecast = {
   latitude: number;
   longitude: number;
   timezone: string;
+  utc_offset_seconds?: number;
   current: {
     time: string;
     temperature_2m: number;
@@ -171,6 +172,8 @@ export async function fetchOpenMeteoForecast(
   }
 
   const data = (await res.json()) as OpenMeteoForecast;
+  const offsetSec = data.utc_offset_seconds ?? 0;
+
   const hourly: HourlyPoint[] = data.hourly.time.map((time, i) => ({
     time,
     temperature: data.hourly.temperature_2m[i],
@@ -191,8 +194,8 @@ export async function fetchOpenMeteoForecast(
     tempMin: data.daily.temperature_2m_min[i],
     precipitationSum: data.daily.precipitation_sum[i],
     windSpeedMax: data.daily.wind_speed_10m_max[i],
-    sunrise: data.daily.sunrise[i],
-    sunset: data.daily.sunset[i],
+    sunrise: formatIsoWithOffset(data.daily.sunrise[i], offsetSec) ?? data.daily.sunrise[i],
+    sunset: formatIsoWithOffset(data.daily.sunset[i], offsetSec) ?? data.daily.sunset[i],
     uvIndexMax: data.daily.uv_index_max?.[i],
   }));
 
@@ -222,4 +225,24 @@ export async function fetchOpenMeteoForecast(
     daily,
     fetchedAt: new Date().toISOString(),
   };
+}
+
+function formatIsoWithOffset(
+  timeStr: string | undefined,
+  offsetSeconds: number = 0,
+): string | undefined {
+  if (!timeStr) return undefined;
+  if (
+    timeStr.endsWith("Z") ||
+    timeStr.includes("+") ||
+    (timeStr.includes("-") && timeStr.length > 16 && timeStr.indexOf("-", 10) > 0)
+  ) {
+    return timeStr;
+  }
+  const sign = offsetSeconds >= 0 ? "+" : "-";
+  const absSec = Math.abs(offsetSeconds);
+  const hours = String(Math.floor(absSec / 3600)).padStart(2, "0");
+  const mins = String(Math.floor((absSec % 3600) / 60)).padStart(2, "0");
+  const sec = timeStr.length === 16 ? ":00" : "";
+  return `${timeStr}${sec}${sign}${hours}:${mins}`;
 }

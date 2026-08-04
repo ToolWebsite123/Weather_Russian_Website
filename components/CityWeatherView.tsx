@@ -116,6 +116,7 @@ export async function CityWeatherView({
           today={tomorrowOnly ? weather.daily[1] : weather.daily[0]}
           latitude={city.latitude}
           longitude={city.longitude}
+          timezone={weather.timezone || city.timezone || undefined}
         />
 
         {focusDate && (
