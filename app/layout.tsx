@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Source_Serif_4 } from "next/font/google";
+import { Inter, Source_Serif_4 } from "next/font/google";
 import { ru } from "@/lib/i18n/ru";
+import { DomNodeFix } from "@/components/DomNodeFix";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 
-const outfit = Outfit({
-  subsets: ["latin", "latin-ext"],
+const inter = Inter({
+  subsets: ["latin", "cyrillic"],
   variable: "--font-outfit",
   display: "swap",
 });
@@ -35,10 +36,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} ${sourceSerif.variable} font-sans antialiased`}
+        suppressHydrationWarning
+        className={`${inter.variable} ${sourceSerif.variable} font-sans antialiased`}
       >
+        <DomNodeFix />
         {children}
       </body>
     </html>
