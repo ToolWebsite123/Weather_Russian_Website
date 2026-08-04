@@ -17,6 +17,8 @@ const sourceSerif = Source_Serif_4({
   display: "swap",
 });
 
+export const runtime = "edge";
+
 export const viewport: Viewport = {
   themeColor: "#0c87ea",
 };
