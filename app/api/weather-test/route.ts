@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getWeatherByCoordinates } from "@/lib/weather";
+import { getWeatherBundle } from "@/lib/weather";
 
 const MOSCOW_LAT = 55.7558;
 const MOSCOW_LON = 37.6173;
@@ -9,17 +9,11 @@ export async function GET() {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const result = await getWeatherByCoordinates(MOSCOW_LAT, MOSCOW_LON);
-
-  if (!result.ok) {
-    const status =
-      result.status === 401 || result.status === 403
-        ? 503
-        : result.error.includes("not configured")
-          ? 503
-          : 502;
-    return NextResponse.json(result, { status });
+  try {
+    const bundle = await getWeatherBundle(MOSCOW_LAT, MOSCOW_LON);
+    return NextResponse.json({ ok: true, data: bundle });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Weather fetch failed";
+    return NextResponse.json({ ok: false, error: message }, { status: 502 });
   }
-
-  return NextResponse.json(result);
 }

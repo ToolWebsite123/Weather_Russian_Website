@@ -15,6 +15,8 @@ import { RecommendationsCard } from "@/components/RecommendationsCard";
 import { AlertBanner } from "@/components/AlertBanner";
 import { HourlyChart } from "@/components/HourlyChart";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
+import { GeomagneticCard } from "@/components/GeomagneticCard";
+import { RoadConditionCard } from "@/components/RoadConditionCard";
 import { CityWeatherFaq } from "@/components/CityWeatherFaq";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { PageShell } from "@/components/SiteChrome";
@@ -27,6 +29,7 @@ import {
 } from "@/lib/weather/city-page";
 import { getNearbyCities } from "@/lib/weather/nearby";
 import { fetchAirQuality } from "@/lib/weather/air-quality";
+import { fetchGeomagneticData } from "@/lib/weather/geomagnetic";
 import { getActiveAlerts } from "@/lib/weather/alerts";
 import { getLatestArticles } from "@/lib/content/articles";
 import { ru } from "@/lib/i18n/ru";
@@ -56,11 +59,12 @@ export async function CityWeatherView({
   const { city, weather } = data;
   const alerts = getActiveAlerts(weather);
 
-  const [favorites, favorited, nearby, aqi, articles] = await Promise.all([
+  const [favorites, favorited, nearby, aqi, geomagnetic, articles] = await Promise.all([
     getFavoritesForSession().catch(() => []),
     isCityFavorited(city.id).catch(() => false),
     getNearbyCities(city, 8).catch(() => []),
     fetchAirQuality(city.latitude, city.longitude).catch(() => null),
+    fetchGeomagneticData().catch(() => null),
     Promise.resolve(getLatestArticles(2)),
   ]);
 
@@ -102,6 +106,8 @@ export async function CityWeatherView({
           hourly={weather.hourly}
         />
 
+        <RoadConditionCard current={weather.current} />
+
         <AstronomyCard
           today={tomorrowOnly ? weather.daily[1] : weather.daily[0]}
           latitude={city.latitude}
@@ -123,6 +129,8 @@ export async function CityWeatherView({
             activeAlerts={alerts}
           />
         )}
+
+        <GeomagneticCard data={geomagnetic} />
 
         {aqi && <AirQualityBlock aqi={aqi} />}
 
