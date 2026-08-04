@@ -105,15 +105,15 @@ export function AstronomyCard({
             <div className="flex items-center justify-between gap-2">
               <span className="text-cloud-600 font-medium">Золотой час:</span>
               <span className="tabular-nums text-sky-950 font-medium">
-                {formatTime(sun.sunrise)}–{formatTime(sun.goldenHourMorningEnd)} ·{" "}
-                {formatTime(sun.goldenHourEveningStart)}–{formatTime(sun.sunset)}
+                {formatTime(sun.sunrise, timezone)}–{formatTime(sun.goldenHourMorningEnd, timezone)} ·{" "}
+                {formatTime(sun.goldenHourEveningStart, timezone)}–{formatTime(sun.sunset, timezone)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-2">
               <span className="text-cloud-600 font-medium">Синий час:</span>
               <span className="tabular-nums text-sky-950 font-medium">
-                {formatTime(sun.blueHourMorningStart)}–{formatTime(sun.blueHourMorningEnd)} ·{" "}
-                {formatTime(sun.blueHourEveningStart)}–{formatTime(sun.blueHourEveningEnd)}
+                {formatTime(sun.blueHourMorningStart, timezone)}–{formatTime(sun.blueHourMorningEnd, timezone)} ·{" "}
+                {formatTime(sun.blueHourEveningStart, timezone)}–{formatTime(sun.blueHourEveningEnd, timezone)}
               </span>
             </div>
           </div>
@@ -150,13 +150,13 @@ export function AstronomyCard({
             <div className="rounded-xl bg-sky-50/70 p-2.5">
               <p className="text-[11px] font-medium text-sky-800">Восход Луны</p>
               <p className="mt-1 text-sm font-semibold tabular-nums text-sky-950">
-                {moon.moonrise ? `🌙 ${formatTime(moon.moonrise)}` : "не восходит"}
+                {moon.moonrise ? `🌙 ${formatTime(moon.moonrise, timezone)}` : "не восходит"}
               </p>
             </div>
             <div className="rounded-xl bg-sky-50/70 p-2.5">
               <p className="text-[11px] font-medium text-sky-800">Заход Луны</p>
               <p className="mt-1 text-sm font-semibold tabular-nums text-sky-950">
-                {moon.moonset ? `🌘 ${formatTime(moon.moonset)}` : "не заходит"}
+                {moon.moonset ? `🌘 ${formatTime(moon.moonset, timezone)}` : "не заходит"}
               </p>
             </div>
           </div>
@@ -165,13 +165,13 @@ export function AstronomyCard({
             <span>
               Новолуние:{" "}
               <strong className="text-sky-950 font-semibold">
-                {formatDateRu(moon.nextNewMoon)}
+                {formatDateRu(moon.nextNewMoon, timezone)}
               </strong>
             </span>
             <span>
               Полнолуние:{" "}
               <strong className="text-sky-950 font-semibold">
-                {formatDateRu(moon.nextFullMoon)}
+                {formatDateRu(moon.nextFullMoon, timezone)}
               </strong>
             </span>
           </div>
