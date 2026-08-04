@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { randomUUID } from "crypto";
 
 export const SESSION_COOKIE = "wh_session";
 
@@ -7,7 +6,7 @@ export async function getOrCreateSessionId(): Promise<string> {
   const store = cookies();
   const existing = store.get(SESSION_COOKIE)?.value;
   if (existing) return existing;
-  return randomUUID();
+  return crypto.randomUUID();
 }
 
 export function sessionCookieOptions(value: string) {

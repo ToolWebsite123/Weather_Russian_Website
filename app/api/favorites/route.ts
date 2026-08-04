@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
 import { favoritePayloadSchema } from "@/lib/validations/schemas";
@@ -10,7 +9,7 @@ function ensureSession(): { sessionId: string; setCookie: boolean } {
   const store = cookies();
   const existing = store.get(SESSION_COOKIE)?.value;
   if (existing) return { sessionId: existing, setCookie: false };
-  return { sessionId: randomUUID(), setCookie: true };
+  return { sessionId: crypto.randomUUID(), setCookie: true };
 }
 
 export async function POST(req: NextRequest) {
