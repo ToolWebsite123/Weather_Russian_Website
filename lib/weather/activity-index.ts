@@ -1,3 +1,4 @@
+import { config } from "@/lib/config";
 import type {
   CurrentWeather,
   DailyPoint,
@@ -34,18 +35,20 @@ export function computeComfortPenalties(
   let score = 100;
   const penalties: { reason: string; penalty: number }[] = [];
 
-  // 1. Temperature comfort band (18–24°C feelsLike)
+  // 1. Temperature comfort band
+  const minComfort = config.weather.comfortTempMin;
+  const maxComfort = config.weather.comfortTempMax;
   const t = current.feelsLike;
-  if (t < 18) {
-    const dist = 18 - t;
+  if (t < minComfort) {
+    const dist = minComfort - t;
     const pen = Math.min(40, Math.round(dist * 2));
     score -= pen;
     penalties.push({
       reason: t < 0 ? "Морозная погода" : "Прохладно или холодно на улице",
       penalty: pen,
     });
-  } else if (t > 24) {
-    const dist = t - 24;
+  } else if (t > maxComfort) {
+    const dist = t - maxComfort;
     const pen = Math.min(40, Math.round(dist * 2));
     score -= pen;
     penalties.push({

@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchPlaces } from "@/lib/weather/open-meteo";
 import { upsertCityFromGeo } from "@/lib/weather/cache";
+import { searchQuerySchema } from "@/lib/validations/schemas";
 
 export async function GET(req: NextRequest) {
-  const q = req.nextUrl.searchParams.get("q") ?? "";
-  if (q.trim().length < 2) {
+  const parseResult = searchQuerySchema.safeParse({
+    q: req.nextUrl.searchParams.get("q"),
+  });
+
+  if (!parseResult.success) {
     return NextResponse.json({ results: [] });
   }
+
+  const { q } = parseResult.data;
 
   try {
     const results = await searchPlaces(q, "ru");

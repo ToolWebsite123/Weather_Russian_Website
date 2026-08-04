@@ -1,9 +1,10 @@
+import { config } from "@/lib/config";
 import { prisma } from "@/lib/prisma";
 import { getWeatherBundle } from "@/lib/weather";
 import type { WeatherBundle } from "@/types/weather";
 import type { City } from "@prisma/client";
 
-const CACHE_TTL_MS = 15 * 60 * 1000;
+const CACHE_TTL_MS = config.cache.ttlMs;
 
 export async function getCityBySlug(slug: string): Promise<City | null> {
   return prisma.city.findUnique({ where: { slug } });

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
+import { favoritePayloadSchema } from "@/lib/validations/schemas";
 
 function ensureSession(): { sessionId: string; setCookie: boolean } {
   const store = cookies();
@@ -11,18 +12,14 @@ function ensureSession(): { sessionId: string; setCookie: boolean } {
   return { sessionId: randomUUID(), setCookie: true };
 }
 
-function parseCityId(value: unknown): number | null {
-  const n = typeof value === "number" ? value : Number(value);
-  return Number.isInteger(n) && n > 0 ? n : null;
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as { cityId?: unknown };
-    const cityId = parseCityId(body.cityId);
-    if (cityId == null) {
+    const body = await req.json();
+    const parseResult = favoritePayloadSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json({ error: "cityId required" }, { status: 400 });
     }
+    const { cityId } = parseResult.data;
 
     const city = await prisma.city.findUnique({ where: { id: cityId } });
     if (!city) {
@@ -46,11 +43,12 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const body = (await req.json()) as { cityId?: unknown };
-    const cityId = parseCityId(body.cityId);
-    if (cityId == null) {
+    const body = await req.json();
+    const parseResult = favoritePayloadSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json({ error: "cityId required" }, { status: 400 });
     }
+    const { cityId } = parseResult.data;
 
     const { sessionId, setCookie } = ensureSession();
     await prisma.favorite.deleteMany({

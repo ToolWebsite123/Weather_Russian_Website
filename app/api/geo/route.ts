@@ -3,15 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { searchPlaces } from "@/lib/weather/open-meteo";
 import { upsertCityFromGeo } from "@/lib/weather/cache";
 import { slugifyCity } from "@/lib/cities";
+import { geoQuerySchema } from "@/lib/validations/schemas";
 import type { City } from "@prisma/client";
 import type { GeocodingResult } from "@/types/weather";
 
 export async function GET(req: NextRequest) {
-  const lat = Number(req.nextUrl.searchParams.get("lat"));
-  const lon = Number(req.nextUrl.searchParams.get("lon"));
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+  const parseResult = geoQuerySchema.safeParse({
+    lat: req.nextUrl.searchParams.get("lat"),
+    lon: req.nextUrl.searchParams.get("lon"),
+  });
+
+  if (!parseResult.success) {
     return NextResponse.json({ error: "invalid coords" }, { status: 400 });
   }
+
+  const { lat, lon } = parseResult.data;
 
   try {
     const nearbyName = await nearestCityName(lat, lon);
