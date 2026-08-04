@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && npx @cloudflare/next-on-pages",
-    "build:next": "prisma generate && next build",
+    "build": "prisma generate && next build",
+    "pages:build": "prisma generate && npx @cloudflare/next-on-pages",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
@@ -13,7 +13,6 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:setup": "prisma db push && tsx prisma/seed.ts",
-    "pages:build": "npx @cloudflare/next-on-pages",
     "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static",
     "pages:preview": "npm run pages:build && wrangler pages dev .vercel/output/static"
   },
