@@ -7,7 +7,7 @@ import { getCityLocative } from "@/lib/i18n/declension";
 type Props = { params: { slug: string } };
 
 export async function generateStaticParams() {
-  const cities = await listPopularCities(20).catch(() => []);
+  const cities = await listPopularCities(50).catch(() => []);
   return cities.map((c) => ({ slug: c.slug }));
 }
 

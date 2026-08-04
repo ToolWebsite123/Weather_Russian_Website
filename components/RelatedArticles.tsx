@@ -11,7 +11,7 @@ export function RelatedArticles({ articles }: { articles: Article[] }) {
         {articles.map((article) => (
           <li key={article.slug}>
             <Link
-              href={`/novosti/${article.slug}`}
+              href={`/articles/${article.slug}`}
               className="block rounded-xl bg-white/80 p-4 ring-1 ring-sky-100 hover:bg-sun-50"
             >
               <p className="font-medium text-sky-950">{article.title}</p>

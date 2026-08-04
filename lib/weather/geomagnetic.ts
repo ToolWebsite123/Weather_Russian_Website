@@ -1,3 +1,5 @@
+import { reportError } from "@/lib/monitoring";
+
 export type GeomagneticSeverity = "calm" | "minor" | "storm" | "severe";
 
 export type GeomagneticData = {
@@ -61,7 +63,8 @@ export async function fetchGeomagneticData(): Promise<GeomagneticData | null> {
       isElevated: roundedInt >= 5,
       timeTag: latest.time_tag ?? "",
     };
-  } catch {
+  } catch (err) {
+    reportError(err, { service: "fetchGeomagneticData" });
     return null;
   }
 }

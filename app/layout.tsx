@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Outfit, Source_Serif_4 } from "next/font/google";
 import { ru } from "@/lib/i18n/ru";
 import "./globals.css";
@@ -16,12 +16,17 @@ const sourceSerif = Source_Serif_4({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#0c87ea",
+};
+
 export const metadata: Metadata = {
   title: {
     default: `${ru.brand} — ${ru.homeTitle}`,
     template: `%s`,
   },
   description: ru.homeSubtitle,
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({

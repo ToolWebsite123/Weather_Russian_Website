@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
 import { favoritePayloadSchema } from "@/lib/validations/schemas";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 function ensureSession(): { sessionId: string; setCookie: boolean } {
   const store = cookies();
@@ -13,6 +14,9 @@ function ensureSession(): { sessionId: string; setCookie: boolean } {
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimit = checkRateLimit(req, { maxRequests: 15, windowMs: 60 * 1000 });
+  if (!rateLimit.success) return rateLimitResponse();
+
   try {
     const body = await req.json();
     const parseResult = favoritePayloadSchema.safeParse(body);
@@ -42,6 +46,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const rateLimit = checkRateLimit(req, { maxRequests: 15, windowMs: 60 * 1000 });
+  if (!rateLimit.success) return rateLimitResponse();
+
   try {
     const body = await req.json();
     const parseResult = favoritePayloadSchema.safeParse(body);

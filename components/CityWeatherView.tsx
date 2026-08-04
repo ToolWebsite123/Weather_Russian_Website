@@ -19,6 +19,7 @@ import { GeomagneticCard } from "@/components/GeomagneticCard";
 import { RoadConditionCard } from "@/components/RoadConditionCard";
 import { CityWeatherFaq } from "@/components/CityWeatherFaq";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { NotificationPrompt } from "@/components/NotificationPrompt";
 import { PageShell } from "@/components/SiteChrome";
 import { RememberLastCity } from "@/components/RememberLastCity";
 import { RelatedArticles } from "@/components/RelatedArticles";
@@ -96,7 +97,10 @@ export async function CityWeatherView({
           <div className="min-w-0 flex-1">
             <ForecastTabs slug={city.slug} active={active} />
           </div>
-          <FavoriteButton cityId={city.id} initialFavorited={favorited} />
+          <div className="flex items-center gap-2">
+            <NotificationPrompt />
+            <FavoriteButton cityId={city.id} initialFavorited={favorited} />
+          </div>
         </div>
 
         <CurrentWeatherCard

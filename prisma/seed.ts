@@ -1,264 +1,81 @@
 import { PrismaClient } from "@prisma/client";
+import { slugifyCity, transliterateRu } from "../lib/cities";
+import chunkMajor from "./data/_chunk_major.json";
+import chunkMid1 from "./data/_chunk_mid1.json";
 
 const prisma = new PrismaClient();
 
-const cities = [
-  {
-    slug: "moscow",
-    name: "Москва",
-    nameEn: "Moscow",
-    region: "Москва",
-    latitude: 55.7558,
-    longitude: 37.6173,
-    timezone: "Europe/Moscow",
-    population: 12600000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "saint-petersburg",
-    name: "Санкт-Петербург",
-    nameEn: "Saint Petersburg",
-    region: "Санкт-Петербург",
-    latitude: 59.9311,
-    longitude: 30.3609,
-    timezone: "Europe/Moscow",
-    population: 5600000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "novosibirsk",
-    name: "Новосибирск",
-    nameEn: "Novosibirsk",
-    region: "Новосибирская область",
-    latitude: 55.0084,
-    longitude: 82.9357,
-    timezone: "Asia/Novosibirsk",
-    population: 1600000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "yekaterinburg",
-    name: "Екатеринбург",
-    nameEn: "Yekaterinburg",
-    region: "Свердловская область",
-    latitude: 56.8389,
-    longitude: 60.6057,
-    timezone: "Asia/Yekaterinburg",
-    population: 1500000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "kazan",
-    name: "Казань",
-    nameEn: "Kazan",
-    region: "Татарстан",
-    latitude: 55.7961,
-    longitude: 49.1064,
-    timezone: "Europe/Moscow",
-    population: 1300000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "nizhny-novgorod",
-    name: "Нижний Новгород",
-    nameEn: "Nizhny Novgorod",
-    region: "Нижегородская область",
-    latitude: 56.2965,
-    longitude: 43.9361,
-    timezone: "Europe/Moscow",
-    population: 1250000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "chelyabinsk",
-    name: "Челябинск",
-    nameEn: "Chelyabinsk",
-    region: "Челябинская область",
-    latitude: 55.1644,
-    longitude: 61.4368,
-    timezone: "Asia/Yekaterinburg",
-    population: 1200000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "samara",
-    name: "Самара",
-    nameEn: "Samara",
-    region: "Самарская область",
-    latitude: 53.1959,
-    longitude: 50.1002,
-    timezone: "Europe/Samara",
-    population: 1160000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "omsk",
-    name: "Омск",
-    nameEn: "Omsk",
-    region: "Омская область",
-    latitude: 54.9885,
-    longitude: 73.3242,
-    timezone: "Asia/Omsk",
-    population: 1100000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "rostov-on-don",
-    name: "Ростов-на-Дону",
-    nameEn: "Rostov-on-Don",
-    region: "Ростовская область",
-    latitude: 47.2357,
-    longitude: 39.7015,
-    timezone: "Europe/Moscow",
-    population: 1100000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "ufa",
-    name: "Уфа",
-    nameEn: "Ufa",
-    region: "Башкортостан",
-    latitude: 54.7388,
-    longitude: 55.9721,
-    timezone: "Asia/Yekaterinburg",
-    population: 1100000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "krasnoyarsk",
-    name: "Красноярск",
-    nameEn: "Krasnoyarsk",
-    region: "Красноярский край",
-    latitude: 56.0153,
-    longitude: 92.8932,
-    timezone: "Asia/Krasnoyarsk",
-    population: 1000000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "voronezh",
-    name: "Воронеж",
-    nameEn: "Voronezh",
-    region: "Воронежская область",
-    latitude: 51.672,
-    longitude: 39.1843,
-    timezone: "Europe/Moscow",
-    population: 1050000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "perm",
-    name: "Пермь",
-    nameEn: "Perm",
-    region: "Пермский край",
-    latitude: 58.0105,
-    longitude: 56.2502,
-    timezone: "Asia/Yekaterinburg",
-    population: 1050000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "volgograd",
-    name: "Волгоград",
-    nameEn: "Volgograd",
-    region: "Волгоградская область",
-    latitude: 48.708,
-    longitude: 44.5133,
-    timezone: "Europe/Volgograd",
-    population: 1000000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "krasnodar",
-    name: "Краснодар",
-    nameEn: "Krasnodar",
-    region: "Краснодарский край",
-    latitude: 45.0355,
-    longitude: 38.9753,
-    timezone: "Europe/Moscow",
-    population: 950000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "saratov",
-    name: "Саратов",
-    nameEn: "Saratov",
-    region: "Саратовская область",
-    latitude: 51.5336,
-    longitude: 46.0343,
-    timezone: "Europe/Saratov",
-    population: 840000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "tyumen",
-    name: "Тюмень",
-    nameEn: "Tyumen",
-    region: "Тюменская область",
-    latitude: 57.1522,
-    longitude: 65.5272,
-    timezone: "Asia/Yekaterinburg",
-    population: 850000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "irkutsk",
-    name: "Иркутск",
-    nameEn: "Irkutsk",
-    region: "Иркутская область",
-    latitude: 52.2978,
-    longitude: 104.2964,
-    timezone: "Asia/Irkutsk",
-    population: 620000,
-    tier: 1,
-    country: "RU",
-  },
-  {
-    slug: "vladivostok",
-    name: "Владивосток",
-    nameEn: "Vladivostok",
-    region: "Приморский край",
-    latitude: 43.1155,
-    longitude: 131.8855,
-    timezone: "Asia/Vladivostok",
-    population: 600000,
-    tier: 1,
-    country: "RU",
-  },
-];
+type RawCityTuple = [string, number, number, number, string];
+
+const EXPLICIT_SLUGS: Record<string, string> = {
+  "Москва": "moscow",
+  "Санкт-Петербург": "saint-petersburg",
+  "Новосибирск": "novosibirsk",
+  "Екатеринбург": "yekaterinburg",
+  "Казань": "kazan",
+  "Нижний Новгород": "nizhny-novgorod",
+  "Челябинск": "chelyabinsk",
+  "Самара": "samara",
+  "Омск": "omsk",
+  "Ростов-на-Дону": "rostov-on-don",
+  "Уфа": "ufa",
+  "Красноярск": "krasnoyarsk",
+  "Воронеж": "voronezh",
+  "Пермь": "perm",
+  "Волгоград": "volgograd",
+  "Краснодар": "krasnodar",
+  "Саратов": "saratov",
+  "Тюмень": "tyumen",
+  "Иркутск": "irkutsk",
+  "Владивосток": "vladivostok",
+};
 
 async function main() {
-  for (const city of cities) {
+  const rawList = [...(chunkMajor as RawCityTuple[]), ...(chunkMid1 as RawCityTuple[])];
+  const seen = new Set<string>();
+
+  const citiesToSeed = rawList.map(([name, lat, lon, pop, region]) => {
+    let slug = EXPLICIT_SLUGS[name];
+    if (!slug) {
+      slug = slugifyCity(name);
+      if (seen.has(slug)) {
+        slug = slugifyCity(name, region);
+      }
+      let counter = 2;
+      while (seen.has(slug)) {
+        slug = `${slugifyCity(name)}-${counter++}`;
+      }
+    }
+    seen.add(slug);
+
+    return {
+      slug,
+      name,
+      nameEn: transliterateRu(name),
+      region: region ?? name,
+      latitude: Number(lat),
+      longitude: Number(lon),
+      timezone: null as string | null,
+      population: Number(pop),
+      tier: Number(pop) >= 500000 ? 1 : 2,
+      country: "RU",
+    };
+  });
+
+  for (const city of citiesToSeed) {
     await prisma.city.upsert({
       where: { slug: city.slug },
       update: city,
       create: city,
     });
   }
-  console.log(`Seeded ${cities.length} cities`);
+
+  console.log(`Successfully seeded ${citiesToSeed.length} cities.`);
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error("Seeding error:", e);
     process.exit(1);
   })
   .finally(async () => {

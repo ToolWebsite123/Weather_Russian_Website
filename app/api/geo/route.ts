@@ -4,10 +4,13 @@ import { searchPlaces } from "@/lib/weather/open-meteo";
 import { upsertCityFromGeo } from "@/lib/weather/cache";
 import { slugifyCity } from "@/lib/cities";
 import { geoQuerySchema } from "@/lib/validations/schemas";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import type { City } from "@prisma/client";
 import type { GeocodingResult } from "@/types/weather";
 
 export async function GET(req: NextRequest) {
+  const rateLimit = checkRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
+  if (!rateLimit.success) return rateLimitResponse();
   const parseResult = geoQuerySchema.safeParse({
     lat: req.nextUrl.searchParams.get("lat"),
     lon: req.nextUrl.searchParams.get("lon"),

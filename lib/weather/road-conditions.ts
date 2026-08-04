@@ -1,13 +1,11 @@
 import type { CurrentWeather } from "@/types/weather";
+import { isSnowOrIcyPrecipitationCode } from "@/lib/weather/wmo";
 
 // Threshold constants for road condition evaluation
 export const FREEZING_TEMP_C = 0;
 export const BLACK_ICE_TEMP_MIN_C = -2;
 export const BLACK_ICE_TEMP_MAX_C = 2;
 export const SNOW_TEMP_MAX_C = -2;
-
-// WMO codes representing snow or freezing rain
-const SNOW_WMO_CODES = new Set([71, 73, 75, 77, 85, 86, 56, 57, 66, 67]);
 
 export type RoadConditionType = "dry" | "wet" | "icy_risk" | "snow";
 
@@ -21,7 +19,7 @@ export type RoadConditionInfo = {
 
 export function getRoadCondition(current: CurrentWeather): RoadConditionInfo {
   const { temperature, precipitation, weatherCode } = current;
-  const isSnowCode = SNOW_WMO_CODES.has(weatherCode);
+  const isSnowCode = isSnowOrIcyPrecipitationCode(weatherCode);
 
   // 1. Snow condition ("Снежный накат")
   if (isSnowCode || (precipitation > 0 && temperature <= SNOW_TEMP_MAX_C)) {

@@ -51,3 +51,15 @@ model Favorite {
   @@unique([sessionId, cityId])
   @@index([sessionId])
 }
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  sessionId String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sessionId])
+}

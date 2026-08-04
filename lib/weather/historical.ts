@@ -1,3 +1,5 @@
+import { reportError } from "@/lib/monitoring";
+
 export type HistoricalDailyPoint = {
   date: string; // "YYYY-MM-DD"
   tempMax: number;
@@ -88,7 +90,9 @@ export async function fetchHistoricalRange(
   });
 
   if (!res.ok) {
-    throw new Error(`Open-Meteo Archive fetch failed with status ${res.status}`);
+    const err = new Error(`Open-Meteo Archive fetch failed with status ${res.status}`);
+    reportError(err, { latitude, longitude });
+    throw err;
   }
 
   const data = (await res.json()) as OpenMeteoArchiveResponse;

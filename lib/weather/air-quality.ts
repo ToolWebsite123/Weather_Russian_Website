@@ -1,4 +1,5 @@
 import type { AirQuality, PollenInfo } from "@/types/weather";
+import { reportError } from "@/lib/monitoring";
 
 type OpenMeteoAQ = {
   current: {
@@ -63,10 +64,18 @@ export async function fetchAirQuality(
     fetch(forecastUrl.toString(), { next: { revalidate: 1800 } }),
   ]);
 
-  if (!aqRes.ok) throw new Error("Air quality fetch failed");
+  if (!aqRes.ok) {
+    const err = new Error("Air quality fetch failed");
+    reportError(err, { latitude, longitude });
+    throw err;
+  }
   const aq = (await aqRes.json()) as OpenMeteoAQ;
   const usAqi = num(aq.current.us_aqi);
-  if (usAqi <= 0) throw new Error("Air quality data unavailable");
+  if (usAqi <= 0) {
+    const err = new Error("Air quality data unavailable");
+    reportError(err, { latitude, longitude });
+    throw err;
+  }
 
   let uvIndex: number | undefined;
   if (uvRes.ok) {

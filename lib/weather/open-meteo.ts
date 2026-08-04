@@ -5,6 +5,7 @@ import type {
   WeatherBundle,
 } from "@/types/weather";
 import { slugifyCity } from "@/lib/cities";
+import { reportError } from "@/lib/monitoring";
 
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
@@ -163,7 +164,11 @@ export async function fetchOpenMeteoForecast(
   const res = await fetch(url.toString(), {
     next: { revalidate: 900 },
   });
-  if (!res.ok) throw new Error("Forecast fetch failed");
+  if (!res.ok) {
+    const err = new Error(`Forecast fetch failed with status ${res.status}`);
+    reportError(err, { latitude, longitude });
+    throw err;
+  }
 
   const data = (await res.json()) as OpenMeteoForecast;
   const hourly: HourlyPoint[] = data.hourly.time.map((time, i) => ({

@@ -46,3 +46,14 @@ export function weatherCodeEmoji(code: number, isDay = true): string {
   if (code >= 95) return "⛈";
   return "🌤";
 }
+
+/**
+ * Checks if a WMO weather code represents snow or freezing precipitation.
+ * Covers snow/grains (71-77), snow showers (85-86), and freezing drizzle/rain (56, 57, 66, 67).
+ */
+export function isSnowOrIcyPrecipitationCode(code: number): boolean {
+  if (code === 56 || code === 57 || code === 66 || code === 67) return true;
+  if (code >= 71 && code <= 77) return true;
+  if (code >= 85 && code <= 86) return true;
+  return false;
+}
