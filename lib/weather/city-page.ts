@@ -14,24 +14,32 @@ import type { WeatherBundle } from "@/types/weather";
 export const revalidate = 900;
 
 export async function getFavoritesForSession() {
-  const sessionId = cookies().get(SESSION_COOKIE)?.value;
-  if (!sessionId) return [] as { slug: string; name: string }[];
-  const rows = await prisma.favorite.findMany({
-    where: { sessionId },
-    include: { city: true },
-    orderBy: { createdAt: "desc" },
-    take: 8,
-  });
-  return rows.map((r: { city: City }) => ({ slug: r.city.slug, name: r.city.name }));
+  try {
+    const sessionId = cookies().get(SESSION_COOKIE)?.value;
+    if (!sessionId) return [] as { slug: string; name: string }[];
+    const rows = await prisma.favorite.findMany({
+      where: { sessionId },
+      include: { city: true },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    });
+    return rows.map((r: { city: City }) => ({ slug: r.city.slug, name: r.city.name }));
+  } catch {
+    return [] as { slug: string; name: string }[];
+  }
 }
 
 export async function isCityFavorited(cityId: number): Promise<boolean> {
-  const sessionId = cookies().get(SESSION_COOKIE)?.value;
-  if (!sessionId) return false;
-  const row = await prisma.favorite.findUnique({
-    where: { sessionId_cityId: { sessionId, cityId } },
-  });
-  return Boolean(row);
+  try {
+    const sessionId = cookies().get(SESSION_COOKIE)?.value;
+    if (!sessionId) return false;
+    const row = await prisma.favorite.findUnique({
+      where: { sessionId_cityId: { sessionId, cityId } },
+    });
+    return Boolean(row);
+  } catch {
+    return false;
+  }
 }
 
 const ALIASES: Record<string, string> = {
@@ -46,24 +54,28 @@ export async function resolveCity(slug: string): Promise<City | null> {
   const existing = await getCityBySlug(targetSlug);
   if (existing) return existing;
 
-  // Fallback: treat slug tokens as search (e.g. first known seed missing)
-  const guess = slug.replace(/-/g, " ");
-  const results = await searchPlaces(guess, "ru");
-  const match = results.find((r: { slug: string }) => r.slug === slug) ?? results[0];
-  if (!match) return null;
+  // Fallback: treat slug tokens as search
+  try {
+    const guess = slug.replace(/-/g, " ");
+    const results = await searchPlaces(guess, "ru");
+    const match = results.find((r: { slug: string }) => r.slug === slug) ?? results[0];
+    if (!match) return null;
 
-  return upsertCityFromGeo({
-    slug: match.slug === slug ? match.slug : slug,
-    name: match.name,
-    nameEn: match.nameEn ?? match.name,
-    country: match.country || "RU",
-    region: match.admin1,
-    latitude: match.latitude,
-    longitude: match.longitude,
-    timezone: match.timezone,
-    population: match.population,
-    tier: 2,
-  });
+    return upsertCityFromGeo({
+      slug: match.slug === slug ? match.slug : slug,
+      name: match.name,
+      nameEn: match.nameEn ?? match.name,
+      country: match.country || "RU",
+      region: match.admin1,
+      latitude: match.latitude,
+      longitude: match.longitude,
+      timezone: match.timezone,
+      population: match.population,
+      tier: 2,
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function loadCityWeather(slug: string): Promise<{
@@ -76,12 +88,16 @@ export async function loadCityWeather(slug: string): Promise<{
     const weather = await getCachedWeatherForCity(city);
     return { city, weather };
   } catch {
-    // Retry once after brief delay if connection pooler timed out under heavy SSG load
-    await new Promise((res) => setTimeout(res, 500));
-    const city = await resolveCity(slug);
-    if (!city) return null;
-    const weather = await getCachedWeatherForCity(city);
-    return { city, weather };
+    // Retry once after brief delay if connection pooler timed out
+    try {
+      await new Promise((res) => setTimeout(res, 300));
+      const city = await resolveCity(slug);
+      if (!city) return null;
+      const weather = await getCachedWeatherForCity(city);
+      return { city, weather };
+    } catch {
+      return null;
+    }
   }
 }
 
