@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -14,7 +13,13 @@ function createPrismaClient(): PrismaClient {
   }
 
   if (typeof WebSocket === "undefined") {
-    neonConfig.webSocketConstructor = ws;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const wsModule = require("ws");
+      neonConfig.webSocketConstructor = wsModule.default || wsModule;
+    } catch {
+      // Ignored if ws module is unavailable or running in edge
+    }
   }
 
   const pool = new Pool({

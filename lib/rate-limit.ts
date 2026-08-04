@@ -14,16 +14,15 @@ type RateLimitRecord = {
 
 const tracker = new Map<string, RateLimitRecord>();
 
-// Cleanup stale records every 5 minutes to prevent memory leaks
-if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    const now = Date.now();
+// Periodic cleanup helper to prevent memory leaks in long-running processes
+function cleanupStaleRecords(now: number) {
+  if (tracker.size > 500) {
     for (const [key, record] of tracker.entries()) {
       if (now > record.resetAt) {
         tracker.delete(key);
       }
     }
-  }, 5 * 60 * 1000);
+  }
 }
 
 export type RateLimitOptions = {
@@ -51,6 +50,7 @@ export function checkRateLimit(
 
   const key = `${req.nextUrl.pathname}:${ip}`;
   const now = Date.now();
+  cleanupStaleRecords(now);
   const record = tracker.get(key);
 
   if (!record || now > record.resetAt) {
