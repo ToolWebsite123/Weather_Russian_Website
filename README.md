@@ -83,7 +83,7 @@ npm run db:seed
 
 ## Аудит точности данных
 
-Обратите внимание: внешние сервисы **Gismeteo** и **Yandex Weather** не являются провайдерами данных в рантайме. Они используются исключительно как сторонние бенчмарки в скриптах аудита точности (`scripts/audit-snapshot.ts` и `scripts/generate-audit-report.ts`), сопоставляющих показатели Open-Meteo с конкурентами. Подробное руководство по обновлению данных бенчмарка см. в [scripts/AUDIT_BENCHMARKS_GUIDE.md](file:///d:/Project/Weather%20Tool%20Website/scripts/AUDIT_BENCHMARKS_GUIDE.md).
+Обратите внимание: внешние сервисы **Gismeteo** и **Yandex Weather** не являются провайдерами данных в рантайме. Они используются исключительно как сторонние бенчмарки в скриптах аудита точности (`scripts/audit-snapshot.ts` и `scripts/generate-audit-report.ts`), сопоставляющих показатели Open-Meteo с конкурентами. Подробное руководство по обновлению данных бенчмарка см. в [scripts/AUDIT_BENCHMARKS_GUIDE.md](./scripts/AUDIT_BENCHMARKS_GUIDE.md).
 
 ## Доступные скрипты
 
