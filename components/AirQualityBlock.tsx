@@ -61,7 +61,7 @@ export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
         {aqi.uvIndex != null && (
           <span className="text-xs text-cloud-600">
             УФ-индекс:{" "}
-            <strong className="text-sky-950 font-semibold">
+            <strong className="text-sky-950 font-semibold tabular-nums">
               {aqi.uvIndex.toFixed(1)}
             </strong>
           </span>

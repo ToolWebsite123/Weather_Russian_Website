@@ -5,6 +5,7 @@ import { ru } from "@/lib/i18n/ru";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
 import { summarizeDayParts } from "@/lib/weather/day-parts";
 import { WeatherIcon } from "@/components/WeatherIcon";
+import { TemperatureSparkline } from "@/components/TemperatureSparkline";
 import type { AirQuality, CurrentWeather, DailyPoint, HourlyPoint } from "@/types/weather";
 import { getPressureTrend, type PressureTrendValue } from "@/lib/weather/pressure-trend";
 import { getUvCategory } from "@/lib/weather/uv-scale";
@@ -111,14 +112,25 @@ export function CurrentWeatherCard({
           className="shrink-0"
         />
         <div>
-          <p className="text-6xl font-semibold tabular-nums leading-none text-sky-950 sm:text-7xl">
-            {formatTemp(current.temperature)}
-          </p>
+          <div className="flex flex-wrap items-baseline gap-3">
+            <p className="text-6xl font-semibold tabular-nums leading-none text-sky-950 sm:text-7xl">
+              {formatTemp(current.temperature)}
+            </p>
+            {hourly && hourly.length > 0 && (
+              <TemperatureSparkline
+                hourly={hourly}
+                currentTime={current.time}
+                width={100}
+                height={28}
+                className="self-center"
+              />
+            )}
+          </div>
           <p className="mt-2 text-base text-cloud-600 sm:text-lg">
             {weatherCodeLabel(current.weatherCode)}
           </p>
           {today && (
-            <p className="mt-1 text-sm text-cloud-500">
+            <p className="mt-1 text-sm text-cloud-500 tabular-nums">
               {formatTemp(today.tempMin)} … {formatTemp(today.tempMax)}
             </p>
           )}

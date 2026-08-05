@@ -52,7 +52,7 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight text-cloud-900">
+          <span className="text-xl font-bold tracking-tight text-cloud-900 tabular-nums">
             {data.kpDisplay} <span className="text-xs text-cloud-400 font-normal">/ 9 Kp</span>
           </span>
           <span
