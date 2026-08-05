@@ -4,6 +4,7 @@
  */
 
 export const config = {
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://weatherhub.ru",
   cache: {
     ttlMs: process.env.WEATHER_CACHE_TTL_MINUTES
       ? parseInt(process.env.WEATHER_CACHE_TTL_MINUTES, 10) * 60 * 1000
