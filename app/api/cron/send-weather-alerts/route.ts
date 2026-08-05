@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 import { prisma } from "@/lib/prisma";
 import { listPopularCities, getCachedWeatherForCity } from "@/lib/weather/cache";
-import { getActiveAlerts, type WeatherAlert } from "@/lib/weather/alerts";
+import { getActiveAlerts } from "@/lib/weather/alerts";
 
 function initWebPush() {
   const publicKey = process.env.VAPID_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
