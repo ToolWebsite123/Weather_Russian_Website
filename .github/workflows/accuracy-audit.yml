@@ -1,0 +1,69 @@
+name: Weather Accuracy Audit
+
+on:
+  schedule:
+    # Run every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Fetch Live Weather Snapshot
+        run: npx tsx scripts/audit-snapshot.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+
+      - name: Generate Markdown Audit Report
+        run: npx tsx scripts/generate-audit-report.ts
+
+      - name: Check for Flagged Discrepancies (🚩)
+        id: check_flags
+        run: |
+          if grep -q "🚩" WEATHER_ACCURACY_AUDIT.md; then
+            echo "flagged=true" >> $GITHUB_OUTPUT
+            echo "Discrepancies found in audit report!"
+          else
+            echo "flagged=false" >> $GITHUB_OUTPUT
+            echo "All cities passed within tolerance."
+          fi
+
+      - name: Create GitHub Issue if Flagged 🚩
+        if: steps.check_flags.outputs.flagged == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportContent = fs.readFileSync('WEATHER_ACCURACY_AUDIT.md', 'utf-8');
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Weather Accuracy Audit Discrepancy Flagged',
+              body: `### Weather Accuracy Audit Alert\n\nOne or more test cities exceeded tolerance thresholds during the automated weekly audit.\n\n<details><summary>View Audit Report</summary>\n\n${reportContent}\n</details>`,
+            });
+
+      - name: Commit Updated Audit Report
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(audit): update weekly weather accuracy report [skip ci]"
+          file_pattern: "WEATHER_ACCURACY_AUDIT.md audit-snapshot-raw.json"

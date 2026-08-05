@@ -9,11 +9,28 @@ export function SiteHeader({
   return (
     <header className="relative z-10 border-b border-sky-200/50 bg-white/40 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-        <Link href="/" className="font-serif text-2xl font-semibold text-sky-950">
-          {ru.brand}
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="font-serif text-2xl font-semibold text-sky-950">
+            {ru.brand}
+          </Link>
+          <nav className="flex items-center gap-4">
+            <Link
+              href="/gorod"
+              className="text-xs font-semibold uppercase tracking-wider text-sky-900 hover:text-sky-700 transition-colors"
+            >
+              Все города
+            </Link>
+            <Link
+              href="/articles"
+              className="text-xs font-semibold uppercase tracking-wider text-cloud-600 hover:text-sky-800 transition-colors hidden sm:inline-block"
+            >
+              Статьи
+            </Link>
+          </nav>
+        </div>
+
         {favorites.length > 0 && (
-          <nav className="hidden items-center gap-3 sm:flex" aria-label={ru.favorites}>
+          <nav className="hidden items-center gap-3 md:flex" aria-label={ru.favorites}>
             <span className="text-xs uppercase tracking-wide text-cloud-500">
               {ru.favorites}
             </span>
@@ -35,7 +52,20 @@ export function SiteHeader({
 
 export function SiteFooter() {
   return (
-    <footer className="relative z-10 border-t border-sky-200/40 py-8 text-center text-sm text-cloud-500">
+    <footer className="relative z-10 border-t border-sky-200/40 py-8 text-center text-sm text-cloud-500 space-y-3">
+      <nav className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-sky-900">
+        <Link href="/" className="hover:underline">
+          Главная
+        </Link>
+        <span>·</span>
+        <Link href="/gorod" className="hover:underline">
+          Каталог всех 272 городов
+        </Link>
+        <span>·</span>
+        <Link href="/articles" className="hover:underline">
+          Статьи и гайды
+        </Link>
+      </nav>
       <p>
         <a
           href="https://open-meteo.com/"
@@ -46,7 +76,7 @@ export function SiteFooter() {
           {ru.attribution}
         </a>
       </p>
-      <p className="mt-1 text-xs text-cloud-400">
+      <p className="text-xs text-cloud-400">
         WeatherHub · прогноз без рекламного шума на старте
       </p>
     </footer>

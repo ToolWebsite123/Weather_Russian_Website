@@ -3,6 +3,7 @@ import { Inter, Source_Serif_4 } from "next/font/google";
 import { ru } from "@/lib/i18n/ru";
 import { config } from "@/lib/config";
 import { DomNodeFix } from "@/components/DomNodeFix";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
         className={`${inter.variable} ${sourceSerif.variable} font-sans antialiased`}
       >
         <DomNodeFix />
+        <ServiceWorkerRegister />
         {children}
       </body>
     </html>

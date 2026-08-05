@@ -3,12 +3,6 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
 
-/**
- * Note: Scheduled notification dispatch (such as daily weather digests or severe weather warnings)
- * requires a background cron scheduler (such as Vercel Cron or a worker process) triggering a notification job.
- * This endpoint stores the push subscription credentials per session to enable future scheduled delivery.
- */
-
 function ensureSession(): { sessionId: string; setCookie: boolean } {
   const store = cookies();
   const existing = store.get(SESSION_COOKIE)?.value;
@@ -21,15 +15,22 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { endpoint, keys } = body ?? {};
 
-    if (!endpoint || typeof endpoint !== "string") {
+    if (!endpoint || typeof endpoint !== "string" || !endpoint.startsWith("http")) {
       return NextResponse.json(
-        { error: "Valid subscription endpoint required" },
-        { status: 400 },
+        { error: "Valid HTTP(S) subscription endpoint required" },
+        { status: 400 }
       );
     }
 
     const p256dh = typeof keys?.p256dh === "string" ? keys.p256dh : "";
     const auth = typeof keys?.auth === "string" ? keys.auth : "";
+
+    if (!p256dh || !auth) {
+      return NextResponse.json(
+        { error: "Subscription keys (p256dh and auth) are required" },
+        { status: 400 }
+      );
+    }
 
     const { sessionId, setCookie } = ensureSession();
 
@@ -51,10 +52,11 @@ export async function POST(req: NextRequest) {
     const res = NextResponse.json({ ok: true, subscribed: true });
     if (setCookie) res.cookies.set(sessionCookieOptions(sessionId));
     return res;
-  } catch {
+  } catch (error) {
+    console.error("Error saving push subscription:", error);
     return NextResponse.json(
       { error: "Push subscription failed" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

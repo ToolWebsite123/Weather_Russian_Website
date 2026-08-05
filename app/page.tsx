@@ -28,7 +28,7 @@ export default async function Home() {
 
   // Load popular cities and user favorites concurrently
   const [popularCitiesList, favorites] = await Promise.all([
-    listPopularCities(12).catch(() => []),
+    listPopularCities(24).catch(() => []),
     getFavoritesForSession().catch(() => []),
   ]);
 

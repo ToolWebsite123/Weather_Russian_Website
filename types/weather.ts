@@ -1,4 +1,4 @@
-export type WeatherProvider = "open-meteo" | "yandex" | "weatherapi";
+export type WeatherProvider = "open-meteo";
 
 export type GeocodingResult = {
   id: string;

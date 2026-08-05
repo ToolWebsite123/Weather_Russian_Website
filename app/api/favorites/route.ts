@@ -13,7 +13,7 @@ function ensureSession(): { sessionId: string; setCookie: boolean } {
 }
 
 export async function POST(req: NextRequest) {
-  const rateLimit = checkRateLimit(req, { maxRequests: 15, windowMs: 60 * 1000 });
+  const rateLimit = await checkRateLimit(req, { maxRequests: 15, windowMs: 60 * 1000 });
   if (!rateLimit.success) return rateLimitResponse();
 
   try {
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const rateLimit = checkRateLimit(req, { maxRequests: 15, windowMs: 60 * 1000 });
+  const rateLimit = await checkRateLimit(req, { maxRequests: 15, windowMs: 60 * 1000 });
   if (!rateLimit.success) return rateLimitResponse();
 
   try {

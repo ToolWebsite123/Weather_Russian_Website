@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { formatTemp } from "@/lib/cities";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
@@ -11,15 +14,30 @@ export type PopularCityItem = {
 };
 
 export function PopularCitiesGrid({ items }: { items: PopularCityItem[] }) {
+  const [expanded, setExpanded] = useState(false);
+
   if (!items || items.length === 0) return null;
 
+  const initialCount = 12;
+  const visibleItems = expanded ? items : items.slice(0, initialCount);
+  const hasMore = items.length > initialCount;
+
   return (
-    <section className="space-y-3">
-      <h2 className="text-xs uppercase tracking-wide text-cloud-500 font-semibold sm:text-sm">
-        Популярные города
-      </h2>
+    <section className="space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-xs uppercase tracking-wide text-cloud-500 font-semibold sm:text-sm">
+          Популярные города
+        </h2>
+        <Link
+          href="/gorod"
+          className="text-xs font-medium text-sky-800 hover:text-sky-950 transition-colors"
+        >
+          Все 272 города →
+        </Link>
+      </div>
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-        {items.map(({ city, weather }) => (
+        {visibleItems.map(({ city, weather }) => (
           <Link
             key={city.slug}
             href={`/pogoda/${city.slug}`}
@@ -58,6 +76,25 @@ export function PopularCitiesGrid({ items }: { items: PopularCityItem[] }) {
             )}
           </Link>
         ))}
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        {hasMore && !expanded && (
+          <button
+            onClick={() => setExpanded(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-4 py-2 text-xs font-semibold text-sky-800 ring-1 ring-sky-200 transition-all hover:bg-sky-100 active:scale-95"
+          >
+            <span>Показать ещё 12 городов</span>
+            <span>↓</span>
+          </button>
+        )}
+        <Link
+          href="/gorod"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 hover:text-sky-900 transition-colors ml-auto"
+        >
+          <span>Полный каталог городов России ({items.length > 24 ? items.length : 272})</span>
+          <span>→</span>
+        </Link>
       </div>
     </section>
   );

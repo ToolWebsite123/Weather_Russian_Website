@@ -1,30 +1,47 @@
 # WeatherHub
 
-Прогноз погоды (Россия и мир): Next.js 14, TypeScript, Tailwind, Prisma, Neon PostgreSQL, Open-Meteo.
+Современный и точный сервис прогноза погоды для 272 городов России на базе Next.js 14, TypeScript, Tailwind, Prisma, Neon PostgreSQL, Open-Meteo и Web Push.
 
-## Stack
+## Stack & Технологии
 
-- Next.js 14 App Router + TypeScript (strict)
-- Tailwind (sky / sun / cloud palette)
-- Prisma + Neon Postgres (города, кэш прогноза, избранное)
-- Open-Meteo (основной API) + опционально Yandex Weather
+- **Framework**: Next.js 14 App Router + TypeScript (strict mode)
+- **Styling**: Tailwind CSS (палитра sky / sun / cloud) + Leaflet CSS
+- **Database & ORM**: Prisma ORM + Neon Serverless PostgreSQL (`prisma/schema.prisma`)
+- **Primary Data Provider**: Open-Meteo API (`lib/weather/open-meteo.ts`)
+- **Push Notifications**: Web Push API (`web-push`), Service Worker (`public/sw.js`), VAPID ключи
+- **Rate Limiting**: Distributed Sliding Window Limiter на базе Upstash Redis (`lib/rate-limit.ts`)
 
-## Структура
+## Основные возможности
+
+- 📅 **Детализированный прогноз по дням и часам (Forecast Tabs)**: раздельные варианты прогноза на Сегодня, Завтра, 3 дня, 7 дней, 10 дней и 14 дней (`/pogoda/[slug]/...`).
+- 🗺️ **Интерактивная карта погоды (Radar Map)**: карта на основе Leaflet с переключением слоёв осадков, температуры и ветра.
+- 🧲 **Геомагнитная обстановка (Geomagnetic Card)**: мониторинг магнитных бурь и Kp-индекса.
+- 🍃 **Качество воздуха и аллергены (Air Quality & Pollen)**: индикация индексов US AQI, концентрации PM2.5, PM10, O₃, NO₂ и пыльцы (берёза, ольха, злаки, амброзия).
+- 🛣️ **Дорожные условия (Road Conditions)**: автоматическая оценка безопасности вождения (гололедица, видимость, мокрое покрытие).
+- 📊 **Сравнение с климатической нормой (Historical Comparison)**: сопоставление текущей температуры с историческими наблюдениями прошлых лет.
+- 🚨 **Штормовые предупреждения (Weather Alerts)**: автоматическое определение опасных погодных условий (сильный ветер, экстремальный мороз, жара, подтопления).
+- 🔔 **Web Push Уведомления**: реальная подписка браузера через Service Worker и рассылка экстренных оповещений (`/api/cron/send-weather-alerts`).
+- ⭐️ **Избранные города (Favorites)**: быстрая подписка и сохранённые города сессии без регистрации.
+- 🏙️ **Полный каталог городов (City Catalog)**: индексируемый каталог 272 городов России (`/gorod`) с алфавитной группировкой.
+
+## Структура проекта
 
 ```text
-app/                # маршруты и API
-components/         # UI
-lib/weather/        # Open-Meteo, кэш, Yandex
-lib/i18n/ru.ts      # русские строки
-prisma/             # схема и seed городов
-types/              # типы погоды
+app/                # Маршруты Next.js App Router (погода, каталог /gorod, статьи, API)
+components/         # Погодные панели, карта Leaflet, уведомления, карточки
+lib/weather/        # Интеграция Open-Meteo, кэширование, геомагнитный индекс, качество воздуха, штормовые предупреждения
+lib/notifications/  # Вспомогательные утилиты VAPID для Web Push
+lib/rate-limit.ts   # Распределённый Rate Limiting (Upstash Redis)
+prisma/             # Схема данных и seed 272 городов России (_chunk_major.json + _chunk_mid1.json)
+public/sw.js        # Service Worker для приёма push-уведомлений и кликов по нотификациям
+scripts/            # Автоматизированный аудит точности данных (сравнение с Gismeteo / Yandex Weather)
+types/              # Типы TypeScript (WeatherBundle, AirQuality, PushSubscription)
 ```
 
 ## Локальный запуск
 
-1. Скопируйте `.env.example` → `.env`, укажите `DATABASE_URL` (Neon).
-2. Опционально: `WEATHER_API_KEY`, `YANDEX_WEATHER_API_KEY`.
-3. Установка и БД:
+1. Скопируйте `.env.example` → `.env`, укажите `DATABASE_URL` (Neon PostgreSQL), VAPID ключи и Upstash Redis при необходимости.
+2. Установка и запуск базы данных:
 
 ```bash
 npm install
@@ -32,39 +49,38 @@ npx prisma migrate reset
 npm run dev
 ```
 
-`migrate reset` drops the database, applies migrations, and runs the seed (20 major Russian cities).
+`npx prisma migrate reset` очищает БД, применяет миграции и засеивает полный список из **272 городов России (крупные + средние города)** из `prisma/data/`.
 
-**Or step-by-step** (after schema changes):
+**Альтернативный пошаговый запуск**:
 
 ```bash
 npm run db:migrate
-# name when prompted: city_tier_schema
-npx prisma db seed
-# equivalent: npm run db:seed
+npm run db:seed
 ```
 
-If migrate fails because `City.id` changed from String to Int on an existing Neon DB, run once:
-
-```bash
-npx prisma migrate reset
-```
-
-Then open e.g. [http://localhost:3000/pogoda/moscow](http://localhost:3000/pogoda/moscow).
+После этого откройте в браузере [http://localhost:3000](http://localhost:3000) или [http://localhost:3000/pogoda/moscow](http://localhost:3000/pogoda/moscow).
 
 ## Маршруты SEO
 
-- `/` — поиск и популярные города
-- `/pogoda/[slug]` — сегодня (например `/pogoda/moscow`)
-- `/pogoda/[slug]/zavtra` — завтра
-- `/pogoda/[slug]/3-dnya` | `7-dney` | `10-dney` | `14-dney`
+- `/` — главная страница (поиск, локация, 24 популярных города)
+- `/gorod` — полный каталог 272 городов России с группировкой по алфавиту
+- `/pogoda/[slug]` — прогноз на сегодня (например `/pogoda/moscow`)
+- `/pogoda/[slug]/zavtra` — прогноз на завтра
+- `/pogoda/[slug]/3-dnya` | `7-dney` | `10-dney` | `14-dney` — среднесрочный и долгосрочный прогноз
+- `/articles` & `/articles/[slug]` — информационные статьи и гиды о погоде
 
-## Скрипты
+## Аудит точности данных
+
+Обратите внимание: внешние сервисы **Gismeteo** и **Yandex Weather** не являются провайдерами данных в рантайме. Они используются исключительно как сторонние бенчмарки в скриптах аудита точности (`scripts/audit-snapshot.ts` и `scripts/generate-audit-report.ts`), сопоставляющих показатели Open-Meteo с конкурентами. Подробное руководство по обновлению данных бенчмарка см. в [scripts/AUDIT_BENCHMARKS_GUIDE.md](file:///d:/Project/Weather%20Tool%20Website/scripts/AUDIT_BENCHMARKS_GUIDE.md).
+
+## Доступные скрипты
 
 | Команда | Описание |
 | --- | --- |
-| `npm run dev` | dev-сервер |
-| `npm run build` | production build |
-| `npm run db:migrate` | `prisma migrate dev` |
-| `npm run db:push` | `prisma db push` (no migration history) |
-| `npm run db:setup` | `prisma db push` + seed |
-| `npm run db:seed` | только seed городов |
+| `npm run dev` | Запуск dev-сервера Next.js |
+| `npm run build` | Сборка production-комплекта |
+| `npm run db:migrate` | `prisma migrate dev` (применение миграций) |
+| `npm run db:push` | `prisma db push` (синхронизация схемы) |
+| `npm run db:setup` | `prisma db push` + `db:seed` |
+| `npm run db:seed` | Засеивание 272 городов в PostgreSQL |
+| `npm run test` | Запуск тестов Vitest (модульные и интеграционные) |

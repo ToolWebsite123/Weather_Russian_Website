@@ -5,7 +5,7 @@ import { searchQuerySchema } from "@/lib/validations/schemas";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
-  const rateLimit = checkRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
+  const rateLimit = await checkRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
   if (!rateLimit.success) return rateLimitResponse();
   const parseResult = searchQuerySchema.safeParse({
     q: req.nextUrl.searchParams.get("q"),

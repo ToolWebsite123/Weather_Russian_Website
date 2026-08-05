@@ -70,12 +70,12 @@ export async function fetchAirQuality(
     throw err;
   }
   const aq = (await aqRes.json()) as OpenMeteoAQ;
-  const usAqi = num(aq.current.us_aqi);
-  if (usAqi <= 0) {
+  if (!aq || !aq.current || aq.current.us_aqi == null) {
     const err = new Error("Air quality data unavailable");
     reportError(err, { latitude, longitude });
     throw err;
   }
+  const usAqi = num(aq.current.us_aqi);
 
   let uvIndex: number | undefined;
   if (uvRes.ok) {

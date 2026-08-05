@@ -9,7 +9,7 @@ import type { City } from "@prisma/client";
 import type { GeocodingResult } from "@/types/weather";
 
 export async function GET(req: NextRequest) {
-  const rateLimit = checkRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
+  const rateLimit = await checkRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
   if (!rateLimit.success) return rateLimitResponse();
   const parseResult = geoQuerySchema.safeParse({
     lat: req.nextUrl.searchParams.get("lat"),
