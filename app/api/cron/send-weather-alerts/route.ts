@@ -25,6 +25,14 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleSendAlerts(req: NextRequest) {
+  // 1. Authorize Vercel Cron / Bearer token request
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = req.headers.get("authorization");
+
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     initWebPush();
   } catch (err: unknown) {
@@ -36,7 +44,7 @@ async function handleSendAlerts(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const isTestParam = searchParams.get("test") === "true";
 
-    let bodyData: { test?: boolean; title?: string; body?: string; url?: string } = {};
+    let bodyData: { test?: boolean } = {};
     if (req.method === "POST") {
       try {
         bodyData = await req.json();
@@ -47,7 +55,7 @@ async function handleSendAlerts(req: NextRequest) {
 
     const isTest = isTestParam || Boolean(bodyData.test);
 
-    // 1. Fetch active push subscriptions
+    // 2. Fetch active push subscriptions
     const subscriptions = await prisma.pushSubscription.findMany();
     if (subscriptions.length === 0) {
       return NextResponse.json({
@@ -61,14 +69,15 @@ async function handleSendAlerts(req: NextRequest) {
     const payloads: { title: string; body: string; url: string; tag: string }[] = [];
 
     if (isTest) {
+      // Defense-in-depth: Fixed hardcoded test payload to prevent arbitrary injection
       payloads.push({
-        title: bodyData.title || "🚨 Тестовое погодное уведомление",
-        body: bodyData.body || "Проверка работы Web Push уведомлений прошла успешно!",
-        url: bodyData.url || "/",
+        title: "🚨 Тестовое погодное уведомление",
+        body: "Проверка работы Web Push уведомлений прошла успешно!",
+        url: "/",
         tag: "test-alert",
       });
     } else {
-      // 2. Fetch severe weather alerts for popular cities
+      // 3. Fetch severe weather alerts for popular cities
       const cities = await listPopularCities(10);
       for (const city of cities) {
         try {
@@ -103,7 +112,7 @@ async function handleSendAlerts(req: NextRequest) {
     let failedCount = 0;
     let cleanedCount = 0;
 
-    // 3. Dispatch push notifications
+    // 4. Dispatch push notifications
     for (const sub of subscriptions) {
       const pushSubscription = {
         endpoint: sub.endpoint,
