@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    robots: city.isCurated ? undefined : { index: false, follow: true },
     alternates: {
       canonical: url,
     },

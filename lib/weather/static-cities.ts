@@ -14,6 +14,7 @@ export function getAllStaticCities(): City[] {
     id: index + 1,
     ...record,
     timezone: "Europe/Moscow",
+    isCurated: true,
     createdAt: now,
     updatedAt: now,
   }));

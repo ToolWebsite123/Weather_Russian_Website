@@ -17,6 +17,7 @@ const FORECAST_TABS = [
 async function getSitemapCities(): Promise<Array<{ slug: string }>> {
   try {
     const cities = await prisma.city.findMany({
+      where: { isCurated: true },
       select: { slug: true },
       orderBy: { id: "asc" },
     });

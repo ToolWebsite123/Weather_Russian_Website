@@ -32,6 +32,28 @@ export async function upsertCityFromGeo(input: {
   population?: number;
   tier?: number;
 }): Promise<City> {
+  const isRu = (input.country ?? "RU").toUpperCase() === "RU";
+
+  // If not RU, return transient non-persisted City object to prevent DB pollution
+  if (!isRu) {
+    return {
+      id: Math.floor(Math.random() * 100000) + 1,
+      slug: input.slug,
+      name: input.name,
+      nameEn: input.nameEn ?? input.name,
+      country: input.country ?? "RU",
+      region: input.region ?? null,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      timezone: input.timezone ?? "Europe/Moscow",
+      population: input.population ?? 100000,
+      tier: input.tier ?? 2,
+      isCurated: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
   try {
     return await prisma.city.upsert({
       where: { slug: input.slug },
@@ -45,6 +67,7 @@ export async function upsertCityFromGeo(input: {
         timezone: input.timezone,
         population: input.population,
         tier: input.tier ?? 2,
+        isCurated: false,
       },
       create: {
         slug: input.slug,
@@ -57,6 +80,7 @@ export async function upsertCityFromGeo(input: {
         timezone: input.timezone,
         population: input.population,
         tier: input.tier ?? 2,
+        isCurated: false,
       },
     });
   } catch {
@@ -72,6 +96,7 @@ export async function upsertCityFromGeo(input: {
       timezone: input.timezone ?? "Europe/Moscow",
       population: input.population ?? 100000,
       tier: input.tier ?? 2,
+      isCurated: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -123,6 +148,7 @@ export async function getCachedWeatherForCity(
 export async function listPopularCities(limit = 12): Promise<City[]> {
   try {
     const cities = await prisma.city.findMany({
+      where: { isCurated: true },
       orderBy: [{ tier: "asc" }, { population: "desc" }, { name: "asc" }],
       take: limit,
     });

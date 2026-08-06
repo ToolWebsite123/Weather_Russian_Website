@@ -21,6 +21,7 @@ model City {
   population Int?
   tier       Int
   timezone   String?
+  isCurated  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -30,6 +31,7 @@ model City {
   @@index([name])
   @@index([tier])
   @@index([country])
+  @@index([isCurated])
 }
 
 model WeatherCache {

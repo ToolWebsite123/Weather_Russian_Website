@@ -7,6 +7,7 @@ async function main() {
   const citiesToSeed = buildCityRecords().map((c) => ({
     ...c,
     timezone: null as string | null,
+    isCurated: true,
   }));
 
   for (const city of citiesToSeed) {

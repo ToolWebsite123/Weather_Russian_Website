@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 async function getCatalogCities(): Promise<City[]> {
   try {
     const cities = await prisma.city.findMany({
+      where: { isCurated: true },
       orderBy: [{ name: "asc" }],
     });
     if (cities.length > 0) return cities;
