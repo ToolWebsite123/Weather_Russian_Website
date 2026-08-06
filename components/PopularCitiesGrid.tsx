@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatTemp } from "@/lib/cities";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
 import { WeatherIcon } from "@/components/WeatherIcon";
+import { SectionHeading } from "@/components/SectionHeading";
 import type { City } from "@prisma/client";
 import type { WeatherBundle } from "@/types/weather";
 
@@ -24,17 +25,18 @@ export function PopularCitiesGrid({ items }: { items: PopularCityItem[] }) {
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="font-serif text-h2 font-semibold text-cloud-900">
-          Популярные города
-        </h2>
-        <Link
-          href="/gorod"
-          className="text-xs font-medium text-sky-800 hover:text-sky-950 transition-colors"
-        >
-          Все 272 города →
-        </Link>
-      </div>
+      <SectionHeading
+        action={
+          <Link
+            href="/gorod"
+            className="text-xs font-medium text-sky-800 hover:text-sky-950 transition-colors"
+          >
+            Все 272 города →
+          </Link>
+        }
+      >
+        Популярные города
+      </SectionHeading>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {visibleItems.map(({ city, weather }) => (

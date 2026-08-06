@@ -96,8 +96,20 @@ export function CurrentWeatherCard({
   const uvCategory =
     typeof current.uvIndex === "number" ? getUvCategory(current.uvIndex) : null;
 
+  const next5Hours = (() => {
+    if (!hourly || hourly.length === 0) return [];
+    if (current?.time) {
+      const currentPrefix = current.time.slice(0, 13);
+      const idx = hourly.findIndex((h) => h.time.startsWith(currentPrefix));
+      if (idx !== -1) {
+        return hourly.slice(idx, idx + 5);
+      }
+    }
+    return hourly.slice(0, 5);
+  })();
+
   return (
-    <section className="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-sky-100 backdrop-blur sm:p-6">
+    <section className="rounded-2xl bg-white/90 p-4 ring-1 ring-sky-200/80 shadow-md shadow-sky-900/10 backdrop-blur sm:p-6">
       <p className="text-xs uppercase tracking-wide text-cloud-500 sm:text-sm">
         {ru.current}
       </p>
@@ -139,6 +151,36 @@ export function CurrentWeatherCard({
           )}
         </div>
       </div>
+
+      {next5Hours.length > 0 && (
+        <div className="mt-4 border-t border-sky-100/80 pt-3">
+          <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-cloud-500 sm:text-xs">
+            {ru.nextHours}
+          </p>
+          <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:gap-2 sm:px-0">
+            {next5Hours.map((h) => {
+              const label = new Date(h.time).toLocaleTimeString("ru-RU", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              return (
+                <div
+                  key={h.time}
+                  className="flex flex-1 min-w-[3.75rem] shrink-0 flex-col items-center justify-center rounded-xl bg-sky-50/60 py-2 px-2 ring-1 ring-sky-100/80"
+                >
+                  <span className="text-[11px] font-medium text-cloud-500 tabular-nums">
+                    {label}
+                  </span>
+                  <WeatherIcon code={h.weatherCode} size={24} className="my-1 shrink-0" />
+                  <span className="text-sm font-semibold text-sky-950 tabular-nums">
+                    {formatTemp(h.temperature)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 border-t border-sky-100/80 pt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <div>

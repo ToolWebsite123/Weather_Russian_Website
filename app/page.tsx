@@ -6,6 +6,9 @@ import { PageShell } from "@/components/SiteChrome";
 import { CurrentWeatherCard } from "@/components/WeatherPanels";
 import { AlertBanner } from "@/components/AlertBanner";
 import { PopularCitiesGrid } from "@/components/PopularCitiesGrid";
+import { WeatherMapPreviewSection } from "@/components/WeatherMapPreviewSection";
+import { RelatedArticles } from "@/components/RelatedArticles";
+import { getLatestArticles } from "@/lib/content/articles";
 import {
   getFavoritesForSession,
   listPopularCities,
@@ -13,6 +16,8 @@ import {
 } from "@/lib/weather/city-page";
 import { getCachedWeatherForCity } from "@/lib/weather/cache";
 import { getActiveAlerts } from "@/lib/weather/alerts";
+
+import { SectionHeading } from "@/components/SectionHeading";
 
 export const revalidate = 900;
 
@@ -45,6 +50,7 @@ export default async function Home() {
   );
 
   const activeAlerts = primaryData ? getActiveAlerts(primaryData.weather) : [];
+  const latestArticles = getLatestArticles(3);
 
   return (
     <PageShell favorites={favorites}>
@@ -60,10 +66,8 @@ export default async function Home() {
           />
         )}
 
-        <section className="rounded-2xl bg-white/70 p-5 ring-1 ring-sky-100 backdrop-blur sm:p-6">
-          <h2 className="mb-3 font-serif text-h2 font-semibold text-cloud-900">
-            Выбрать другой город
-          </h2>
+        <section className="rounded-2xl bg-white/70 p-5 ring-1 ring-sky-100 backdrop-blur sm:p-6 space-y-3">
+          <SectionHeading>Выбрать другой город</SectionHeading>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex-1 min-w-0 max-w-xl">
               <CitySearch />
@@ -73,6 +77,10 @@ export default async function Home() {
         </section>
 
         <PopularCitiesGrid items={popularCityItems} />
+
+        <WeatherMapPreviewSection />
+
+        <RelatedArticles articles={latestArticles} layout="grid" showViewAll />
       </main>
     </PageShell>
   );
