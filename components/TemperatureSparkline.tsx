@@ -27,7 +27,8 @@ export function TemperatureSparkline({
 
   let currentPoint = coords[0];
   if (currentTime) {
-    const found = coords.find((c) => c.time === currentTime);
+    const prefix = currentTime.slice(0, 13);
+    const found = coords.find((c) => c.time.startsWith(prefix));
     if (found) currentPoint = found;
   }
 

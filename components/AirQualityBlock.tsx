@@ -53,8 +53,8 @@ export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
   );
 
   return (
-    <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-6 space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5 space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
         <h2 className="font-serif text-h2 font-semibold text-sky-950">
           Качество воздуха
         </h2>
@@ -68,7 +68,7 @@ export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
         <div>
           <p className="text-4xl font-bold tabular-nums text-sky-950">
             {usAqi}
@@ -77,9 +77,9 @@ export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
             Индекс US AQI
           </p>
         </div>
-        <div className="space-y-1 min-w-0 flex-1">
+        <div className="space-y-0.5 min-w-0 flex-1">
           <span
-            className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${level.color}`}
+            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${level.color}`}
           >
             {level.label}
           </span>
@@ -90,25 +90,23 @@ export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
       </div>
 
       {pollutants.length > 0 && (
-        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-sky-100/80 sm:grid-cols-3 md:grid-cols-6">
+        <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-sky-100/80 sm:grid-cols-3 sm:gap-2 md:grid-cols-6">
           {pollutants.map((p) => {
             const levelInfo = getPollutantLevel(p.key, p.val!);
             return (
               <div
                 key={p.key}
-                className="rounded-xl bg-sky-50/50 p-2.5 ring-1 ring-sky-100/60"
+                className="rounded-xl bg-sky-50/50 p-2 ring-1 ring-sky-100/60"
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-xs font-semibold text-cloud-600">
                     {p.name}
                   </span>
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${levelInfo.colorClass}`}
-                  >
+                  <span className="text-[10px] font-medium text-cloud-500">
                     {levelInfo.label}
                   </span>
                 </div>
-                <p className="mt-1 text-base font-bold tabular-nums text-sky-950">
+                <p className="mt-0.5 text-base font-bold tabular-nums text-sky-950">
                   {p.val! < 10 ? p.val!.toFixed(1) : Math.round(p.val!)}
                   <span className="text-[10px] font-normal text-cloud-400 ml-0.5">
                     мкг/м³
@@ -121,31 +119,29 @@ export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
       )}
 
       {pollenItems.length > 0 && (
-        <div className="pt-3 border-t border-sky-100/80">
-          <h3 className="text-h3 font-semibold text-cloud-900 mb-2">
+        <div className="pt-2.5 border-t border-sky-100/80">
+          <h3 className="text-h3 font-semibold text-cloud-900 mb-1.5">
             Пыльца и аллергены
           </h3>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2">
             {pollenItems.map((item) => {
               const pollenLevel = getPollenLevel(item.val);
               return (
                 <div
                   key={item.name}
-                  className="rounded-xl bg-amber-50/50 p-2.5 ring-1 ring-amber-200/50"
+                  className="rounded-xl bg-sun-50/40 p-2 ring-1 ring-sun-100/60"
                 >
                   <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs font-medium text-amber-900">
+                    <span className="text-xs font-medium text-sun-950">
                       {item.name}
                     </span>
-                    <span
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${pollenLevel.colorClass}`}
-                    >
+                    <span className="text-[10px] font-medium text-sun-900">
                       {pollenLevel.label}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm font-bold tabular-nums text-amber-950">
+                  <p className="mt-0.5 text-sm font-bold tabular-nums text-sun-950">
                     {Math.round(item.val)}
-                    <span className="text-[10px] font-normal text-amber-800 ml-0.5">
+                    <span className="text-[10px] font-normal text-sun-800 ml-0.5">
                       зер/м³
                     </span>
                   </p>

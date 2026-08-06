@@ -41,7 +41,7 @@ export function PopularCitiesGrid({ items }: { items: PopularCityItem[] }) {
           <Link
             key={city.slug}
             href={`/pogoda/${city.slug}`}
-            className="group flex flex-col justify-between rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm transition-all hover:bg-sky-50/60 hover:shadow-md hover:ring-sky-200 backdrop-blur"
+            className="group flex flex-col justify-between rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-sky-50/60 hover:shadow-md hover:ring-sky-200 backdrop-blur motion-reduce:transform-none"
           >
             <div>
               <p className="font-semibold text-sky-950 transition-colors group-hover:text-sky-700 truncate">

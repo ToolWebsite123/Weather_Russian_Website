@@ -61,8 +61,8 @@ export function AstronomyCard({
   const diffVal = sun.dayLengthDiffMinutes;
 
   return (
-    <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-6 space-y-5">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+    <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5 space-y-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {/* Left Column — Sun & Daylight */}
         <div className="space-y-3">
           <h3 className="text-h3 font-semibold text-cloud-900">
@@ -70,29 +70,38 @@ export function AstronomyCard({
           </h3>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-xl bg-amber-50/70 p-2.5">
-              <p className="text-[11px] font-medium text-amber-800">Восход</p>
-              <p className="mt-1 text-base font-semibold tabular-nums text-amber-950">
-                🌅 {sunriseTime}
+            <div className="rounded-xl bg-sun-50/70 p-2.5">
+              <p className="text-[11px] font-medium text-sun-900">Восход</p>
+              <p className="mt-1 text-sm font-semibold tabular-nums text-sun-950 flex items-center justify-center gap-1">
+                <svg className="h-4 w-4 text-sun-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 2v6" /><path d="M4.93 10.93l4.24 4.24" /><path d="M2 18h20" /><path d="M20 10l-4 4" /><path d="M12 18a6 6 0 0 0 6-6H6a6 6 0 0 0 6 6z" />
+                </svg>
+                <span>{sunriseTime}</span>
               </p>
             </div>
-            <div className="rounded-xl bg-orange-50/70 p-2.5">
-              <p className="text-[11px] font-medium text-orange-800">Закат</p>
-              <p className="mt-1 text-base font-semibold tabular-nums text-orange-950">
-                🌇 {sunsetTime}
+            <div className="rounded-xl bg-sun-50/70 p-2.5">
+              <p className="text-[11px] font-medium text-sun-900">Закат</p>
+              <p className="mt-1 text-sm font-semibold tabular-nums text-sun-950 flex items-center justify-center gap-1">
+                <svg className="h-4 w-4 text-sun-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 10V4" /><path d="M4.93 10.93l4.24 4.24" /><path d="M2 18h20" /><path d="M12 18a6 6 0 0 0 6-6H6a6 6 0 0 0 6 6z" />
+                </svg>
+                <span>{sunsetTime}</span>
               </p>
             </div>
             <div className="rounded-xl bg-sky-50/70 p-2.5">
               <p className="text-[11px] font-medium text-sky-800">Долгота</p>
-              <p className="mt-1 text-sm font-semibold tabular-nums text-sky-950">
-                ☀️ {durationStr}
+              <p className="mt-1 text-xs sm:text-sm font-semibold tabular-nums text-sky-950 flex items-center justify-center gap-1">
+                <svg className="h-3.5 w-3.5 text-sky-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />
+                </svg>
+                <span>{durationStr}</span>
               </p>
               <p className="mt-0.5 text-[10px] font-medium tabular-nums">
                 {diffVal > 0 && (
                   <span className="text-sky-600">↑ +{diffVal} мин</span>
                 )}
                 {diffVal < 0 && (
-                  <span className="text-amber-600">↓ {diffVal} мин</span>
+                  <span className="text-sun-700">↓ {diffVal} мин</span>
                 )}
                 {diffVal === 0 && (
                   <span className="text-cloud-500">→ 0 мин</span>
@@ -101,7 +110,7 @@ export function AstronomyCard({
             </div>
           </div>
 
-          <div className="space-y-1.5 rounded-xl bg-sky-50/40 p-3 text-xs ring-1 ring-sky-100/50">
+          <div className="space-y-1.5 rounded-xl bg-sky-50/40 p-2.5 text-xs ring-1 ring-sky-100/50">
             <div className="flex items-center justify-between gap-2">
               <span className="text-cloud-600 font-medium">Золотой час:</span>
               <span className="tabular-nums text-sky-950 font-medium">
@@ -120,7 +129,7 @@ export function AstronomyCard({
         </div>
 
         {/* Right Column — Moon & Phases */}
-        <div className="space-y-3 border-t border-sky-100/80 pt-4 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-6">
+        <div className="space-y-3 border-t border-sky-100/80 pt-4 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-5">
           <h3 className="text-h3 font-semibold text-cloud-900">
             Луна и фазы
           </h3>
@@ -129,7 +138,7 @@ export function AstronomyCard({
             <MoonPhaseIcon
               illumination={moon.illumination}
               waxing={moon.phaseValue < 0.5}
-              size={44}
+              size={40}
             />
             <div>
               <p className="text-base font-bold text-sky-950 leading-tight">
@@ -137,7 +146,7 @@ export function AstronomyCard({
               </p>
               <p className="text-xs text-cloud-600">
                 Освещённость:{" "}
-                <strong className="text-sky-950 font-semibold">
+                <strong className="text-sky-950 font-semibold tabular-nums">
                   {moon.illumination}%
                 </strong>
                 {" · "}
@@ -149,14 +158,20 @@ export function AstronomyCard({
           <div className="grid grid-cols-2 gap-2 text-center text-xs">
             <div className="rounded-xl bg-sky-50/70 p-2.5">
               <p className="text-[11px] font-medium text-sky-800">Восход Луны</p>
-              <p className="mt-1 text-sm font-semibold tabular-nums text-sky-950">
-                {moon.moonrise ? `🌙 ${formatTime(moon.moonrise, timezone)}` : "не восходит"}
+              <p className="mt-1 text-xs sm:text-sm font-semibold tabular-nums text-sky-950 flex items-center justify-center gap-1">
+                <svg className="h-3.5 w-3.5 text-sky-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+                <span>{moon.moonrise ? formatTime(moon.moonrise, timezone) : "не восходит"}</span>
               </p>
             </div>
             <div className="rounded-xl bg-sky-50/70 p-2.5">
               <p className="text-[11px] font-medium text-sky-800">Заход Луны</p>
-              <p className="mt-1 text-sm font-semibold tabular-nums text-sky-950">
-                {moon.moonset ? `🌘 ${formatTime(moon.moonset, timezone)}` : "не заходит"}
+              <p className="mt-1 text-xs sm:text-sm font-semibold tabular-nums text-sky-950 flex items-center justify-center gap-1">
+                <svg className="h-3.5 w-3.5 text-sky-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+                <span>{moon.moonset ? formatTime(moon.moonset, timezone) : "не заходит"}</span>
               </p>
             </div>
           </div>

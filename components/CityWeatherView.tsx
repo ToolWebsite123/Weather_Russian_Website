@@ -32,6 +32,7 @@ import { getNearbyCities } from "@/lib/weather/nearby";
 import { fetchAirQuality } from "@/lib/weather/air-quality";
 import { fetchGeomagneticData } from "@/lib/weather/geomagnetic";
 import { getActiveAlerts } from "@/lib/weather/alerts";
+import { getUpcomingWeekendDays } from "@/lib/weather/weekend";
 import { getLatestArticles } from "@/lib/content/articles";
 import { ru } from "@/lib/i18n/ru";
 import { notFound } from "next/navigation";
@@ -42,12 +43,14 @@ export async function CityWeatherView({
   dailyLimit,
   showHourly = true,
   tomorrowOnly = false,
+  weekendOnly = false,
 }: {
   slug: string;
-  active: "today" | "tomorrow" | "3" | "7" | "10" | "14";
+  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14";
   dailyLimit?: number;
   showHourly?: boolean;
   tomorrowOnly?: boolean;
+  weekendOnly?: boolean;
 }) {
   let data;
   try {
@@ -72,20 +75,29 @@ export async function CityWeatherView({
   let daily = weather.daily;
   if (tomorrowOnly) {
     daily = weather.daily.slice(1, 2);
+  } else if (weekendOnly) {
+    daily = getUpcomingWeekendDays(weather.daily);
   } else if (dailyLimit) {
     daily = weather.daily.slice(0, dailyLimit);
   }
 
   const focusDate = tomorrowOnly
     ? weather.daily[1]?.date
-    : weather.daily[0]?.date;
+    : weekendOnly
+      ? daily[0]?.date
+      : weather.daily[0]?.date;
 
   const hours = tomorrowOnly
     ? weather.hourly.filter((h) => {
         const day = weather.daily[1]?.date;
         return day && h.time.startsWith(day);
       })
-    : weather.hourly;
+    : weekendOnly
+      ? weather.hourly.filter((h) => {
+          const dates = daily.map((d) => d.date);
+          return dates.some((date) => h.time.startsWith(date));
+        })
+      : weather.hourly;
 
   return (
     <PageShell favorites={favorites}>
@@ -93,7 +105,7 @@ export async function CityWeatherView({
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-4 sm:space-y-8 sm:py-8 sm:px-6">
         <AlertBanner alerts={alerts} />
 
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3 animate-fade-in-up stagger-1 motion-reduce:animate-none">
           <div className="min-w-0 flex-1">
             <ForecastTabs slug={city.slug} active={active} />
           </div>
@@ -103,68 +115,92 @@ export async function CityWeatherView({
           </div>
         </div>
 
-        <CurrentWeatherCard
-          cityName={city.name}
-          current={weather.current}
-          today={weather.daily[0]}
-          hourly={weather.hourly}
-        />
-
-        <RoadConditionCard current={weather.current} />
-
-        <AstronomyCard
-          today={tomorrowOnly ? weather.daily[1] : weather.daily[0]}
-          latitude={city.latitude}
-          longitude={city.longitude}
-          timezone={weather.timezone || city.timezone || undefined}
-        />
-
-        {focusDate && (
-          <DayPartsGrid hourly={weather.hourly} date={focusDate} />
-        )}
-
-        <ComfortIndices current={weather.current} hourly={weather.hourly} aqi={aqi} />
-
-        {active === "today" && (
-          <RecommendationsCard
+        <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">
+          <CurrentWeatherCard
+            cityName={city.name}
             current={weather.current}
             today={weather.daily[0]}
             hourly={weather.hourly}
-            aqi={aqi}
-            activeAlerts={alerts}
           />
+        </div>
+
+        <div className="animate-fade-in-up stagger-3 motion-reduce:animate-none">
+          <RoadConditionCard current={weather.current} />
+        </div>
+
+        <div className="animate-fade-in-up stagger-4 motion-reduce:animate-none">
+          <AstronomyCard
+            today={tomorrowOnly ? weather.daily[1] : weather.daily[0]}
+            latitude={city.latitude}
+            longitude={city.longitude}
+            timezone={weather.timezone || city.timezone || undefined}
+          />
+        </div>
+
+        {focusDate && (
+          <div className="animate-fade-in-up stagger-5 motion-reduce:animate-none">
+            <DayPartsGrid hourly={weather.hourly} date={focusDate} />
+          </div>
         )}
 
-        <GeomagneticCard data={geomagnetic} />
+        <div className="animate-fade-in-up stagger-5 motion-reduce:animate-none">
+          <ComfortIndices current={weather.current} hourly={weather.hourly} aqi={aqi} />
+        </div>
 
-        {aqi && <AirQualityBlock aqi={aqi} />}
+        {active === "today" && (
+          <div className="animate-fade-in-up stagger-6 motion-reduce:animate-none">
+            <RecommendationsCard
+              current={weather.current}
+              today={weather.daily[0]}
+              hourly={weather.hourly}
+              aqi={aqi}
+              activeAlerts={alerts}
+            />
+          </div>
+        )}
+
+        <div className="animate-fade-in-up stagger-6 motion-reduce:animate-none">
+          <GeomagneticCard data={geomagnetic} />
+        </div>
+
+        {aqi && (
+          <div className="animate-fade-in-up stagger-7 motion-reduce:animate-none">
+            <AirQualityBlock aqi={aqi} />
+          </div>
+        )}
 
         {showHourly && hours.length > 0 && (
-          <>
+          <div className="space-y-6 sm:space-y-8 animate-fade-in-up stagger-7 motion-reduce:animate-none">
             <HourlyChart hours={hours} />
             <HourlyForecast hours={hours} />
-          </>
+          </div>
         )}
 
-        <DailyForecast days={daily} hourly={weather.hourly} />
+        <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
+          <DailyForecast days={daily} hourly={weather.hourly} />
+        </div>
 
         {active === "today" && (
           <Suspense fallback={null}>
-            <HistoricalComparisonCard
-              todayTempMax={weather.daily[0].tempMax}
-              todayDate={weather.daily[0].date}
-              latitude={city.latitude}
-              longitude={city.longitude}
-            />
+            <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
+              <HistoricalComparisonCard
+                todayTempMax={weather.daily[0].tempMax}
+                todayDate={weather.daily[0].date}
+                latitude={city.latitude}
+                longitude={city.longitude}
+              />
+            </div>
           </Suspense>
         )}
 
-        <WeatherMap
-          latitude={city.latitude}
-          longitude={city.longitude}
-          cityName={city.name}
-          showPrecip
-        />
+        <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
+          <WeatherMap
+            latitude={city.latitude}
+            longitude={city.longitude}
+            cityName={city.name}
+            showPrecip
+          />
+        </div>
 
         <CityWeatherFaq city={city} weather={weather} />
 

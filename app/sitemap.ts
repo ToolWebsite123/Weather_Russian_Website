@@ -7,6 +7,7 @@ import { getAllStaticCities } from "@/lib/weather/static-cities";
 const FORECAST_TABS = [
   "",
   "/zavtra",
+  "/vykhodnye",
   "/3-dnya",
   "/7-dney",
   "/10-dney",
@@ -28,8 +29,8 @@ async function getSitemapCities(): Promise<Array<{ slug: string }>> {
 
 /**
  * Note on scale: Next.js sitemap functions have a soft limit of 50,000 URLs per file.
- * Current URL count is ~1,640 (272 cities * 6 routes + 6 articles + homepage + articles index).
- * If the city count or route variants grow substantially in the future (e.g. > 8,000 cities),
+ * Current URL count is ~1,920 (272 cities * 7 routes + 6 articles + homepage + catalog + policy pages).
+ * If the city count or route variants grow substantially in the future (e.g. > 7,000 cities),
  * generateSitemaps() should be used to paginate sitemap index files.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -55,6 +56,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.4,
     },
   ];
 

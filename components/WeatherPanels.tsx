@@ -97,14 +97,14 @@ export function CurrentWeatherCard({
     typeof current.uvIndex === "number" ? getUvCategory(current.uvIndex) : null;
 
   return (
-    <section className="rounded-2xl bg-white/80 p-5 shadow-sm ring-1 ring-sky-100 backdrop-blur sm:p-8">
+    <section className="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-sky-100 backdrop-blur sm:p-6">
       <p className="text-xs uppercase tracking-wide text-cloud-500 sm:text-sm">
         {ru.current}
       </p>
       <h1 className="mt-1 font-serif text-h1 font-semibold leading-tight text-sky-950">
         {ru.forecastFor(cityName)}
       </h1>
-      <div className="mt-6 flex flex-wrap items-center gap-4 sm:gap-8">
+      <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-6">
         <WeatherIcon
           code={current.weatherCode}
           isDay={current.isDay}
@@ -113,7 +113,10 @@ export function CurrentWeatherCard({
         />
         <div>
           <div className="flex flex-wrap items-baseline gap-3">
-            <p className="text-display font-semibold tabular-nums leading-none text-sky-950">
+            <p
+              key={current.temperature}
+              className="text-display font-semibold tabular-nums leading-none text-sky-950 animate-temp-settle motion-reduce:animate-none"
+            >
               {formatTemp(current.temperature)}
             </p>
             {hourly && hourly.length > 0 && (
@@ -126,18 +129,18 @@ export function CurrentWeatherCard({
               />
             )}
           </div>
-          <p className="mt-2 text-base text-cloud-600 sm:text-lg">
+          <p className="mt-1.5 text-base text-cloud-600 sm:text-lg">
             {weatherCodeLabel(current.weatherCode)}
           </p>
           {today && (
-            <p className="mt-1 text-sm text-cloud-500 tabular-nums">
+            <p className="mt-0.5 text-sm text-cloud-500 tabular-nums">
               {formatTemp(today.tempMin)} … {formatTemp(today.tempMax)}
             </p>
           )}
         </div>
       </div>
 
-      <div className="mt-6 border-t border-sky-100/80 pt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-4 border-t border-sky-100/80 pt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <div>
           <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
             Давление
@@ -203,24 +206,24 @@ export function DayPartsGrid({
 
   return (
     <section>
-      <h2 className="mb-3 font-serif text-h2 text-sky-950">По частям суток</h2>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+      <h2 className="mb-2 font-serif text-h2 text-sky-950">По частям суток</h2>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5">
         {parts.map((p) => (
           <div
             key={p.key}
-            className="flex flex-col items-center rounded-xl bg-white/80 px-3 py-4 ring-1 ring-sky-100"
+            className="flex flex-col items-center rounded-xl bg-white/80 px-2.5 py-3 ring-1 ring-sky-100"
           >
             <p className="text-xs uppercase tracking-wide text-cloud-500">
               {p.label}
             </p>
-            <WeatherIcon code={p.weatherCode} size={40} className="my-2" />
+            <WeatherIcon code={p.weatherCode} size={40} className="my-1.5" />
             <p className="text-xl font-semibold tabular-nums text-sky-950">
               {formatTemp(p.temperature)}
             </p>
-            <p className="mt-1 text-center text-xs text-cloud-500">
+            <p className="mt-0.5 text-center text-xs text-cloud-500">
               {weatherCodeLabel(p.weatherCode)}
             </p>
-            <p className="mt-1 text-[11px] tabular-nums text-cloud-500 text-center">
+            <p className="mt-0.5 text-[11px] tabular-nums text-cloud-500 text-center">
               {p.precipitation.toFixed(1)} мм
               {typeof p.precipitationProbability === "number" &&
               p.precipitationProbability > 0
@@ -347,8 +350,8 @@ export function HourlyForecast({ hours }: { hours: HourlyPoint[] }) {
   const next = hours.slice(0, 24);
   return (
     <section>
-      <h2 className="mb-3 font-serif text-h2 text-sky-950">{ru.hourly}</h2>
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
+      <h2 className="mb-2 font-serif text-h2 text-sky-950">{ru.hourly}</h2>
+      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-2 sm:px-0">
         {next.map((h) => {
           const label = new Date(h.time).toLocaleTimeString("ru-RU", {
             hour: "2-digit",
@@ -357,10 +360,10 @@ export function HourlyForecast({ hours }: { hours: HourlyPoint[] }) {
           return (
             <div
               key={h.time}
-              className="flex min-w-[4.25rem] shrink-0 flex-col items-center rounded-xl bg-white/80 px-2 py-3 ring-1 ring-sky-100"
+              className="flex min-w-[4rem] shrink-0 flex-col items-center rounded-xl bg-white/80 px-2 py-2.5 ring-1 ring-sky-100"
             >
-              <p className="text-[10px] text-cloud-500 sm:text-xs">{label}</p>
-              <WeatherIcon code={h.weatherCode} size={32} className="my-1.5" />
+              <p className="text-[10px] text-cloud-500 sm:text-xs tabular-nums">{label}</p>
+              <WeatherIcon code={h.weatherCode} size={32} className="my-1" />
               <p className="text-sm font-medium tabular-nums text-sky-950">
                 {formatTemp(h.temperature)}
               </p>
@@ -388,7 +391,7 @@ export function DailyForecast({
 
   return (
     <section>
-      <h2 className="mb-3 font-serif text-h2 text-sky-950">{ru.daily}</h2>
+      <h2 className="mb-2 font-serif text-h2 text-sky-950">{ru.daily}</h2>
       <ul className="divide-y divide-sky-100 overflow-hidden rounded-xl bg-white/80 ring-1 ring-sky-100">
         {list.map((d) => {
           const dateLabel = new Date(d.date + "T12:00:00").toLocaleDateString(
@@ -400,7 +403,7 @@ export function DailyForecast({
           const widthPercent = Math.max(6, ((d.tempMax - d.tempMin) / range) * 100);
 
           return (
-            <li key={d.date} className="px-3 py-3 sm:px-4">
+            <li key={d.date} className="px-3 py-2.5 sm:px-4">
               <div className="flex items-center gap-2 text-sm sm:gap-3 sm:text-base">
                 <span className="w-24 capitalize text-cloud-600 sm:w-32 shrink-0 truncate">
                   {dateLabel}
@@ -431,7 +434,7 @@ export function DailyForecast({
               </div>
 
               {/* Mobile range bar row */}
-              <div className="mt-1.5 sm:hidden flex items-center px-1">
+              <div className="mt-1 sm:hidden flex items-center px-1">
                 <div className="h-1.5 w-full rounded-full bg-cloud-100 relative overflow-hidden">
                   <div
                     className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 to-sun-400"
@@ -444,11 +447,11 @@ export function DailyForecast({
               </div>
 
               {parts.length > 0 && (
-                <div className="mt-2 grid grid-cols-4 gap-1 sm:hidden">
+                <div className="mt-1.5 grid grid-cols-4 gap-1 sm:hidden">
                   {parts.map((p) => (
                     <div
                       key={p.key}
-                      className="rounded-lg bg-sky-50/80 px-1 py-1.5 text-center"
+                      className="rounded-lg bg-sky-50/80 px-1 py-1 text-center"
                     >
                       <p className="text-[9px] text-cloud-500">{p.label}</p>
                       <p className="text-xs font-medium tabular-nums">
@@ -471,7 +474,7 @@ export function ForecastTabs({
   active,
 }: {
   slug: string;
-  active: "today" | "tomorrow" | "3" | "7" | "10" | "14";
+  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14";
 }) {
   const tabs = [
     { id: "today" as const, href: `/pogoda/${slug}`, label: ru.today },
@@ -479,6 +482,11 @@ export function ForecastTabs({
       id: "tomorrow" as const,
       href: `/pogoda/${slug}/zavtra`,
       label: ru.tomorrow,
+    },
+    {
+      id: "weekend" as const,
+      href: `/pogoda/${slug}/vykhodnye`,
+      label: "Выходные",
     },
     { id: "3" as const, href: `/pogoda/${slug}/3-dnya`, label: ru.days3 },
     { id: "7" as const, href: `/pogoda/${slug}/7-dney`, label: ru.days7 },

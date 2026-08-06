@@ -28,7 +28,7 @@ export function getRoadCondition(current: CurrentWeather): RoadConditionInfo {
       label: "Снежный накат",
       description: "На дорогах возможен снежный покров или заносы. Будьте осторожны на поворотах.",
       icon: "❄️",
-      badgeClass: "bg-slate-100 text-slate-800 border-slate-200",
+      badgeClass: "bg-sky-50 text-sky-900 ring-sky-200/80",
     };
   }
 
@@ -42,7 +42,7 @@ export function getRoadCondition(current: CurrentWeather): RoadConditionInfo {
       label: "Риск гололёда",
       description: "Температура около 0°C. На асфальте и мостах возможна скользкая корка льда.",
       icon: "⚠️",
-      badgeClass: "bg-amber-100 text-amber-900 border-amber-300 font-semibold",
+      badgeClass: "bg-sun-100 text-sun-950 ring-sun-300 font-semibold",
     };
   }
 
@@ -53,7 +53,7 @@ export function getRoadCondition(current: CurrentWeather): RoadConditionInfo {
       label: "Мокрая дорога",
       description: "Дорожное покрытие влажное, увеличен тормозной путь.",
       icon: "🌧️",
-      badgeClass: "bg-sky-100 text-sky-900 border-sky-200",
+      badgeClass: "bg-sky-50 text-sky-900 ring-sky-200/60",
     };
   }
 
@@ -63,6 +63,6 @@ export function getRoadCondition(current: CurrentWeather): RoadConditionInfo {
     label: "Сухая дорога",
     description: "Благоприятное состояние дорожного покрытия.",
     icon: "🚗",
-    badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    badgeClass: "bg-sky-50/60 text-sky-800 ring-sky-100",
   };
 }

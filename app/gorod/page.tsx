@@ -105,7 +105,7 @@ export default async function CityCatalogPage() {
                     <Link
                       key={city.slug}
                       href={`/pogoda/${city.slug}`}
-                      className="group flex flex-col justify-between rounded-xl bg-white/90 p-3 ring-1 ring-sky-100/80 transition-all hover:bg-sky-50 hover:ring-sky-200 hover:shadow-sm"
+                      className="group flex flex-col justify-between rounded-xl bg-white/90 p-3 ring-1 ring-sky-100/80 transition-all duration-150 hover:-translate-y-0.5 hover:bg-sky-50 hover:ring-sky-200 hover:shadow-md motion-reduce:transform-none"
                     >
                       <span className="font-medium text-sm text-sky-950 group-hover:text-sky-700 transition-colors truncate">
                         {city.name}

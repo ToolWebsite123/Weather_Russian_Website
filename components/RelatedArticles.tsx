@@ -12,7 +12,7 @@ export function RelatedArticles({ articles }: { articles: Article[] }) {
           <li key={article.slug}>
             <Link
               href={`/articles/${article.slug}`}
-              className="block rounded-xl bg-white/80 p-4 ring-1 ring-sky-100 hover:bg-sun-50"
+              className="block rounded-xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-xs transition-all duration-150 hover:-translate-y-0.5 hover:bg-sun-50 hover:shadow-md hover:ring-sky-200 motion-reduce:transform-none"
             >
               <p className="text-h3 font-semibold text-sky-950">{article.title}</p>
               <p className="mt-1 text-sm text-cloud-600">{article.excerpt}</p>

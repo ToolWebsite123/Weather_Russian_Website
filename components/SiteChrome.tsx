@@ -65,19 +65,32 @@ export function SiteFooter() {
         <Link href="/articles" className="hover:underline">
           Статьи и гайды
         </Link>
+        <span>·</span>
+        <Link href="/terms" className="hover:underline">
+          Условия
+        </Link>
+        <span>·</span>
+        <Link href="/privacy" className="hover:underline">
+          Конфиденциальность
+        </Link>
+        <span>·</span>
+        <Link href="/contact" className="hover:underline">
+          Контакты
+        </Link>
       </nav>
-      <p>
+      <p className="text-xs text-cloud-500">
+        Данные о погоде предоставлены{" "}
         <a
           href="https://open-meteo.com/"
           className="underline decoration-sky-300 underline-offset-2 hover:text-sky-800"
           target="_blank"
           rel="noopener noreferrer"
         >
-          {ru.attribution}
+          Open-Meteo
         </a>
       </p>
       <p className="text-xs text-cloud-400">
-        WeatherHub · прогноз без рекламного шума на старте
+        WeatherHub · точный прогноз погоды без рекламного шума
       </p>
     </footer>
   );
