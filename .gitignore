@@ -39,3 +39,6 @@ next-env.d.ts
 /app/generated/prisma
 WEATHER_ACCURACY_AUDIT.md
 
+
+.vercel
+.env*
