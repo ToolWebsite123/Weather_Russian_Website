@@ -24,6 +24,13 @@ export async function POST(req: NextRequest) {
     }
     const { cityId } = parseResult.data;
 
+    if (cityId <= 0) {
+      return NextResponse.json(
+        { error: "This location cannot be favorited" },
+        { status: 400 }
+      );
+    }
+
     const city = await prisma.city.findUnique({ where: { id: cityId } });
     if (!city) {
       return NextResponse.json({ error: "city not found" }, { status: 404 });
@@ -55,6 +62,13 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "cityId required" }, { status: 400 });
     }
     const { cityId } = parseResult.data;
+
+    if (cityId <= 0) {
+      return NextResponse.json(
+        { error: "This location cannot be favorited" },
+        { status: 400 }
+      );
+    }
 
     const { sessionId, setCookie } = ensureSession();
     await prisma.favorite.deleteMany({

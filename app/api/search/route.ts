@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
           slug: r.slug,
           name: r.name,
           nameEn: r.nameEn ?? r.name,
-          country: r.country || "RU",
+          country: r.country,
           region: r.admin1,
           latitude: r.latitude,
           longitude: r.longitude,

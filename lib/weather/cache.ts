@@ -10,6 +10,16 @@ import type { City } from "@prisma/client";
 
 const CACHE_TTL_MS = config.cache.ttlMs;
 
+function getTransientCityId(slug: string): number {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    hash = (hash << 5) - hash + slug.charCodeAt(i);
+    hash |= 0;
+  }
+  const pos = Math.abs(hash) || 1;
+  return -pos;
+}
+
 export async function getCityBySlug(slug: string): Promise<City | null> {
   try {
     const fromDb = await prisma.city.findUnique({ where: { slug } });
@@ -32,16 +42,17 @@ export async function upsertCityFromGeo(input: {
   population?: number;
   tier?: number;
 }): Promise<City> {
-  const isRu = (input.country ?? "RU").toUpperCase() === "RU";
+  const countryCode = input.country?.trim().toUpperCase();
+  const isRu = countryCode === "RU";
 
   // If not RU, return transient non-persisted City object to prevent DB pollution
   if (!isRu) {
     return {
-      id: Math.floor(Math.random() * 100000) + 1,
+      id: getTransientCityId(input.slug),
       slug: input.slug,
       name: input.name,
       nameEn: input.nameEn ?? input.name,
-      country: input.country ?? "RU",
+      country: input.country || "UNKNOWN",
       region: input.region ?? null,
       latitude: input.latitude,
       longitude: input.longitude,
@@ -55,6 +66,12 @@ export async function upsertCityFromGeo(input: {
   }
 
   try {
+    const existing = await prisma.city.findUnique({
+      where: { slug: input.slug },
+      select: { isCurated: true },
+    });
+    const isCurated = existing?.isCurated ?? false;
+
     return await prisma.city.upsert({
       where: { slug: input.slug },
       update: {
@@ -67,7 +84,7 @@ export async function upsertCityFromGeo(input: {
         timezone: input.timezone,
         population: input.population,
         tier: input.tier ?? 2,
-        isCurated: false,
+        isCurated,
       },
       create: {
         slug: input.slug,
@@ -85,11 +102,11 @@ export async function upsertCityFromGeo(input: {
     });
   } catch {
     return {
-      id: Math.floor(Math.random() * 100000) + 1,
+      id: getTransientCityId(input.slug),
       slug: input.slug,
       name: input.name,
       nameEn: input.nameEn ?? input.name,
-      country: input.country ?? "RU",
+      country: input.country || "UNKNOWN",
       region: input.region ?? null,
       latitude: input.latitude,
       longitude: input.longitude,
@@ -106,6 +123,11 @@ export async function upsertCityFromGeo(input: {
 export async function getCachedWeatherForCity(
   city: City,
 ): Promise<WeatherBundle> {
+  // Skip DB caching for transient (negative/non-persisted) cities
+  if (city.id < 0) {
+    return getWeatherBundle(city.latitude, city.longitude, 14);
+  }
+
   const now = new Date();
 
   try {
@@ -162,7 +184,7 @@ export async function listPopularCities(limit = 12): Promise<City[]> {
 export async function getBatchCachedWeather(
   cities: City[],
 ): Promise<Record<number, WeatherBundle>> {
-  const cityIds = cities.map((c) => c.id).filter(Boolean);
+  const cityIds = cities.map((c) => c.id).filter((id) => id > 0);
   if (cityIds.length === 0) return {};
   try {
     const rows = await prisma.weatherCache.findMany({

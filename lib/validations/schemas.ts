@@ -34,5 +34,5 @@ export const geoQuerySchema = z.object({
 });
 
 export const favoritePayloadSchema = z.object({
-  cityId: z.coerce.number().int().positive("cityId must be a positive integer"),
+  cityId: z.coerce.number().int("cityId must be an integer"),
 });
