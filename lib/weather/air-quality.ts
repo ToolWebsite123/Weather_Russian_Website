@@ -27,6 +27,14 @@ type OpenMeteoUV = {
   daily?: { uv_index_max?: number[] };
 };
 
+function pm25ToUsAqi(pm25: number): number {
+  if (pm25 <= 12.0) return Math.round((50 / 12.0) * pm25);
+  if (pm25 <= 35.4) return Math.round(50 + ((100 - 51) / (35.4 - 12.1)) * (pm25 - 12.1));
+  if (pm25 <= 55.4) return Math.round(101 + ((150 - 101) / (55.4 - 35.5)) * (pm25 - 35.5));
+  if (pm25 <= 150.4) return Math.round(151 + ((200 - 151) / (150.4 - 55.5)) * (pm25 - 55.5));
+  return Math.round(201 + ((300 - 201) / (250.4 - 150.5)) * (pm25 - 150.5));
+}
+
 export async function fetchAirQuality(
   latitude: number,
   longitude: number,
@@ -70,12 +78,30 @@ export async function fetchAirQuality(
     throw err;
   }
   const aq = (await aqRes.json()) as OpenMeteoAQ;
-  if (!aq || !aq.current || aq.current.us_aqi == null) {
+  if (!aq || !aq.current) {
     const err = new Error("Air quality data unavailable");
     reportError(err, { latitude, longitude });
     throw err;
   }
-  const usAqi = num(aq.current.us_aqi);
+
+  const rawUsAqi = aq.current.us_aqi != null ? num(aq.current.us_aqi) : null;
+  const pm25Val = aq.current.pm2_5 != null ? num(aq.current.pm2_5) : null;
+  const pm10Val = aq.current.pm10 != null ? num(aq.current.pm10) : null;
+
+  let usAqi: number | null = rawUsAqi;
+  if (usAqi == null && pm25Val != null) {
+    usAqi = pm25ToUsAqi(pm25Val);
+  } else if (usAqi == null && pm10Val != null) {
+    usAqi = Math.round(pm10Val * 0.8);
+  } else if (usAqi == null && aq.current.european_aqi != null) {
+    usAqi = Math.round(num(aq.current.european_aqi) * 20);
+  }
+
+  if (usAqi == null) {
+    const err = new Error("Air quality data unavailable");
+    reportError(err, { latitude, longitude });
+    throw err;
+  }
 
   let uvIndex: number | undefined;
   if (uvRes.ok) {

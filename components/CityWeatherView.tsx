@@ -88,14 +88,14 @@ export async function CityWeatherView({
 
   const hours = tomorrowOnly
     ? weather.hourly.filter((h) => {
-        const day = weather.daily[1]?.date;
-        return day && h.time.startsWith(day);
-      })
+      const day = weather.daily[1]?.date;
+      return day && h.time.startsWith(day);
+    })
     : weekendOnly
       ? weather.hourly.filter((h) => {
-          const dates = daily.map((d) => d.date);
-          return dates.some((date) => h.time.startsWith(date));
-        })
+        const dates = daily.map((d) => d.date);
+        return dates.some((date) => h.time.startsWith(date));
+      })
       : weather.hourly;
 
   return (
@@ -195,12 +195,6 @@ export async function CityWeatherView({
             showPrecip
           />
         </div>
-
-        {articles.length > 0 && (
-          <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
-            <RelatedArticles articles={articles} />
-          </div>
-        )}
 
         <CityWeatherFaq city={city} weather={weather} />
 

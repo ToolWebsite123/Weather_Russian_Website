@@ -11,6 +11,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import type { HourlyPoint } from "@/types/weather";
+import { ru } from "@/lib/i18n/ru";
 
 type TooltipProps = {
   active?: boolean;
@@ -67,26 +68,65 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
 }
 
 export function HourlyChart({ hours }: { hours: HourlyPoint[] }) {
-  if (!hours || hours.length === 0) return null;
+  if (!hours || hours.length === 0) {
+    return (
+      <section className="rounded-3xl bg-white/95 p-6 border border-sky-200/90 shadow-lg shadow-sky-900/5 backdrop-blur-md ring-1 ring-white/80">
+        <h2 className="font-serif text-h2 font-semibold text-sky-950 mb-2">
+          График на 24 часа
+        </h2>
+        <p className="text-sm text-cloud-500 py-6 text-center">
+          {ru.dataUnavailable}
+        </p>
+      </section>
+    );
+  }
 
-  // Take next 24 hours
-  const data = hours.slice(0, 24).map((h) => {
-    const dateObj = new Date(h.time);
-    const timeLabel = dateObj.toLocaleTimeString("ru-RU", {
-      hour: "2-digit",
-      minute: "2-digit",
+  // Take next 24 hours and sanitize numbers/dates to prevent rendering failures
+  const data = hours
+    .slice(0, 24)
+    .filter((h) => h && typeof h.temperature === "number" && !isNaN(h.temperature))
+    .map((h) => {
+      let timeLabel = "";
+      if (typeof h.time === "string") {
+        if (h.time.includes("T")) {
+          timeLabel = h.time.split("T")[1]?.slice(0, 5) ?? h.time;
+        } else if (h.time.includes(" ")) {
+          timeLabel = h.time.split(" ")[1]?.slice(0, 5) ?? h.time;
+        } else {
+          timeLabel = h.time.slice(0, 5);
+        }
+      }
+
+      const tempNum = Math.round(h.temperature);
+      const feelsLikeNum =
+        typeof h.feelsLike === "number" && !isNaN(h.feelsLike)
+          ? Math.round(h.feelsLike)
+          : tempNum;
+      const precipNum =
+        typeof h.precipitation === "number" && !isNaN(h.precipitation)
+          ? Math.max(0, h.precipitation)
+          : 0;
+
+      return {
+        timeLabel,
+        temp: tempNum,
+        feelsLike: feelsLikeNum,
+        precip: precipNum,
+      };
     });
 
-    return {
-      timeLabel,
-      temp: Math.round(h.temperature),
-      feelsLike:
-        typeof h.feelsLike === "number"
-          ? Math.round(h.feelsLike)
-          : Math.round(h.temperature),
-      precip: h.precipitation ?? 0,
-    };
-  });
+  if (data.length === 0) {
+    return (
+      <section className="rounded-3xl bg-white/95 p-6 border border-sky-200/90 shadow-lg shadow-sky-900/5 backdrop-blur-md ring-1 ring-white/80">
+        <h2 className="font-serif text-h2 font-semibold text-sky-950 mb-2">
+          График на 24 часа
+        </h2>
+        <p className="text-sm text-cloud-500 py-6 text-center">
+          {ru.dataUnavailable}
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-3xl bg-white/95 p-6 border border-sky-200/90 shadow-lg shadow-sky-900/5 backdrop-blur-md ring-1 ring-white/80">

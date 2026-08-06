@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
+import { ru } from "@/lib/i18n/ru";
 
 type RadarFrame = {
   time: number;
@@ -16,6 +18,26 @@ type RainViewerResponse = {
     nowcast?: RadarFrame[];
   };
 };
+
+const RADAR_HUBS = [
+  { name: "Москва и Центр", slug: "moscow", lat: 55.7558, lon: 37.6173 },
+  { name: "Санкт-Петербург", slug: "saint-petersburg", lat: 59.9343, lon: 30.3351 },
+  { name: "Сочи и Юг", slug: "sochi", lat: 43.6028, lon: 39.7342 },
+  { name: "Екатеринбург и Урал", slug: "ekaterinburg", lat: 56.8389, lon: 60.6057 },
+];
+
+function findNearestHub(lat: number, lon: number) {
+  let nearest = RADAR_HUBS[0];
+  let minDist = Infinity;
+  for (const hub of RADAR_HUBS) {
+    const dist = Math.hypot(lat - hub.lat, lon - hub.lon);
+    if (dist < minDist) {
+      minDist = dist;
+      nearest = hub;
+    }
+  }
+  return { hub: nearest, dist: minDist };
+}
 
 export default function RadarMap({
   latitude,
@@ -34,23 +56,36 @@ export default function RadarMap({
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
 
-  // Fetch RainViewer radar frames safely
+  const { hub: nearestHub, dist } = findNearestHub(latitude, longitude);
+  const isOutside =
+    dist > 15 || latitude < 40 || latitude > 75 || longitude < 19 || longitude > 180;
+
+  // Fetch RainViewer radar frames safely with a 5-second timeout boundary
   useEffect(() => {
-    if (!showPrecip) return;
+    if (!showPrecip || isOutside) return;
 
     let isMounted = true;
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      if (isMounted) setHasError(true);
+      controller.abort();
+    }, 5000);
+
     async function fetchRadarFrames() {
       try {
-        const res = await fetch(
-          "https://api.rainviewer.com/public/weather-maps.json",
-        );
+        const res = await fetch("https://api.rainviewer.com/public/weather-maps.json", {
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
         if (!res.ok) throw new Error("RainViewer API failed");
         const data = (await res.json()) as RainViewerResponse;
 
         if (isMounted && data.host && data.radar?.past?.length) {
           setHost(data.host);
           setFrames(data.radar.past);
-          setCurrentFrameIdx(data.radar.past.length - 1); // default to latest past frame
+          setCurrentFrameIdx(data.radar.past.length - 1);
+        } else if (isMounted) {
+          setHasError(true);
         }
       } catch {
         if (isMounted) setHasError(true);
@@ -60,8 +95,10 @@ export default function RadarMap({
     fetchRadarFrames();
     return () => {
       isMounted = false;
+      clearTimeout(timer);
+      controller.abort();
     };
-  }, [showPrecip]);
+  }, [showPrecip, isOutside]);
 
   // Animation timer loop
   useEffect(() => {
@@ -74,6 +111,39 @@ export default function RadarMap({
     return () => clearInterval(interval);
   }, [isPlaying, frames.length]);
 
+  if (isOutside || hasError) {
+    return (
+      <section className="rounded-2xl bg-white/80 p-6 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-8 space-y-4 text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sky-100/80 text-sky-700">
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-base font-semibold text-sky-950">{ru.radarUnavailable}</h3>
+          <p className="text-xs text-cloud-500">
+            Локация «{cityName}» находится вне зоны покрытия метеорадара.
+          </p>
+        </div>
+        {nearestHub && (
+          <div>
+            <Link
+              href={`/pogoda/${nearestHub.slug}`}
+              className="inline-flex items-center gap-1 rounded-xl bg-sky-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-800"
+            >
+              {ru.viewNearestRadar(nearestHub.name)} &rarr;
+            </Link>
+          </div>
+        )}
+      </section>
+    );
+  }
+
   const currentFrame = frames[currentFrameIdx];
   const currentFrameTimeLabel = currentFrame
     ? new Date(currentFrame.time * 1000).toLocaleTimeString("ru-RU", {
@@ -82,7 +152,6 @@ export default function RadarMap({
       })
     : "";
 
-  // Custom city marker pin icon
   const cityPinIcon = L.divIcon({
     className: "custom-city-pin",
     html: `<div style="display:flex;align-items:center;justify-content:center;transform:translate(-50%,-100%);">
@@ -101,9 +170,7 @@ export default function RadarMap({
         <h2 className="font-serif text-h2 font-semibold text-sky-950">
           Карта осадков и радар
         </h2>
-        <span className="text-xs text-cloud-500">
-          RainViewer & OpenStreetMap
-        </span>
+        <span className="text-xs text-cloud-500">RainViewer & OpenStreetMap</span>
       </div>
 
       <div className="relative h-80 w-full overflow-hidden rounded-xl ring-1 ring-sky-100/80 sm:h-96">
@@ -127,13 +194,10 @@ export default function RadarMap({
           )}
 
           <Marker position={[latitude, longitude]} icon={cityPinIcon}>
-            <Popup className="font-sans font-medium text-sky-950">
-              {cityName}
-            </Popup>
+            <Popup className="font-sans font-medium text-sky-950">{cityName}</Popup>
           </Marker>
         </MapContainer>
 
-        {/* Floating Animation Control Overlay */}
         {showPrecip && frames.length > 0 && !hasError && (
           <div className="absolute bottom-3 left-3 z-[1000] flex items-center gap-3 rounded-xl bg-white/95 px-3 py-2 text-xs shadow-md ring-1 ring-sky-100/80 backdrop-blur">
             <button
@@ -147,7 +211,7 @@ export default function RadarMap({
 
             <div>
               <p className="font-semibold text-sky-950">Радар осадков</p>
-              <p className="text-[11px] tabular-nums text-cloud-600">
+              <p className="text-[11px] tabular-nums text-cloud-600 font-medium">
                 {currentFrameTimeLabel}
               </p>
             </div>

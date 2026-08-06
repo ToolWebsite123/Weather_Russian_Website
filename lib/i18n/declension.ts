@@ -51,7 +51,12 @@ const DICTIONARY: Record<string, DeclensionPair> = {
  */
 export function getCityLocative(cityName: string): string {
   if (!cityName) return "в городе";
-  const key = cityName.trim().toLowerCase();
+  const trimmed = cityName.trim();
+  // Skip declension for non-Cyrillic / Latin city names
+  if (/[a-zA-Z]/.test(trimmed) || !/[\u0400-\u04FF]/.test(trimmed)) {
+    return `: ${trimmed}`;
+  }
+  const key = trimmed.toLowerCase();
   if (DICTIONARY[key]) return DICTIONARY[key].locative;
 
   // Heuristic rule for unknown Russian city names
@@ -77,7 +82,11 @@ export function getCityLocative(cityName: string): string {
  */
 export function getCityGenitive(cityName: string): string {
   if (!cityName) return "города";
-  const key = cityName.trim().toLowerCase();
+  const trimmed = cityName.trim();
+  if (/[a-zA-Z]/.test(trimmed) || !/[\u0400-\u04FF]/.test(trimmed)) {
+    return trimmed;
+  }
+  const key = trimmed.toLowerCase();
   if (DICTIONARY[key]) return DICTIONARY[key].genitive;
 
   if (cityName.endsWith("а")) {

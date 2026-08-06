@@ -60,7 +60,6 @@ export function CitySearch() {
     <div ref={boxRef} className="relative w-full max-w-xl">
       <form onSubmit={onSubmit} className="flex gap-2">
         <input
-          id="city-search-input"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results.length > 0 && setOpen(true)}
