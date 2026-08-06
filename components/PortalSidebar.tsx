@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Article } from "@/lib/content/articles";
+import { RelatedArticles } from "@/components/RelatedArticles";
 
 export const REGIONAL_SHORTCUTS = [
   { name: "Москва", slug: "moscow", region: "Центр" },
@@ -114,11 +115,12 @@ export function RegionalShortcutsBar() {
   );
 }
 
-export function PortalSidebar({ articles }: { articles: Article[] }) {
+export function PortalSidebar({ articles }: { articles?: Article[] }) {
   return (
     <aside className="space-y-6 sm:space-y-8">
       <EnvironmentalInsightsBar />
       <RegionalShortcutsBar />
+      {articles && articles.length > 0 && <RelatedArticles articles={articles} />}
     </aside>
   );
 }
