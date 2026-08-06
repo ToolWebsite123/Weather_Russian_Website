@@ -30,12 +30,13 @@ describe("upsertCityFromGeo - isCurated preservation", () => {
       updatedAt: new Date(),
     });
 
-    vi.mocked(prisma.city.upsert).mockImplementationOnce((async (args: any) => {
+    vi.mocked(prisma.city.upsert).mockImplementationOnce((async (args: unknown) => {
+      const a = args as { where: { slug: string }; update: { name: string; nameEn?: string; isCurated?: boolean } };
       return {
         id: 10,
-        slug: args.where.slug,
-        name: args.update.name as string,
-        nameEn: (args.update.nameEn as string) || (args.update.name as string),
+        slug: a.where.slug,
+        name: a.update.name,
+        nameEn: a.update.nameEn || a.update.name,
         country: "RU",
         region: null,
         latitude: 55.75,
@@ -43,11 +44,11 @@ describe("upsertCityFromGeo - isCurated preservation", () => {
         timezone: "Europe/Moscow",
         population: 12653744,
         tier: 1,
-        isCurated: args.update.isCurated as boolean,
+        isCurated: a.update.isCurated ?? false,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-    }) as any);
+    }) as unknown as typeof prisma.city.upsert);
 
     const result = await upsertCityFromGeo({
       slug: "moscow",
@@ -77,12 +78,13 @@ describe("upsertCityFromGeo - isCurated preservation", () => {
   it("sets isCurated: false for new uncurated cities", async () => {
     vi.mocked(prisma.city.findUnique).mockResolvedValueOnce(null);
 
-    vi.mocked(prisma.city.upsert).mockImplementationOnce((async (args: any) => {
+    vi.mocked(prisma.city.upsert).mockImplementationOnce((async (args: unknown) => {
+      const a = args as { where: { slug: string }; create: { name: string; nameEn?: string; isCurated?: boolean } };
       return {
         id: 99,
-        slug: args.where.slug,
-        name: args.create.name as string,
-        nameEn: (args.create.nameEn as string) || (args.create.name as string),
+        slug: a.where.slug,
+        name: a.create.name,
+        nameEn: a.create.nameEn || a.create.name,
         country: "RU",
         region: null,
         latitude: 55.0,
@@ -90,11 +92,11 @@ describe("upsertCityFromGeo - isCurated preservation", () => {
         timezone: "Europe/Moscow",
         population: 1000,
         tier: 2,
-        isCurated: args.create.isCurated as boolean,
+        isCurated: a.create.isCurated ?? false,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-    }) as any);
+    }) as unknown as typeof prisma.city.upsert);
 
     const result = await upsertCityFromGeo({
       slug: "small-village",
