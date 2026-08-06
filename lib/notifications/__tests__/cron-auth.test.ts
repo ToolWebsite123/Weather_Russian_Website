@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { NextRequest } from "next/server";
-import { GET, POST } from "@/app/api/cron/send-weather-alerts/route";
+import { GET } from "@/app/api/cron/send-weather-alerts/route";
 
 describe("Cron Send Weather Alerts Security Auth", () => {
   const TEST_SECRET = "super-secret-cron-token-999";
