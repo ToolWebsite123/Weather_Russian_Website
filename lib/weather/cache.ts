@@ -132,3 +132,22 @@ export async function listPopularCities(limit = 12): Promise<City[]> {
   }
   return getStaticPopularCities(limit);
 }
+
+export async function getBatchCachedWeather(
+  cities: City[],
+): Promise<Record<number, WeatherBundle>> {
+  const cityIds = cities.map((c) => c.id).filter(Boolean);
+  if (cityIds.length === 0) return {};
+  try {
+    const rows = await prisma.weatherCache.findMany({
+      where: { cityId: { in: cityIds } },
+    });
+    const map: Record<number, WeatherBundle> = {};
+    for (const r of rows) {
+      map[r.cityId] = r.payload as unknown as WeatherBundle;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}

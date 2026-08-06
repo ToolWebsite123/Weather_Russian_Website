@@ -14,7 +14,7 @@ import {
   listPopularCities,
   loadCityWeather,
 } from "@/lib/weather/city-page";
-import { getCachedWeatherForCity } from "@/lib/weather/cache";
+import { getBatchCachedWeather } from "@/lib/weather/cache";
 import { getActiveAlerts } from "@/lib/weather/alerts";
 
 import { SectionHeading } from "@/components/SectionHeading";
@@ -37,17 +37,12 @@ export default async function Home() {
     getFavoritesForSession().catch(() => []),
   ]);
 
-  // Fetch live weather for popular cities in parallel using database cache
-  const popularCityItems = await Promise.all(
-    popularCitiesList.map(async (city) => {
-      try {
-        const weather = await getCachedWeatherForCity(city);
-        return { city, weather };
-      } catch {
-        return { city, weather: null };
-      }
-    }),
-  );
+  // Fetch cached weather payloads for popular cities in 1 fast batch query (~5ms)
+  const weatherMap = await getBatchCachedWeather(popularCitiesList);
+  const popularCityItems = popularCitiesList.map((city) => ({
+    city,
+    weather: weatherMap[city.id] ?? null,
+  }));
 
   const activeAlerts = primaryData ? getActiveAlerts(primaryData.weather) : [];
   const latestArticles = getLatestArticles(3);
