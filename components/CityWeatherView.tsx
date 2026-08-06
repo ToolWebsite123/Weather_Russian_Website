@@ -196,6 +196,12 @@ export async function CityWeatherView({
           />
         </div>
 
+        {articles.length > 0 && (
+          <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
+            <RelatedArticles articles={articles} />
+          </div>
+        )}
+
         <CityWeatherFaq city={city} weather={weather} />
 
         <NearbyCities cities={nearby} />

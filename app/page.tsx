@@ -100,9 +100,14 @@ export default async function Home() {
         {/* 7. Popular Cities Weather Grid (24 Cities) */}
         <PopularCitiesGrid items={popularCityItems} />
 
+        {/* 8. Related Articles Section */}
+        {latestArticles.length > 0 && (
+          <RelatedArticles articles={latestArticles} showViewAll />
+        )}
+
         <div className="my-6 h-px bg-gradient-to-r from-transparent via-sky-200/80 to-transparent" aria-hidden="true" />
 
-        {/* 8. Interactive Weather Radar Section */}
+        {/* 9. Interactive Weather Radar Section */}
         <div id="weather-map">
           <WeatherMapPreviewSection />
         </div>
