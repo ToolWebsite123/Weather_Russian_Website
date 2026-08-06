@@ -150,8 +150,8 @@ export function HourlyChart({ hours }: { hours: HourlyPoint[] }) {
         </div>
       </div>
 
-      <div className="h-56 w-full sm:h-64">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-56 w-full min-h-[220px] sm:h-64">
+        <ResponsiveContainer width="100%" height="100%" minHeight={220}>
           <ComposedChart
             data={data}
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}

@@ -1,9 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
 import { ru } from "@/lib/i18n/ru";
 
 type RadarFrame = {
@@ -50,26 +48,79 @@ export default function RadarMap({
   cityName: string;
   showPrecip?: boolean;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [host, setHost] = useState<string>("");
   const [frames, setFrames] = useState<RadarFrame[]>([]);
   const [currentFrameIdx, setCurrentFrameIdx] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
-  const [hasError, setHasError] = useState<boolean>(false);
+  const [precipError, setPrecipError] = useState<boolean>(false);
+  const [mapError, setMapError] = useState<boolean>(false);
 
   const { hub: nearestHub, dist } = findNearestHub(latitude, longitude);
+  // Strictly check if location is outside covered geographic regions
   const isOutside =
-    dist > 15 || latitude < 40 || latitude > 75 || longitude < 19 || longitude > 180;
+    dist > 25 && (latitude < 30 || latitude > 75 || longitude < 15 || longitude > 180);
 
-  // Fetch RainViewer radar frames safely with a 5-second timeout boundary
+  // Initialize Leaflet map safely in client effect
+  useEffect(() => {
+    if (isOutside || !containerRef.current) return;
+
+    let mapInstance: any = null;
+
+    async function initMap() {
+      try {
+        const L = (await import("leaflet")).default;
+        if (!containerRef.current) return;
+
+        mapInstance = L.map(containerRef.current, {
+          center: [latitude, longitude],
+          zoom: 7,
+          scrollWheelZoom: false,
+        });
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        }).addTo(mapInstance);
+
+        const cityPinIcon = L.divIcon({
+          className: "custom-city-pin",
+          html: `<div style="display:flex;align-items:center;justify-content:center;transform:translate(-50%,-100%);">
+            <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.16344 24.8366 0 16 0Z" fill="#006bc8"/>
+              <circle cx="16" cy="16" r="6" fill="white"/>
+            </svg>
+          </div>`,
+          iconSize: [32, 40],
+          iconAnchor: [16, 40],
+        });
+
+        L.marker([latitude, longitude], { icon: cityPinIcon })
+          .addTo(mapInstance)
+          .bindPopup(cityName);
+      } catch {
+        setMapError(true);
+      }
+    }
+
+    initMap();
+
+    return () => {
+      if (mapInstance) {
+        mapInstance.remove();
+      }
+    };
+  }, [latitude, longitude, cityName, isOutside]);
+
+  // Fetch RainViewer radar frames safely
   useEffect(() => {
     if (!showPrecip || isOutside) return;
 
     let isMounted = true;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      if (isMounted) setHasError(true);
+      if (isMounted) setPrecipError(true);
       controller.abort();
-    }, 5000);
+    }, 10000);
 
     async function fetchRadarFrames() {
       try {
@@ -85,10 +136,10 @@ export default function RadarMap({
           setFrames(data.radar.past);
           setCurrentFrameIdx(data.radar.past.length - 1);
         } else if (isMounted) {
-          setHasError(true);
+          setPrecipError(true);
         }
       } catch {
-        if (isMounted) setHasError(true);
+        if (isMounted) setPrecipError(true);
       }
     }
 
@@ -100,7 +151,7 @@ export default function RadarMap({
     };
   }, [showPrecip, isOutside]);
 
-  // Animation timer loop
+  // Animation loop
   useEffect(() => {
     if (!isPlaying || frames.length <= 1) return;
 
@@ -111,7 +162,7 @@ export default function RadarMap({
     return () => clearInterval(interval);
   }, [isPlaying, frames.length]);
 
-  if (isOutside || hasError) {
+  if (isOutside || mapError) {
     return (
       <section className="rounded-2xl bg-white/80 p-6 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-8 space-y-4 text-center">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sky-100/80 text-sky-700">
@@ -130,7 +181,7 @@ export default function RadarMap({
             Локация «{cityName}» находится вне зоны покрытия метеорадара.
           </p>
         </div>
-        {nearestHub && (
+        {nearestHub && nearestHub.name !== cityName && (
           <div>
             <Link
               href={`/pogoda/${nearestHub.slug}`}
@@ -152,18 +203,6 @@ export default function RadarMap({
       })
     : "";
 
-  const cityPinIcon = L.divIcon({
-    className: "custom-city-pin",
-    html: `<div style="display:flex;align-items:center;justify-content:center;transform:translate(-50%,-100%);">
-      <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.16344 24.8366 0 16 0Z" fill="#006bc8"/>
-        <circle cx="16" cy="16" r="6" fill="white"/>
-      </svg>
-    </div>`,
-    iconSize: [32, 40],
-    iconAnchor: [16, 40],
-  });
-
   return (
     <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-6 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -174,31 +213,9 @@ export default function RadarMap({
       </div>
 
       <div className="relative h-80 w-full overflow-hidden rounded-xl ring-1 ring-sky-100/80 sm:h-96">
-        <MapContainer
-          center={[latitude, longitude]}
-          zoom={7}
-          scrollWheelZoom={false}
-          className="h-full w-full z-0"
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+        <div ref={containerRef} className="h-full w-full z-0" />
 
-          {showPrecip && currentFrame && host && (
-            <TileLayer
-              key={currentFrame.path}
-              url={`${host}${currentFrame.path}/256/{z}/{x}/{y}/2/1_1.png`}
-              opacity={0.7}
-            />
-          )}
-
-          <Marker position={[latitude, longitude]} icon={cityPinIcon}>
-            <Popup className="font-sans font-medium text-sky-950">{cityName}</Popup>
-          </Marker>
-        </MapContainer>
-
-        {showPrecip && frames.length > 0 && !hasError && (
+        {showPrecip && frames.length > 0 && !precipError && (
           <div className="absolute bottom-3 left-3 z-[1000] flex items-center gap-3 rounded-xl bg-white/95 px-3 py-2 text-xs shadow-md ring-1 ring-sky-100/80 backdrop-blur">
             <button
               type="button"
