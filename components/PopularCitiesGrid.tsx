@@ -14,7 +14,13 @@ export type PopularCityItem = {
   weather: WeatherBundle | null;
 };
 
-export function PopularCitiesGrid({ items }: { items: PopularCityItem[] }) {
+export function PopularCitiesGrid({
+  items,
+  totalCount = 272,
+}: {
+  items: PopularCityItem[];
+  totalCount?: number;
+}) {
   const [expanded, setExpanded] = useState(false);
 
   if (!items || items.length === 0) return null;
@@ -31,7 +37,7 @@ export function PopularCitiesGrid({ items }: { items: PopularCityItem[] }) {
             href="/gorod"
             className="text-xs font-medium text-sky-800 hover:text-sky-950 transition-colors"
           >
-            Все 272 города →
+            Все {totalCount} городов →
           </Link>
         }
       >
@@ -100,7 +106,7 @@ export function PopularCitiesGrid({ items }: { items: PopularCityItem[] }) {
           href="/gorod"
           className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 hover:text-sky-900 transition-colors ml-auto"
         >
-          <span>Полный каталог городов России ({items.length > 24 ? items.length : 272})</span>
+          <span>Полный каталог городов России ({totalCount})</span>
           <span>→</span>
         </Link>
       </div>

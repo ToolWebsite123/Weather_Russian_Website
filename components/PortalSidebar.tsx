@@ -10,7 +10,7 @@ export const REGIONAL_SHORTCUTS = [
   { name: "Москва", slug: "moscow", region: "Центр" },
   { name: "Санкт-Петербург", slug: "saint-petersburg", region: "Северо-Запад" },
   { name: "Сочи", slug: "sochi", region: "Юг" },
-  { name: "Екатеринбург", slug: "ekaterinburg", region: "Урал" },
+  { name: "Екатеринбург", slug: "yekaterinburg", region: "Урал" },
   { name: "Новосибирск", slug: "novosibirsk", region: "Сибирь" },
   { name: "Казань", slug: "kazan", region: "Поволжье" },
   { name: "Нижний Новгород", slug: "nizhny-novgorod", region: "Центр" },

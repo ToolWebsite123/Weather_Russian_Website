@@ -3,12 +3,14 @@ import Link from "next/link";
 import { PageShell } from "@/components/SiteChrome";
 import { getFavoritesForSession } from "@/lib/weather/city-page";
 
+import { config } from "@/lib/config";
+
 export const metadata: Metadata = {
   title: "Политика конфиденциальности | WeatherHub",
   description:
     "Политика обработки персональных данных сервиса WeatherHub: прозрачные правила сбора, хранения и защиты данных пользователей.",
   alternates: {
-    canonical: "https://weatherhub.ru/privacy",
+    canonical: `${config.siteUrl}/privacy`,
   },
 };
 

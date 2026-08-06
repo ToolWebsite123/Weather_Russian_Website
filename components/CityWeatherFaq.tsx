@@ -4,6 +4,7 @@ import type { City } from "@prisma/client";
 import type { WeatherBundle } from "@/types/weather";
 import { formatPressureMmHg, formatTemp } from "@/lib/cities";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
+import { config } from "@/lib/config";
 
 interface Props {
   city: City;
@@ -63,7 +64,7 @@ export function CityWeatherFaq({ city, weather }: Props) {
     "@context": "https://schema.org",
     "@type": "WeatherForecast",
     name: `Прогноз погоды ${locative}`,
-    url: `https://weatherhub.ru/pogoda/${city.slug}`,
+    url: `${config.siteUrl}/pogoda/${city.slug}`,
     datePublished: new Date().toISOString(),
     validFrom: new Date().toISOString(),
     location: {

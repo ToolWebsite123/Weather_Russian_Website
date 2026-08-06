@@ -65,6 +65,10 @@ export type WeatherBundle = {
   current: CurrentWeather;
   hourly: HourlyPoint[];
   daily: DailyPoint[];
+  yesterday?: {
+    daily: DailyPoint;
+    hourly: HourlyPoint[];
+  };
   fetchedAt: string;
 };
 

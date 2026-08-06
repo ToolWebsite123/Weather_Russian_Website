@@ -101,4 +101,14 @@ export async function loadCityWeather(slug: string): Promise<{
   }
 }
 
+export async function getCityCount(): Promise<number> {
+  try {
+    const count = await prisma.city.count({ where: { isCurated: true, country: "RU" } });
+    if (count > 0) return count;
+  } catch {
+    // fallback
+  }
+  return 272;
+}
+
 export { listPopularCities };

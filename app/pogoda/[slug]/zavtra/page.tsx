@@ -3,6 +3,7 @@ import { CityWeatherView } from "@/components/CityWeatherView";
 import { resolveCity, listPopularCities } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { config } from "@/lib/config";
 
 type Props = { params: { slug: string } };
 
@@ -16,9 +17,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!city) return { title: ru.brand };
 
   const locative = getCityLocative(city.name);
-  const title = `Погода ${locative} на завтра — подробный точный прогноз | WeatherHub`;
-  const description = `Точный прогноз погоды ${locative} на завтра: температура по часам, вероятность осадков, скорость ветра и атмосферное давление.`;
-  const url = `https://weatherhub.ru/pogoda/${city.slug}/zavtra`;
+  const title = `Погода ${locative} на завтра — точный прогноз погоды | WeatherHub`;
+  const description = `Точный прогноз погоды ${locative} на завтра: температура по часам, вероятность осадков и направление ветра.`;
+  const url = `${config.siteUrl}/pogoda/${city.slug}/zavtra`;
 
   return {
     title,

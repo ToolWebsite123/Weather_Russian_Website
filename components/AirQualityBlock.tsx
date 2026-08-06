@@ -1,8 +1,9 @@
 import type { AirQuality } from "@/types/weather";
 import { getPollutantLevel, getPollenLevel } from "@/lib/weather/pollutant-scale";
 
-export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
+export function AirQualityBlock({ aqi, uvIndex }: { aqi: AirQuality; uvIndex?: number }) {
   const usAqi = Math.round(aqi.usAqi);
+  const displayUv = uvIndex ?? aqi.uvIndex;
 
   const level =
     usAqi <= 50
@@ -58,11 +59,11 @@ export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
         <h2 className="font-serif text-h2 font-semibold text-sky-950">
           Качество воздуха
         </h2>
-        {aqi.uvIndex != null && (
+        {displayUv != null && (
           <span className="text-xs text-cloud-600">
             УФ-индекс:{" "}
             <strong className="text-sky-950 font-semibold tabular-nums">
-              {aqi.uvIndex.toFixed(1)}
+              {displayUv.toFixed(1)}
             </strong>
           </span>
         )}

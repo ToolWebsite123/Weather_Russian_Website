@@ -3,6 +3,7 @@ import { CityWeatherView } from "@/components/CityWeatherView";
 import { resolveCity, listPopularCities } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { config } from "@/lib/config";
 
 type Props = { params: { slug: string } };
 
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locative = getCityLocative(city.name);
   const title = `Погода ${locative} сегодня — точный прогноз погоды | WeatherHub`;
   const description = ru.metaDescription(city.name);
-  const url = `https://weatherhub.ru/pogoda/${city.slug}`;
+  const url = `${config.siteUrl}/pogoda/${city.slug}`;
 
   return {
     title,
@@ -38,9 +39,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function CityPage({ params }: Props) {
+export default function CityPage({
+  params,
+  searchParams,
+}: Props & { searchParams?: { view?: string } }) {
   return (
-    <CityWeatherView slug={params.slug} active="today" dailyLimit={7} />
+    <CityWeatherView
+      slug={params.slug}
+      active="today"
+      dailyLimit={7}
+      isYesterday={searchParams?.view === "yesterday"}
+    />
   );
 }
 

@@ -89,19 +89,21 @@ export async function searchPlaces(
   if (!res.ok) throw new Error("Geocoding failed");
 
   const data = (await res.json()) as OpenMeteoGeo;
-  return (data.results ?? []).map((r) => ({
-    id: String(r.id),
-    name: r.name,
-    nameEn: r.name,
-    nameRu: r.name,
-    country: r.country_code ?? "",
-    admin1: r.admin1,
-    latitude: r.latitude,
-    longitude: r.longitude,
-    timezone: r.timezone,
-    population: r.population,
-    slug: slugifyCity(r.name, r.admin1),
-  }));
+  return (data.results ?? [])
+    .filter((r) => !r.country_code || r.country_code.toUpperCase() === "RU")
+    .map((r) => ({
+      id: String(r.id),
+      name: r.name,
+      nameEn: r.name,
+      nameRu: r.name,
+      country: (r.country_code ?? "RU").toUpperCase(),
+      admin1: r.admin1,
+      latitude: r.latitude,
+      longitude: r.longitude,
+      timezone: r.timezone,
+      population: r.population,
+      slug: slugifyCity(r.name, r.admin1),
+    }));
 }
 
 export async function fetchOpenMeteoForecast(
@@ -113,6 +115,7 @@ export async function fetchOpenMeteoForecast(
   url.searchParams.set("latitude", String(latitude));
   url.searchParams.set("longitude", String(longitude));
   url.searchParams.set("timezone", "auto");
+  url.searchParams.set("past_days", "1");
   url.searchParams.set("forecast_days", String(Math.min(16, forecastDays)));
   url.searchParams.set(
     "current",
@@ -174,7 +177,7 @@ export async function fetchOpenMeteoForecast(
   const data = (await res.json()) as OpenMeteoForecast;
   const offsetSec = data.utc_offset_seconds ?? 0;
 
-  const hourly: HourlyPoint[] = data.hourly.time.map((time, i) => ({
+  const allHourly: HourlyPoint[] = data.hourly.time.map((time, i) => ({
     time,
     temperature: data.hourly.temperature_2m[i],
     precipitation: data.hourly.precipitation[i],
@@ -187,7 +190,7 @@ export async function fetchOpenMeteoForecast(
     pressure: data.hourly.pressure_msl?.[i],
   }));
 
-  const daily: DailyPoint[] = data.daily.time.map((date, i) => ({
+  const allDaily: DailyPoint[] = data.daily.time.map((date, i) => ({
     date,
     weatherCode: data.daily.weather_code[i],
     tempMax: data.daily.temperature_2m_max[i],
@@ -198,6 +201,19 @@ export async function fetchOpenMeteoForecast(
     sunset: formatIsoWithOffset(data.daily.sunset[i], offsetSec) ?? data.daily.sunset[i],
     uvIndexMax: data.daily.uv_index_max?.[i],
   }));
+
+  const currentDateIso = data.current.time.split("T")[0];
+  const hasPast = allDaily.length > 1 && allDaily[0].date < currentDateIso;
+
+  const yesterdayDaily = hasPast ? allDaily[0] : undefined;
+  const daily = hasPast ? allDaily.slice(1) : allDaily;
+
+  const yesterdayHourly = yesterdayDaily
+    ? allHourly.filter((h) => h.time.startsWith(yesterdayDaily.date))
+    : [];
+  const hourly = yesterdayDaily
+    ? allHourly.filter((h) => !h.time.startsWith(yesterdayDaily.date))
+    : allHourly;
 
   return {
     provider: "open-meteo",
@@ -223,6 +239,7 @@ export async function fetchOpenMeteoForecast(
     },
     hourly,
     daily,
+    yesterday: yesterdayDaily ? { daily: yesterdayDaily, hourly: yesterdayHourly } : undefined,
     fetchedAt: new Date().toISOString(),
   };
 }

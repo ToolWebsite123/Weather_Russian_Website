@@ -5,22 +5,23 @@ import { getAllStaticCities } from "@/lib/weather/static-cities";
 import { getFavoritesForSession } from "@/lib/weather/city-page";
 import { PageShell } from "@/components/SiteChrome";
 import type { City } from "@prisma/client";
+import { config } from "@/lib/config";
 
 export const revalidate = 3600; // 1 hour ISR
 
 export const metadata: Metadata = {
   title: "Все города России — Каталог погоды | WeatherHub",
   description:
-    "Полный каталог городов России. Точный прогноз погоды для 272 городов: температура, осадк и, ветер и качество воздуха.",
+    "Полный каталог городов России. Точный прогноз погоды для всех городов: температура, осадки, ветер и качество воздуха.",
   alternates: {
-    canonical: "https://weatherhub.ru/gorod",
+    canonical: `${config.siteUrl}/gorod`,
   },
 };
 
 async function getCatalogCities(): Promise<City[]> {
   try {
     const cities = await prisma.city.findMany({
-      where: { isCurated: true },
+      where: { isCurated: true, country: "RU" },
       orderBy: [{ name: "asc" }],
     });
     if (cities.length > 0) return cities;
@@ -38,19 +39,19 @@ export default async function CityCatalogPage() {
 
   // Group cities alphabetically by first uppercase Cyrillic letter
   const grouped = new Map<string, City[]>();
-
-  for (const city of cities) {
-    const letter = city.name.charAt(0).toUpperCase();
-    if (!grouped.has(letter)) {
-      grouped.set(letter, []);
-    }
-    grouped.get(letter)!.push(city);
+  for (const c of cities) {
+    const letter = c.name.charAt(0).toUpperCase();
+    const list = grouped.get(letter) ?? [];
+    list.push(c);
+    grouped.set(letter, list);
   }
 
-  const alphabet = Array.from(grouped.keys()).sort((a, b) => a.localeCompare(b, "ru"));
+  const alphabet = Array.from(grouped.keys()).sort((a, b) =>
+    a.localeCompare(b, "ru"),
+  );
 
   return (
-    <PageShell favorites={favorites}>
+    <PageShell favorites={favorites} cityCount={cities.length}>
       <main className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6">
         {/* Header */}
         <section className="space-y-3 rounded-2xl bg-white/80 p-6 ring-1 ring-sky-100 shadow-sm backdrop-blur">

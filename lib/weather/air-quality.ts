@@ -60,17 +60,7 @@ export async function fetchAirQuality(
     ].join(","),
   );
 
-  const forecastUrl = new URL("https://api.open-meteo.com/v1/forecast");
-  forecastUrl.searchParams.set("latitude", String(latitude));
-  forecastUrl.searchParams.set("longitude", String(longitude));
-  forecastUrl.searchParams.set("daily", "uv_index_max");
-  forecastUrl.searchParams.set("forecast_days", "1");
-  forecastUrl.searchParams.set("timezone", "auto");
-
-  const [aqRes, uvRes] = await Promise.all([
-    fetch(aqUrl.toString(), { next: { revalidate: 1800 } }),
-    fetch(forecastUrl.toString(), { next: { revalidate: 1800 } }),
-  ]);
+  const aqRes = await fetch(aqUrl.toString(), { next: { revalidate: 1800 } });
 
   if (!aqRes.ok) {
     const err = new Error("Air quality fetch failed");
@@ -101,13 +91,6 @@ export async function fetchAirQuality(
     const err = new Error("Air quality data unavailable");
     reportError(err, { latitude, longitude });
     throw err;
-  }
-
-  let uvIndex: number | undefined;
-  if (uvRes.ok) {
-    const uv = (await uvRes.json()) as OpenMeteoUV;
-    const raw = uv.daily?.uv_index_max?.[0];
-    uvIndex = raw != null && Number.isFinite(Number(raw)) ? Number(raw) : undefined;
   }
 
   const hasPollen =
@@ -155,7 +138,7 @@ export async function fetchAirQuality(
       aq.current.european_aqi != null && Number.isFinite(Number(aq.current.european_aqi))
         ? Number(aq.current.european_aqi)
         : undefined,
-    uvIndex,
+    uvIndex: undefined,
     pollen,
   };
 }

@@ -3,6 +3,7 @@ import { CityWeatherView } from "@/components/CityWeatherView";
 import { resolveCity, listPopularCities } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { config } from "@/lib/config";
 
 type Props = { params: { slug: string } };
 
@@ -16,9 +17,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!city) return { title: ru.brand };
 
   const locative = getCityLocative(city.name);
-  const title = `Погода ${locative} на 3 дня — точный прогноз по дням | WeatherHub`;
-  const description = `Подробный прогноз погоды ${locative} на 3 дня: температура воздуха, осадки, динамика давления и ветра.`;
-  const url = `https://weatherhub.ru/pogoda/${city.slug}/3-dnya`;
+  const title = `Погода ${locative} на 3 дня — точный почасовой прогноз | WeatherHub`;
+  const description = `Подробный прогноз погоды ${locative} на 3 дня: температура воздуха по часам, вероятность осадков и ветер.`;
+  const url = `${config.siteUrl}/pogoda/${city.slug}/3-dnya`;
 
   return {
     title,

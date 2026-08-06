@@ -11,6 +11,9 @@ async function main() {
   }));
 
   for (const city of citiesToSeed) {
+    if (city.country !== "RU") {
+      throw new Error(`Seeding failed: city ${city.name} has non-RU country code '${city.country}'`);
+    }
     await prisma.city.upsert({
       where: { slug: city.slug },
       update: city,

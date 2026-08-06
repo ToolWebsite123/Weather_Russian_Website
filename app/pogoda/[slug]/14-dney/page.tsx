@@ -3,6 +3,7 @@ import { CityWeatherView } from "@/components/CityWeatherView";
 import { resolveCity, listPopularCities } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { config } from "@/lib/config";
 
 type Props = { params: { slug: string } };
 
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locative = getCityLocative(city.name);
   const title = `Погода ${locative} на 14 дней (на 2 недели) — точный прогноз | WeatherHub`;
   const description = `Долгосрочный прогноз погоды ${locative} на 14 дней (2 недели): температурные графики, осадки и ветер.`;
-  const url = `https://weatherhub.ru/pogoda/${city.slug}/14-dney`;
+  const url = `${config.siteUrl}/pogoda/${city.slug}/14-dney`;
 
   return {
     title,

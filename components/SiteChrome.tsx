@@ -53,8 +53,10 @@ function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
 
 export function SiteHeader({
   favorites = [],
+  cityCount = 272,
 }: {
   favorites?: { slug: string; name: string }[];
+  cityCount?: number;
 }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname() || "/";
@@ -66,7 +68,7 @@ export function SiteHeader({
 
   function handleSearchClick() {
     const pageSearchInput = document.querySelector<HTMLInputElement>(
-      `input[aria-label="${ru.searchPlaceholder}"], input[placeholder="${ru.searchPlaceholder}"]`
+      'input[placeholder*="Поиск по 272"], input[placeholder*="Поиск города"]',
     );
     if (pageSearchInput && !isSearchOpen) {
       pageSearchInput.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -75,6 +77,9 @@ export function SiteHeader({
       setIsSearchOpen((prev) => !prev);
     }
   }
+
+  const isCityPage = pathname.startsWith("/pogoda");
+  const anchorPrefix = isCityPage ? "" : `/pogoda/${currentCitySlug}`;
 
   const horizonTabs = [
     { id: "yesterday", label: "Вчера", href: `/pogoda/${currentCitySlug}?view=yesterday#hourly-forecast`, active: false },
@@ -86,13 +91,11 @@ export function SiteHeader({
     { id: "week", label: "Неделя", href: `/pogoda/${currentCitySlug}/7-dney`, active: subRoute === "7-dney" },
     { id: "10days", label: "10 дней", href: `/pogoda/${currentCitySlug}/10-dney`, active: subRoute === "10-dney" },
     { id: "2weeks", label: "2 недели", href: `/pogoda/${currentCitySlug}/14-dney`, active: subRoute === "14-dney" },
-    { id: "knowledge", label: "День знаний", href: `/pogoda/${currentCitySlug}#seasonal`, active: false },
-    { id: "month", label: "Месяц", href: `/pogoda/${currentCitySlug}/14-dney`, active: false },
-    { id: "radar", label: "Радар", href: "#weather-map", active: false },
-    { id: "pollen", label: "Пыльца", href: "#environmental-insights", active: false },
-    { id: "roads", label: "Дороги", href: "#road-conditions", active: false },
-    { id: "gm", label: "Г/м активность", href: "#geomagnetic", active: false },
-    { id: "archive", label: "Архив", href: "/articles", active: pathname.startsWith("/articles") },
+    { id: "radar", label: "Радар", href: `${anchorPrefix}#weather-map`, active: false },
+    { id: "pollen", label: "Пыльца", href: `${anchorPrefix}#environmental-insights`, active: false },
+    { id: "roads", label: "Дороги", href: `${anchorPrefix}#road-conditions`, active: false },
+    { id: "gm", label: "Г/м активность", href: `${anchorPrefix}#geomagnetic`, active: false },
+    { id: "archive", label: "Статьи", href: "/articles", active: pathname.startsWith("/articles") },
   ];
 
   function scrollNav(direction: "left" | "right") {
@@ -120,7 +123,7 @@ export function SiteHeader({
               href="/gorod"
               className="text-xs font-semibold uppercase tracking-wider text-sky-900 hover:text-sky-700 transition-colors whitespace-nowrap"
             >
-              Все 272 города
+              Все {cityCount} городов
             </Link>
             <Link
               href="/articles"
@@ -216,7 +219,7 @@ export function SiteHeader({
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({ cityCount = 272 }: { cityCount?: number }) {
   return (
     <footer className="relative z-10 border-t border-sky-200/40 py-8 text-center text-sm text-cloud-500 space-y-3">
       <nav className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-sky-900">
@@ -225,7 +228,7 @@ export function SiteFooter() {
         </Link>
         <span>·</span>
         <Link href="/gorod" className="hover:underline">
-          Каталог всех 272 городов
+          Каталог всех {cityCount} городов
         </Link>
         <span>·</span>
         <Link href="/articles" className="hover:underline">
@@ -264,9 +267,11 @@ export function SiteFooter() {
 export function PageShell({
   children,
   favorites,
+  cityCount = 272,
 }: {
   children: React.ReactNode;
   favorites?: { slug: string; name: string }[];
+  cityCount?: number;
 }) {
   return (
     <div className="relative min-h-screen">
@@ -274,9 +279,9 @@ export function PageShell({
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,theme(colors.sun.200)_0%,transparent_40%),radial-gradient(ellipse_at_90%_5%,theme(colors.sky.300)_0%,transparent_45%),linear-gradient(180deg,theme(colors.sky.50)_0%,theme(colors.sky.100)_50%,theme(colors.cloud.50)_100%)]"
       />
-      <SiteHeader favorites={favorites} />
+      <SiteHeader favorites={favorites} cityCount={cityCount} />
       <div className="relative z-10">{children}</div>
-      <SiteFooter />
+      <SiteFooter cityCount={cityCount} />
     </div>
   );
 }

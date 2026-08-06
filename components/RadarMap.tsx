@@ -23,7 +23,7 @@ const RADAR_HUBS = [
   { name: "Москва и Центр", slug: "moscow", lat: 55.7558, lon: 37.6173 },
   { name: "Санкт-Петербург", slug: "saint-petersburg", lat: 59.9343, lon: 30.3351 },
   { name: "Сочи и Юг", slug: "sochi", lat: 43.6028, lon: 39.7342 },
-  { name: "Екатеринбург и Урал", slug: "ekaterinburg", lat: 56.8389, lon: 60.6057 },
+  { name: "Екатеринбург и Урал", slug: "yekaterinburg", lat: 56.8389, lon: 60.6057 },
 ];
 
 function findNearestHub(lat: number, lon: number) {

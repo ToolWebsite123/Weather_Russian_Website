@@ -3,6 +3,7 @@ import { CityWeatherView } from "@/components/CityWeatherView";
 import { resolveCity, listPopularCities } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { config } from "@/lib/config";
 
 type Props = { params: { slug: string } };
 
@@ -17,8 +18,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const locative = getCityLocative(city.name);
   const title = `Погода ${locative} на выходные — точный прогноз на субботу и воскресенье | WeatherHub`;
-  const description = `Подробный прогноз погоды ${locative} на ближайшие выходные (суббота и воскресенье): температура, вероятность осадков, скорость ветра и УФ-индекс.`;
-  const url = `https://weatherhub.ru/pogoda/${city.slug}/vykhodnye`;
+  const description = `Прогноз погоды ${locative} на ближайшие выходные (суббота и воскресенье): температура, осадки и ветер.`;
+  const url = `${config.siteUrl}/pogoda/${city.slug}/vykhodnye`;
 
   return {
     title,

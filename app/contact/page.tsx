@@ -3,12 +3,14 @@ import Link from "next/link";
 import { PageShell } from "@/components/SiteChrome";
 import { getFavoritesForSession } from "@/lib/weather/city-page";
 
+import { config } from "@/lib/config";
+
 export const metadata: Metadata = {
   title: "Контакты и обратная связь | WeatherHub",
   description:
     "Контакты и информация о метеорологическом проекте WeatherHub.",
   alternates: {
-    canonical: "https://weatherhub.ru/contact",
+    canonical: `${config.siteUrl}/contact`,
   },
 };
 
@@ -33,7 +35,7 @@ export default async function ContactPage() {
 
           <div className="space-y-4 text-sm leading-relaxed text-cloud-700">
             <p>
-              <strong>WeatherHub</strong> — некоммерческий веб-сервис погоды, создан для быстрого и удобного просмотра метеорологических прогнозов для 272 городов России.
+              <strong>WeatherHub</strong> — некоммерческий веб-сервис погоды, создан для быстрого и удобного просмотра метеорологических прогнозов для городов России.
             </p>
 
             <div className="rounded-xl bg-sky-50/70 p-4 ring-1 ring-sky-100 space-y-2">

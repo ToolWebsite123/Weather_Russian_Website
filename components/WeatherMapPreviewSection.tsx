@@ -20,7 +20,7 @@ const REGIONAL_HUBS = [
   { id: "moscow", name: "Москва и Центр", slug: "moscow", lat: 55.7558, lon: 37.6173 },
   { id: "spb", name: "Санкт-Петербург", slug: "saint-petersburg", lat: 59.9343, lon: 30.3351 },
   { id: "sochi", name: "Сочи и Юг", slug: "sochi", lat: 43.6028, lon: 39.7342 },
-  { id: "ekaterinburg", name: "Екатеринбург и Урал", slug: "ekaterinburg", lat: 56.8389, lon: 60.6057 },
+  { id: "ekaterinburg", name: "Екатеринбург и Урал", slug: "yekaterinburg", lat: 56.8389, lon: 60.6057 },
 ];
 
 export function WeatherMapPreviewSection() {

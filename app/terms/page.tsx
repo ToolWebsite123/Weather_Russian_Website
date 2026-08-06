@@ -3,12 +3,14 @@ import Link from "next/link";
 import { PageShell } from "@/components/SiteChrome";
 import { getFavoritesForSession } from "@/lib/weather/city-page";
 
+import { config } from "@/lib/config";
+
 export const metadata: Metadata = {
   title: "Пользовательское соглашение | WeatherHub",
   description:
     "Условия использования сервиса погоды WeatherHub: правила пользования, отказы от ответственности и источники данных.",
   alternates: {
-    canonical: "https://weatherhub.ru/terms",
+    canonical: `${config.siteUrl}/terms`,
   },
 };
 

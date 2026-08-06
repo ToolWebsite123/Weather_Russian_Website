@@ -43,6 +43,7 @@ export async function CityWeatherView({
   showHourly = true,
   tomorrowOnly = false,
   weekendOnly = false,
+  isYesterday = false,
 }: {
   slug: string;
   active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14";
@@ -50,6 +51,7 @@ export async function CityWeatherView({
   showHourly?: boolean;
   tomorrowOnly?: boolean;
   weekendOnly?: boolean;
+  isYesterday?: boolean;
 }) {
   let data;
   try {
@@ -71,8 +73,12 @@ export async function CityWeatherView({
     Promise.resolve(getLatestArticles(2)),
   ]);
 
+  const hasYesterdayData = isYesterday && weather.yesterday != null;
+
   let daily = weather.daily;
-  if (tomorrowOnly) {
+  if (hasYesterdayData && weather.yesterday) {
+    daily = [weather.yesterday.daily];
+  } else if (tomorrowOnly) {
     daily = weather.daily.slice(1, 2);
   } else if (weekendOnly) {
     daily = getUpcomingWeekendDays(weather.daily);
@@ -80,29 +86,41 @@ export async function CityWeatherView({
     daily = weather.daily.slice(0, dailyLimit);
   }
 
-  const focusDate = tomorrowOnly
-    ? weather.daily[1]?.date
-    : weekendOnly
-      ? daily[0]?.date
-      : weather.daily[0]?.date;
+  const focusDate = hasYesterdayData && weather.yesterday
+    ? weather.yesterday.daily.date
+    : tomorrowOnly
+      ? weather.daily[1]?.date
+      : weekendOnly
+        ? daily[0]?.date
+        : weather.daily[0]?.date;
 
-  const hours = tomorrowOnly
-    ? weather.hourly.filter((h) => {
-      const day = weather.daily[1]?.date;
-      return day && h.time.startsWith(day);
-    })
-    : weekendOnly
+  const hours = hasYesterdayData && weather.yesterday
+    ? weather.yesterday.hourly
+    : tomorrowOnly
       ? weather.hourly.filter((h) => {
-        const dates = daily.map((d) => d.date);
-        return dates.some((date) => h.time.startsWith(date));
+        const day = weather.daily[1]?.date;
+        return day && h.time.startsWith(day);
       })
-      : weather.hourly;
+      : weekendOnly
+        ? weather.hourly.filter((h) => {
+          const dates = daily.map((d) => d.date);
+          return dates.some((date) => h.time.startsWith(date));
+        })
+        : weather.hourly;
 
   return (
     <PageShell favorites={favorites}>
       <RememberLastCity slug={city.slug} />
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-4 sm:space-y-8 sm:py-8 sm:px-6">
         <AlertBanner alerts={alerts} />
+
+        {hasYesterdayData && weather.yesterday && (
+          <div className="rounded-2xl bg-sky-50 border border-sky-200 p-4 text-sky-950 font-medium text-sm flex items-center justify-between gap-3">
+            <span>
+              🕒 Просмотр архивных метеонаблюдений <strong>за вчера ({weather.yesterday.daily.date})</strong> для {city.name}.
+            </span>
+          </div>
+        )}
 
         <div className="flex items-center justify-end gap-2 animate-fade-in-up stagger-1 motion-reduce:animate-none">
           <NotificationPrompt />
@@ -159,7 +177,7 @@ export async function CityWeatherView({
 
         {aqi && (
           <div className="animate-fade-in-up stagger-7 motion-reduce:animate-none">
-            <AirQualityBlock aqi={aqi} />
+            <AirQualityBlock aqi={aqi} uvIndex={weather.current.uvIndex} />
           </div>
         )}
 
