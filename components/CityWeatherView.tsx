@@ -3,7 +3,6 @@ import {
   CurrentWeatherCard,
   DailyForecast,
   DayPartsGrid,
-  ForecastTabs,
   HourlyForecast,
   NearbyCities,
   WeatherMap,
@@ -105,14 +104,9 @@ export async function CityWeatherView({
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-4 sm:space-y-8 sm:py-8 sm:px-6">
         <AlertBanner alerts={alerts} />
 
-        <div className="flex flex-wrap items-start justify-between gap-3 animate-fade-in-up stagger-1 motion-reduce:animate-none">
-          <div className="min-w-0 flex-1">
-            <ForecastTabs slug={city.slug} active={active} />
-          </div>
-          <div className="flex items-center gap-2">
-            <NotificationPrompt />
-            <FavoriteButton cityId={city.id} initialFavorited={favorited} />
-          </div>
+        <div className="flex items-center justify-end gap-2 animate-fade-in-up stagger-1 motion-reduce:animate-none">
+          <NotificationPrompt />
+          <FavoriteButton cityId={city.id} initialFavorited={favorited} />
         </div>
 
         <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">

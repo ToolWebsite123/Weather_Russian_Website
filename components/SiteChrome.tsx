@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ru } from "@/lib/i18n/ru";
 import { CitySearch } from "@/components/CitySearch";
 
@@ -56,6 +57,12 @@ export function SiteHeader({
   favorites?: { slug: string; name: string }[];
 }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const pathname = usePathname() || "/";
+
+  // Parse current city slug and sub-route dynamically from pathname
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const currentCitySlug = pathSegments[0] === "pogoda" && pathSegments[1] ? pathSegments[1] : "moscow";
+  const subRoute = pathSegments[0] === "pogoda" ? (pathSegments[2] || "") : "";
 
   function handleSearchClick() {
     const pageSearchInput = document.querySelector<HTMLInputElement>(
@@ -69,9 +76,37 @@ export function SiteHeader({
     }
   }
 
+  const horizonTabs = [
+    { id: "yesterday", label: "Вчера", href: `/pogoda/${currentCitySlug}?view=yesterday#hourly-forecast`, active: false },
+    { id: "now", label: "Сейчас", href: `/pogoda/${currentCitySlug}`, active: subRoute === "" && (pathname.startsWith("/pogoda") || pathname === "/") },
+    { id: "today", label: "Сегодня", href: `/pogoda/${currentCitySlug}`, active: false },
+    { id: "tomorrow", label: "Завтра", href: `/pogoda/${currentCitySlug}/zavtra`, active: subRoute === "zavtra" },
+    { id: "3days", label: "3 дня", href: `/pogoda/${currentCitySlug}/3-dnya`, active: subRoute === "3-dnya" },
+    { id: "weekend", label: "Выходные", href: `/pogoda/${currentCitySlug}/vykhodnye`, active: subRoute === "vykhodnye" },
+    { id: "week", label: "Неделя", href: `/pogoda/${currentCitySlug}/7-dney`, active: subRoute === "7-dney" },
+    { id: "10days", label: "10 дней", href: `/pogoda/${currentCitySlug}/10-dney`, active: subRoute === "10-dney" },
+    { id: "2weeks", label: "2 недели", href: `/pogoda/${currentCitySlug}/14-dney`, active: subRoute === "14-dney" },
+    { id: "knowledge", label: "День знаний", href: `/pogoda/${currentCitySlug}#seasonal`, active: false },
+    { id: "month", label: "Месяц", href: `/pogoda/${currentCitySlug}/14-dney`, active: false },
+    { id: "radar", label: "Радар", href: "#weather-map", active: false },
+    { id: "pollen", label: "Пыльца", href: "#environmental-insights", active: false },
+    { id: "roads", label: "Дороги", href: "#road-conditions", active: false },
+    { id: "gm", label: "Г/м активность", href: "#geomagnetic", active: false },
+    { id: "archive", label: "Архив", href: "/articles", active: pathname.startsWith("/articles") },
+  ];
+
+  function scrollNav(direction: "left" | "right") {
+    const container = document.getElementById("horizon-nav-container");
+    if (container) {
+      const amount = direction === "left" ? -240 : 240;
+      container.scrollBy({ left: amount, behavior: "smooth" });
+    }
+  }
+
   return (
-    <header className="sticky top-0 z-30 border-b border-sky-200/50 bg-white/90 backdrop-blur-md transition-all">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+    <header className="sticky top-0 z-30 border-b border-sky-200/60 bg-white/95 backdrop-blur-md transition-all shadow-xs">
+      {/* Top Header Bar */}
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3 sm:gap-6 shrink-0">
           <Link
             href="/"
@@ -80,33 +115,33 @@ export function SiteHeader({
             <SunCloudLogo />
             <span>{ru.brand}</span>
           </Link>
-          <nav className="flex items-center gap-3 sm:gap-4">
+          <nav className="hidden md:flex items-center gap-4">
             <Link
               href="/gorod"
               className="text-xs font-semibold uppercase tracking-wider text-sky-900 hover:text-sky-700 transition-colors whitespace-nowrap"
             >
-              Все города
+              Все 272 города
             </Link>
             <Link
               href="/articles"
-              className="text-xs font-semibold uppercase tracking-wider text-cloud-600 hover:text-sky-800 transition-colors hidden sm:inline-block whitespace-nowrap"
+              className="text-xs font-semibold uppercase tracking-wider text-cloud-600 hover:text-sky-800 transition-colors whitespace-nowrap"
             >
               Статьи
             </Link>
           </nav>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           {favorites.length > 0 && (
-            <nav className="hidden items-center gap-3 lg:flex" aria-label={ru.favorites}>
-              <span className="text-xs uppercase tracking-wide text-cloud-500">
-                {ru.favorites}
+            <nav className="hidden items-center gap-2 lg:flex" aria-label={ru.favorites}>
+              <span className="text-xs uppercase tracking-wide text-cloud-500 font-medium">
+                {ru.favorites}:
               </span>
               {favorites.map((f) => (
                 <Link
                   key={f.slug}
                   href={`/pogoda/${f.slug}`}
-                  className="text-sm text-sky-800 hover:text-sun-600 truncate max-w-[100px]"
+                  className="rounded-lg bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800 hover:bg-sky-100 hover:text-sky-950 transition-colors truncate max-w-[110px]"
                 >
                   {f.name}
                 </Link>
@@ -117,18 +152,62 @@ export function SiteHeader({
           <button
             type="button"
             onClick={handleSearchClick}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-200/70 bg-sky-50/80 text-sky-900 shadow-sm transition hover:bg-sky-100 hover:text-sky-950 focus:outline-none focus:ring-2 focus:ring-sky-400"
+            className="flex h-9 items-center gap-2 rounded-xl border border-sky-200/80 bg-sky-50/80 px-3 text-xs font-semibold text-sky-900 shadow-2xs transition hover:bg-sky-100 hover:text-sky-950 focus:outline-none focus:ring-2 focus:ring-sky-400"
             aria-label="Поиск города"
             title="Поиск города"
           >
-            <SearchIcon className="h-4 w-4" />
+            <SearchIcon className="h-4 w-4 text-sky-700" />
+            <span className="hidden sm:inline">Поиск города...</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Sub-Header Horizon Quick Navigation Strip with Scroll Arrows */}
+      <div className="relative border-t border-sky-200/80 bg-sky-600 px-2 py-1.5 sm:px-4 shadow-inner">
+        <div className="mx-auto flex max-w-7xl items-center gap-1">
+          <button
+            type="button"
+            onClick={() => scrollNav("left")}
+            className="hidden sm:flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sky-700/80 text-white hover:bg-sky-800 transition-colors"
+            aria-label="Скролл влево"
+          >
+            ‹
+          </button>
+
+          <div
+            id="horizon-nav-container"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            className="flex flex-1 items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth text-xs text-white"
+          >
+            {horizonTabs.map((tab) => (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                className={`shrink-0 rounded-md px-3 py-1.5 font-medium transition-all whitespace-nowrap ${
+                  tab.active
+                    ? "bg-sky-100 text-sky-950 font-bold shadow-xs"
+                    : "text-sky-50 hover:bg-sky-500/80 hover:text-white"
+                }`}
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => scrollNav("right")}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sky-500 text-white hover:bg-sky-400 transition-colors shadow-xs font-bold"
+            aria-label="Скролл вправо"
+          >
+            ›
           </button>
         </div>
       </div>
 
       {isSearchOpen && (
         <div className="border-t border-sky-100/80 bg-white/95 px-4 py-3 shadow-inner sm:px-6">
-          <div className="mx-auto max-w-5xl flex justify-center">
+          <div className="mx-auto max-w-4xl flex justify-center">
             <CitySearch />
           </div>
         </div>
