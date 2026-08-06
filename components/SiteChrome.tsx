@@ -10,7 +10,7 @@ export function SiteHeader({
     <header className="relative z-10 border-b border-sky-200/50 bg-white/40 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-6">
-          <Link href="/" className="font-serif text-2xl font-semibold text-sky-950">
+          <Link href="/" className="font-serif text-h2 font-semibold text-sky-950">
             {ru.brand}
           </Link>
           <nav className="flex items-center gap-4">

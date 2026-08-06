@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <PageShell>
       <main className="mx-auto max-w-lg px-4 py-24 text-center">
-        <h1 className="font-serif text-3xl text-sky-950">Город не найден</h1>
+        <h1 className="font-serif text-h1 text-sky-950">Город не найден</h1>
         <p className="mt-3 text-cloud-600">
           Попробуйте другой запрос или вернитесь на главную.
         </p>

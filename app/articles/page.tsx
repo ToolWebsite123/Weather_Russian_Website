@@ -25,7 +25,7 @@ export default async function ArticlesIndexPage() {
         </nav>
 
         <div>
-          <h1 className="font-serif text-2xl sm:text-3xl text-sky-950">
+          <h1 className="font-serif text-h1 font-bold text-sky-950">
             Статьи о погоде, климате и здоровье
           </h1>
           <p className="mt-2 text-sm sm:text-base text-cloud-600">
@@ -54,7 +54,7 @@ export default async function ArticlesIndexPage() {
                   </time>
                 </div>
 
-                <h2 className="text-lg font-semibold text-cloud-900 group-hover:text-sky-600 transition-colors">
+                <h2 className="font-serif text-h2 font-semibold text-cloud-900 group-hover:text-sky-600 transition-colors">
                   {article.title}
                 </h2>
 

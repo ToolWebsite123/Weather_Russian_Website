@@ -55,7 +55,7 @@ export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
   return (
     <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-serif text-xl font-semibold text-sky-950">
+        <h2 className="font-serif text-h2 font-semibold text-sky-950">
           Качество воздуха
         </h2>
         {aqi.uvIndex != null && (
@@ -122,7 +122,7 @@ export function AirQualityBlock({ aqi }: { aqi: AirQuality }) {
 
       {pollenItems.length > 0 && (
         <div className="pt-3 border-t border-sky-100/80">
-          <h3 className="text-xs uppercase tracking-wide text-cloud-500 font-semibold mb-2">
+          <h3 className="text-h3 font-semibold text-cloud-900 mb-2">
             Пыльца и аллергены
           </h3>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

@@ -12,7 +12,7 @@ export function RoadConditionCard({ current }: { current: CurrentWeather }) {
             {road.icon}
           </span>
           <div>
-            <h3 className="text-sm font-semibold text-cloud-900">
+            <h3 className="text-h3 font-semibold text-cloud-900">
               Состояние дорог
             </h3>
             <p className="text-xs text-cloud-500">{road.description}</p>

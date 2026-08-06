@@ -89,7 +89,7 @@ export async function HistoricalComparisonCard({
       {/* Section 1: Past Years Comparison */}
       {comparisons.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-cloud-500">
+          <h3 className="text-h3 font-semibold text-cloud-900">
             В этот день в прошлые годы
           </h3>
           <div
@@ -129,7 +129,7 @@ export async function HistoricalComparisonCard({
       {/* Section 2: Climate Normal & Anomaly */}
       <div className="space-y-3 border-t border-sky-100/80 pt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-cloud-500">
+          <h3 className="text-h3 font-semibold text-cloud-900">
             Норма для {monthGenitive}
           </h3>
           <div className="flex items-center gap-2">

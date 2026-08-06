@@ -25,7 +25,7 @@ export function PopularCitiesGrid({ items }: { items: PopularCityItem[] }) {
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-xs uppercase tracking-wide text-cloud-500 font-semibold sm:text-sm">
+        <h2 className="font-serif text-h2 font-semibold text-cloud-900">
           Популярные города
         </h2>
         <Link

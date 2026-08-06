@@ -60,7 +60,7 @@ export default async function CityCatalogPage() {
             <span>/</span>
             <span className="text-sky-950 font-medium">Каталог городов</span>
           </nav>
-          <h1 className="font-serif text-2xl font-bold text-sky-950 sm:text-3xl">
+          <h1 className="font-serif text-h1 font-bold text-sky-950">
             Погода во всех городах России
           </h1>
           <p className="text-sm text-cloud-600 max-w-2xl leading-relaxed">

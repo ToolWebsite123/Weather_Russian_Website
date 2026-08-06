@@ -44,7 +44,7 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
             🧲
           </span>
           <div>
-            <h3 className="text-base font-semibold text-cloud-900">
+            <h3 className="text-h3 font-semibold text-cloud-900">
               Геомагнитная активность
             </h3>
             <p className="text-xs text-cloud-500">Данные NOAA (индекс Kp)</p>

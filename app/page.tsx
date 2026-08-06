@@ -61,7 +61,7 @@ export default async function Home() {
         )}
 
         <section className="rounded-2xl bg-white/70 p-5 ring-1 ring-sky-100 backdrop-blur sm:p-6">
-          <h2 className="mb-3 text-xs uppercase tracking-wide text-cloud-500 font-semibold sm:text-sm">
+          <h2 className="mb-3 font-serif text-h2 font-semibold text-cloud-900">
             Выбрать другой город
           </h2>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

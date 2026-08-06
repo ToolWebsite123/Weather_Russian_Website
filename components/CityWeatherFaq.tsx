@@ -96,7 +96,7 @@ export function CityWeatherFaq({ city, weather }: Props) {
 
       {/* Editorial Overview for SEO */}
       <div className="rounded-2xl bg-white/80 p-5 ring-1 ring-sky-100 backdrop-blur sm:p-6">
-        <h2 className="font-serif text-xl font-semibold text-sky-950 sm:text-2xl">
+        <h2 className="font-serif text-h2 font-semibold text-sky-950">
           Особенности погоды и климата {locative}
         </h2>
         <div className="mt-3 space-y-3 text-sm leading-relaxed text-cloud-700">
@@ -113,7 +113,7 @@ export function CityWeatherFaq({ city, weather }: Props) {
 
       {/* FAQ Accordion Section */}
       <div className="rounded-2xl bg-white/80 p-5 ring-1 ring-sky-100 backdrop-blur sm:p-6">
-        <h2 className="font-serif text-xl font-semibold text-sky-950 sm:text-2xl">
+        <h2 className="font-serif text-h2 font-semibold text-sky-950">
           Частые вопросы о погоде {locative}
         </h2>
         <div className="mt-4 divide-y divide-sky-100">

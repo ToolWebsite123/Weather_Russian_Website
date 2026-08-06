@@ -68,6 +68,31 @@ const config: Config = {
         sans: ["var(--font-outfit)", "sans-serif"],
         serif: ["var(--font-source-serif)", "serif"],
       },
+      /**
+       * Explicit Typography Scale System
+       * ----------------------------------
+       * Font Family Rules:
+       * - Serif (`font-serif` / Source Serif 4): Reserved for page titles (`h1`) and major section titles (`h2`) for editorial warmth.
+       * - Sans (`font-sans` / Outfit): Applied to everything else: `display` numbers, `h3` card titles, `body` text, `body-sm` metadata/labels, and `caption` micro-text.
+       *
+       * Named Scale Hierarchy:
+       * - display: 4rem (64px) / line-height 1 / letter-spacing -0.02em / bold (700)
+       * - h1: 2.25rem (36px) / line-height 1.2 / letter-spacing -0.015em / bold (700)
+       * - h2: 1.375rem (22px) / line-height 1.35 / letter-spacing -0.01em / semi-bold (600)
+       * - h3: 1.125rem (18px) / line-height 1.4 / semi-bold (600)
+       * - body: 0.9375rem (15px) / line-height 1.5 / regular (400)
+       * - body-sm: 0.8125rem (13px) / line-height 1.4 / regular (400)
+       * - caption: 0.6875rem (11px) / line-height 1.3 / regular (400)
+       */
+      fontSize: {
+        display: ["4rem", { lineHeight: "1", letterSpacing: "-0.02em", fontWeight: "700" }],
+        h1: ["2.25rem", { lineHeight: "1.2", letterSpacing: "-0.015em", fontWeight: "700" }],
+        h2: ["1.375rem", { lineHeight: "1.35", letterSpacing: "-0.01em", fontWeight: "600" }],
+        h3: ["1.125rem", { lineHeight: "1.4", fontWeight: "600" }],
+        body: ["0.9375rem", { lineHeight: "1.5", fontWeight: "400" }],
+        "body-sm": ["0.8125rem", { lineHeight: "1.4", fontWeight: "400" }],
+        caption: ["0.6875rem", { lineHeight: "1.3", fontWeight: "400" }],
+      },
     },
   },
   plugins: [],

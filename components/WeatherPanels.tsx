@@ -101,7 +101,7 @@ export function CurrentWeatherCard({
       <p className="text-xs uppercase tracking-wide text-cloud-500 sm:text-sm">
         {ru.current}
       </p>
-      <h1 className="mt-1 font-serif text-2xl font-semibold leading-tight text-sky-950 sm:text-4xl">
+      <h1 className="mt-1 font-serif text-h1 font-semibold leading-tight text-sky-950">
         {ru.forecastFor(cityName)}
       </h1>
       <div className="mt-6 flex flex-wrap items-center gap-4 sm:gap-8">
@@ -113,7 +113,7 @@ export function CurrentWeatherCard({
         />
         <div>
           <div className="flex flex-wrap items-baseline gap-3">
-            <p className="text-6xl font-semibold tabular-nums leading-none text-sky-950 sm:text-7xl">
+            <p className="text-display font-semibold tabular-nums leading-none text-sky-950">
               {formatTemp(current.temperature)}
             </p>
             {hourly && hourly.length > 0 && (
@@ -203,7 +203,7 @@ export function DayPartsGrid({
 
   return (
     <section>
-      <h2 className="mb-3 font-serif text-xl text-sky-950">По частям суток</h2>
+      <h2 className="mb-3 font-serif text-h2 text-sky-950">По частям суток</h2>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {parts.map((p) => (
           <div
@@ -347,7 +347,7 @@ export function HourlyForecast({ hours }: { hours: HourlyPoint[] }) {
   const next = hours.slice(0, 24);
   return (
     <section>
-      <h2 className="mb-3 font-serif text-xl text-sky-950">{ru.hourly}</h2>
+      <h2 className="mb-3 font-serif text-h2 text-sky-950">{ru.hourly}</h2>
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
         {next.map((h) => {
           const label = new Date(h.time).toLocaleTimeString("ru-RU", {
@@ -388,7 +388,7 @@ export function DailyForecast({
 
   return (
     <section>
-      <h2 className="mb-3 font-serif text-xl text-sky-950">{ru.daily}</h2>
+      <h2 className="mb-3 font-serif text-h2 text-sky-950">{ru.daily}</h2>
       <ul className="divide-y divide-sky-100 overflow-hidden rounded-xl bg-white/80 ring-1 ring-sky-100">
         {list.map((d) => {
           const dateLabel = new Date(d.date + "T12:00:00").toLocaleDateString(
@@ -519,7 +519,7 @@ export function NearbyCities({
   if (cities.length === 0) return null;
   return (
     <section>
-      <h2 className="mb-3 font-serif text-xl text-sky-950">Рядом</h2>
+      <h2 className="mb-3 font-serif text-h2 text-sky-950">Рядом</h2>
       <div className="flex flex-wrap gap-2">
         {cities.map((c) => (
           <Link

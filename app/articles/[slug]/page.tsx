@@ -73,7 +73,7 @@ function ArticleBodyRenderer({ content }: { content: string }) {
     if (trimmed.startsWith("## ")) {
       flushList();
       elements.push(
-        <h2 key={index} className="mt-8 mb-4 font-serif text-xl sm:text-2xl text-sky-950 font-semibold">
+        <h2 key={index} className="mt-8 mb-4 font-serif text-h2 text-sky-950 font-semibold">
           {trimmed.replace("## ", "")}
         </h2>
       );
@@ -83,7 +83,7 @@ function ArticleBodyRenderer({ content }: { content: string }) {
     if (trimmed.startsWith("### ")) {
       flushList();
       elements.push(
-        <h3 key={index} className="mt-6 mb-3 text-lg font-semibold text-cloud-900">
+        <h3 key={index} className="mt-6 mb-3 text-h3 font-semibold text-cloud-900">
           {trimmed.replace("### ", "")}
         </h3>
       );
@@ -155,7 +155,7 @@ export default async function ArticleDetailPage({ params }: Props) {
               </time>
             </div>
 
-            <h1 className="font-serif text-2xl sm:text-3xl sm:leading-tight text-sky-950">
+            <h1 className="font-serif text-h1 font-bold text-sky-950">
               {article.title}
             </h1>
 

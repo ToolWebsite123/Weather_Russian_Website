@@ -98,7 +98,7 @@ export default function RadarMap({
   return (
     <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-6 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-serif text-xl font-semibold text-sky-950">
+        <h2 className="font-serif text-h2 font-semibold text-sky-950">
           Карта осадков и радар
         </h2>
         <span className="text-xs text-cloud-500">

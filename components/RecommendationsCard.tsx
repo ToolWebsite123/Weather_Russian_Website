@@ -28,13 +28,13 @@ export function RecommendationsCard({
     <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-6 space-y-5">
       {/* Section 1: Clothing Recommendation */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-cloud-500">
+        <h3 className="text-h3 font-semibold text-cloud-900">
           Что надеть
         </h3>
 
         <div className="flex items-center gap-2">
           <span className="text-2xl">{clothing.icon}</span>
-          <h2 className="font-serif text-lg font-semibold text-sky-950 leading-snug">
+          <h2 className="font-serif text-h2 font-semibold text-sky-950 leading-snug">
             {clothing.headline}
           </h2>
         </div>
@@ -60,7 +60,7 @@ export function RecommendationsCard({
       {/* Section 2: Outdoor Activity Index */}
       <div className="border-t border-sky-100/80 pt-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-cloud-500">
+          <h3 className="text-h3 font-semibold text-cloud-900">
             Активность на улице
           </h3>
           <span

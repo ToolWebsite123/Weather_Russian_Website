@@ -65,7 +65,7 @@ export function AstronomyCard({
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {/* Left Column — Sun & Daylight */}
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-cloud-500">
+          <h3 className="text-h3 font-semibold text-cloud-900">
             Солнце и световой день
           </h3>
 
@@ -121,7 +121,7 @@ export function AstronomyCard({
 
         {/* Right Column — Moon & Phases */}
         <div className="space-y-3 border-t border-sky-100/80 pt-4 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-6">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-cloud-500">
+          <h3 className="text-h3 font-semibold text-cloud-900">
             Луна и фазы
           </h3>
 

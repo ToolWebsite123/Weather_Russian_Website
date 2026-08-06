@@ -20,7 +20,7 @@ export default function RootError({
         <div className="w-16 h-16 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
           ⚠️
         </div>
-        <h2 className="text-xl font-bold mb-2">Произошла ошибка</h2>
+        <h2 className="font-serif text-h2 font-bold mb-2">Произошла ошибка</h2>
         <p className="text-slate-400 text-sm mb-6">
           Не удалось загрузить данные погоды. Пожалуйста, попробуйте обновить страницу.
         </p>

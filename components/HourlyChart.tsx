@@ -91,7 +91,7 @@ export function HourlyChart({ hours }: { hours: HourlyPoint[] }) {
   return (
     <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-serif text-xl text-sky-950">
+        <h2 className="font-serif text-h2 font-semibold text-sky-950">
           График на 24 часа
         </h2>
         <div className="flex flex-wrap items-center gap-3 text-xs text-cloud-600">
