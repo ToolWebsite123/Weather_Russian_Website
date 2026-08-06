@@ -4,7 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ru } from "@/lib/i18n/ru";
 
-export function UseMyLocation() {
+export function UseMyLocation({
+  buttonText,
+  className,
+}: {
+  buttonText?: string;
+  className?: string;
+} = {}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -40,9 +46,12 @@ export function UseMyLocation() {
         type="button"
         onClick={locate}
         disabled={pending}
-        className="rounded-xl border border-sky-300 bg-white/80 px-4 py-2.5 text-sm font-medium text-sky-800 transition hover:bg-sky-50 disabled:opacity-60"
+        className={
+          className ||
+          "rounded-xl border border-sky-300 bg-white/80 px-4 py-2.5 text-sm font-medium text-sky-800 transition hover:bg-sky-50 disabled:opacity-60"
+        }
       >
-        {pending ? ru.locating : ru.useMyLocation}
+        {pending ? ru.locating : buttonText || ru.useMyLocation}
       </button>
       {error && <p className="mt-2 text-sm text-sun-700">{error}</p>}
     </div>

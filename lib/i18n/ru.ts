@@ -42,6 +42,9 @@ export const ru = {
   metaDescription: (city: string) =>
     `Точный прогноз погоды ${getCityLocative(city)} на сегодня и 14 дней: температура сейчас, по часам, влажность, давление и ветер.`,
   daylightDuration: "Долгота дня",
+  geoFallbackBanner: "Не удалось определить ваше местоположение — воспользуйтесь поиском",
+  preciseLocationBanner: "Хотите более точный прогноз?",
+  preciseLocationAction: "Использовать точное местоположение",
 } as const;
 
 
