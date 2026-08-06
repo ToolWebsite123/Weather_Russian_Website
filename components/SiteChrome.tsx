@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ru } from "@/lib/i18n/ru";
 import { CitySearch } from "@/components/CitySearch";
+import { AutoLocationDetector } from "@/components/AutoLocationDetector";
 
 function SunCloudLogo() {
   return (
@@ -261,7 +262,6 @@ export function SiteFooter() {
     </footer>
   );
 }
-
 export function PageShell({
   children,
   favorites,
@@ -271,6 +271,7 @@ export function PageShell({
 }) {
   return (
     <div className="relative min-h-screen">
+      <AutoLocationDetector />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,theme(colors.sun.200)_0%,transparent_40%),radial-gradient(ellipse_at_90%_5%,theme(colors.sky.300)_0%,transparent_45%),linear-gradient(180deg,theme(colors.sky.50)_0%,theme(colors.sky.100)_50%,theme(colors.cloud.50)_100%)]"

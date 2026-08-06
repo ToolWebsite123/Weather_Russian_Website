@@ -109,55 +109,62 @@ export function CurrentWeatherCard({
   })();
 
   return (
-    <section className="rounded-2xl bg-white/90 p-4 ring-1 ring-sky-200/80 shadow-md shadow-sky-900/10 backdrop-blur sm:p-6">
-      <p className="text-xs uppercase tracking-wide text-cloud-500 sm:text-sm">
-        {ru.current}
-      </p>
-      <h1 className="mt-1 font-serif text-h1 font-semibold leading-tight text-sky-950">
+    <section className="rounded-3xl bg-white/95 p-6 sm:p-8 border border-sky-200/90 shadow-xl shadow-sky-900/10 backdrop-blur-md ring-1 ring-white/80 transition-all">
+      <div className="flex items-center justify-between gap-2 border-b border-sky-100/90 pb-3">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-100/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-sky-900">
+          <span className="h-2 w-2 rounded-full bg-sky-600 animate-pulse" />
+          {ru.current}
+        </span>
+        {today && (
+          <span className="text-xs font-semibold text-cloud-600 tabular-nums">
+            Макс: <span className="text-sky-950 font-bold">{formatTemp(today.tempMax)}</span> · Мин: <span className="text-sky-950 font-bold">{formatTemp(today.tempMin)}</span>
+          </span>
+        )}
+      </div>
+
+      <h1 className="mt-4 font-serif text-h1 font-bold leading-tight text-sky-950">
         {ru.forecastFor(cityName)}
       </h1>
-      <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-6">
-        <WeatherIcon
-          code={current.weatherCode}
-          isDay={current.isDay}
-          size={72}
-          className="shrink-0"
-        />
-        <div>
-          <div className="flex flex-wrap items-baseline gap-3">
-            <p
-              key={current.temperature}
-              className="text-display font-semibold tabular-nums leading-none text-sky-950 animate-temp-settle motion-reduce:animate-none"
-            >
-              {formatTemp(current.temperature)}
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-6">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-8">
+          <WeatherIcon
+            code={current.weatherCode}
+            isDay={current.isDay}
+            size={96}
+            className="shrink-0 transition-transform hover:scale-105"
+          />
+          <div>
+            <div className="flex flex-wrap items-baseline gap-4">
+              <p
+                key={current.temperature}
+                className="text-6xl sm:text-7xl lg:text-[5.5rem] font-black tabular-nums leading-none tracking-tighter text-sky-950 animate-temp-settle motion-reduce:animate-none drop-shadow-2xs"
+              >
+                {formatTemp(current.temperature)}
+              </p>
+              {hourly && hourly.length > 0 && (
+                <TemperatureSparkline
+                  hourly={hourly}
+                  currentTime={current.time}
+                  width={110}
+                  height={32}
+                  className="self-center"
+                />
+              )}
+            </div>
+            <p className="mt-2 text-lg font-semibold text-sky-900 sm:text-xl">
+              {weatherCodeLabel(current.weatherCode)}
             </p>
-            {hourly && hourly.length > 0 && (
-              <TemperatureSparkline
-                hourly={hourly}
-                currentTime={current.time}
-                width={100}
-                height={28}
-                className="self-center"
-              />
-            )}
           </div>
-          <p className="mt-1.5 text-base text-cloud-600 sm:text-lg">
-            {weatherCodeLabel(current.weatherCode)}
-          </p>
-          {today && (
-            <p className="mt-0.5 text-sm text-cloud-500 tabular-nums">
-              {formatTemp(today.tempMin)} … {formatTemp(today.tempMax)}
-            </p>
-          )}
         </div>
       </div>
 
       {next5Hours.length > 0 && (
-        <div className="mt-4 border-t border-sky-100/80 pt-3">
-          <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-cloud-500 sm:text-xs">
+        <div className="mt-6 border-t border-sky-100/90 pt-4">
+          <p className="mb-3 text-xs font-bold uppercase tracking-wider text-cloud-500">
             {ru.nextHours}
           </p>
-          <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:gap-2 sm:px-0">
+          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 sm:mx-0 sm:gap-3 sm:px-0 no-scrollbar">
             {next5Hours.map((h) => {
               const label = new Date(h.time).toLocaleTimeString("ru-RU", {
                 hour: "2-digit",
@@ -166,13 +173,13 @@ export function CurrentWeatherCard({
               return (
                 <div
                   key={h.time}
-                  className="flex flex-1 min-w-[3.75rem] shrink-0 flex-col items-center justify-center rounded-xl bg-sky-50/60 py-2 px-2 ring-1 ring-sky-100/80"
+                  className="flex flex-1 min-w-[4.25rem] shrink-0 flex-col items-center justify-center rounded-2xl bg-sky-50/80 p-3 border border-sky-100/90 shadow-2xs hover:bg-sky-100/80 transition-colors"
                 >
-                  <span className="text-[11px] font-medium text-cloud-500 tabular-nums">
+                  <span className="text-xs font-medium text-cloud-500 tabular-nums">
                     {label}
                   </span>
-                  <WeatherIcon code={h.weatherCode} size={24} className="my-1 shrink-0" />
-                  <span className="text-sm font-semibold text-sky-950 tabular-nums">
+                  <WeatherIcon code={h.weatherCode} size={30} className="my-1.5 shrink-0" />
+                  <span className="text-base font-bold text-sky-950 tabular-nums">
                     {formatTemp(h.temperature)}
                   </span>
                 </div>
@@ -182,26 +189,26 @@ export function CurrentWeatherCard({
         </div>
       )}
 
-      <div className="mt-4 border-t border-sky-100/80 pt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
+      <div className="mt-6 border-t border-sky-100/90 pt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
+        <div className="rounded-2xl bg-sky-50/60 p-3.5 border border-sky-100/80">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-cloud-500">
             Давление
           </p>
-          <p className="mt-0.5 text-sm font-medium tabular-nums text-sky-950 sm:text-base flex items-center flex-wrap gap-1">
+          <p className="mt-1 text-sm font-bold tabular-nums text-sky-950 sm:text-base flex items-center flex-wrap gap-1">
             <span>{formatPressureMmHg(current.pressure)}</span>
             <PressureTrend trend={trend} />
           </p>
         </div>
         {typeof current.uvIndex === "number" && (
-          <div>
-            <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
+          <div className="rounded-2xl bg-sky-50/60 p-3.5 border border-sky-100/80">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-cloud-500">
               УФ-индекс
             </p>
-            <p className="mt-0.5 text-sm font-medium tabular-nums text-sky-950 sm:text-base flex items-center gap-1.5">
+            <p className="mt-1 text-sm font-bold tabular-nums text-sky-950 sm:text-base flex items-center gap-1.5">
               <span>{current.uvIndex.toFixed(1)}</span>
               {uvCategory && (
                 <span
-                  className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${uvCategory.colorClass}`}
+                  className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${uvCategory.colorClass}`}
                 >
                   {uvCategory.label}
                 </span>
@@ -210,21 +217,21 @@ export function CurrentWeatherCard({
           </div>
         )}
         {typeof current.dewPoint === "number" && (
-          <div>
-            <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
+          <div className="rounded-2xl bg-sky-50/60 p-3.5 border border-sky-100/80">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-cloud-500">
               Точка росы
             </p>
-            <p className="mt-0.5 text-sm font-medium tabular-nums text-sky-950 sm:text-base">
+            <p className="mt-1 text-sm font-bold tabular-nums text-sky-950 sm:text-base">
               {formatTemp(current.dewPoint)}
             </p>
           </div>
         )}
         {typeof current.visibility === "number" && (
-          <div>
-            <p className="text-[10px] uppercase tracking-wide text-cloud-500 sm:text-xs">
+          <div className="rounded-2xl bg-sky-50/60 p-3.5 border border-sky-100/80">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-cloud-500">
               Видимость
             </p>
-            <p className="mt-0.5 text-sm font-medium tabular-nums text-sky-950 sm:text-base">
+            <p className="mt-1 text-sm font-bold tabular-nums text-sky-950 sm:text-base">
               {current.visibility >= 1000
                 ? `${(current.visibility / 1000).toFixed(1)} км`
                 : `${Math.round(current.visibility)} м`}

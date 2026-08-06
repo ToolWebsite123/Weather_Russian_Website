@@ -200,8 +200,6 @@ export async function CityWeatherView({
 
         <NearbyCities cities={nearby} />
 
-        <RelatedArticles articles={articles} />
-
         <p className="text-xs text-cloud-400">
           Источник: {weather.provider} · обновлено{" "}
           {new Date(weather.fetchedAt).toLocaleString("ru-RU")} ·{" "}

@@ -7,7 +7,7 @@ import { AlertBanner } from "@/components/AlertBanner";
 import { PopularCitiesGrid } from "@/components/PopularCitiesGrid";
 import { WeatherMapPreviewSection } from "@/components/WeatherMapPreviewSection";
 import { RelatedArticles } from "@/components/RelatedArticles";
-import { PortalSidebar } from "@/components/PortalSidebar";
+import { EnvironmentalInsightsBar, RegionalShortcutsBar } from "@/components/PortalSidebar";
 import { getLatestArticles } from "@/lib/content/articles";
 import {
   getFavoritesForSession,
@@ -49,58 +49,56 @@ export default async function Home() {
 
   return (
     <PageShell favorites={favorites}>
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-12">
-          {/* Main Weather Stream Column (8 Columns on desktop) */}
-          <div className="lg:col-span-8 space-y-6 sm:space-y-8">
-            {activeAlerts.length > 0 && <AlertBanner alerts={activeAlerts} />}
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8 space-y-8 sm:space-y-10">
+        {activeAlerts.length > 0 && <AlertBanner alerts={activeAlerts} />}
 
-            {primaryData && (
-              <>
-                {/* Hero Primary Weather Panel */}
-                <CurrentWeatherCard
-                  cityName={primaryData.city.name}
-                  current={primaryData.weather.current}
-                  today={primaryData.weather.daily[0]}
-                  hourly={primaryData.weather.hourly}
-                />
+        {primaryData && (
+          <>
+            {/* 1. Hero Primary Weather Panel */}
+            <CurrentWeatherCard
+              cityName={primaryData.city.name}
+              current={primaryData.weather.current}
+              today={primaryData.weather.daily[0]}
+              hourly={primaryData.weather.hourly}
+            />
 
-                {/* 24-Hour Temperature Curve Chart */}
-                <HourlyChart hours={primaryData.weather.hourly} />
+            {/* 2. Environmental & Geomagnetic Insights Bar */}
+            <EnvironmentalInsightsBar />
 
-                {/* Dayparts Breakdown (Morning, Afternoon, Evening, Night) */}
-                {focusDate && (
-                  <DayPartsGrid
-                    hourly={primaryData.weather.hourly}
-                    date={focusDate}
-                  />
-                )}
+            {/* 3. 24-Hour Temperature Curve Chart */}
+            <HourlyChart hours={primaryData.weather.hourly} />
 
-                {/* Extended Daily Forecast */}
-                <DailyForecast
-                  days={primaryData.weather.daily}
-                  hourly={primaryData.weather.hourly}
-                />
-              </>
+            {/* 4. Dayparts Breakdown (Morning, Afternoon, Evening, Night) */}
+            {focusDate && (
+              <DayPartsGrid
+                hourly={primaryData.weather.hourly}
+                date={focusDate}
+              />
             )}
 
-            {/* Popular Cities Weather Grid (24 Cities) */}
-            <PopularCitiesGrid items={popularCityItems} />
+            {/* 5. Extended Daily Forecast */}
+            <DailyForecast
+              days={primaryData.weather.daily}
+              hourly={primaryData.weather.hourly}
+            />
+          </>
+        )}
 
-            {/* Interactive Weather Radar Section */}
-            <div id="weather-map">
-              <WeatherMapPreviewSection />
-            </div>
+        <div className="my-6 h-px bg-gradient-to-r from-transparent via-sky-200/80 to-transparent" aria-hidden="true" />
 
-            {/* Featured Weather Articles Grid */}
-            <RelatedArticles articles={latestArticles.slice(0, 3)} layout="grid" showViewAll />
-          </div>
+        {/* 6. Regional Quick Navigator Pill Strip */}
+        <RegionalShortcutsBar />
 
-          {/* Right Portal Sidebar (4 Columns on desktop) */}
-          <div className="lg:col-span-4">
-            <PortalSidebar articles={latestArticles} />
-          </div>
+        {/* 7. Popular Cities Weather Grid (24 Cities) */}
+        <PopularCitiesGrid items={popularCityItems} />
+
+        <div className="my-6 h-px bg-gradient-to-r from-transparent via-sky-200/80 to-transparent" aria-hidden="true" />
+
+        {/* 8. Interactive Weather Radar Section */}
+        <div id="weather-map">
+          <WeatherMapPreviewSection />
         </div>
+
       </main>
     </PageShell>
   );
