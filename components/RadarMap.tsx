@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ru } from "@/lib/i18n/ru";
 
+import type L from "leaflet";
+
 type RadarFrame = {
   time: number;
   path: string;
@@ -49,7 +51,6 @@ export default function RadarMap({
   showPrecip?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [host, setHost] = useState<string>("");
   const [frames, setFrames] = useState<RadarFrame[]>([]);
   const [currentFrameIdx, setCurrentFrameIdx] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
@@ -65,24 +66,24 @@ export default function RadarMap({
   useEffect(() => {
     if (isOutside || !containerRef.current) return;
 
-    let mapInstance: any = null;
+    let mapInstance: L.Map | null = null;
 
     async function initMap() {
       try {
-        const L = (await import("leaflet")).default;
+        const LModule = (await import("leaflet")).default;
         if (!containerRef.current) return;
 
-        mapInstance = L.map(containerRef.current, {
+        mapInstance = LModule.map(containerRef.current, {
           center: [latitude, longitude],
           zoom: 7,
           scrollWheelZoom: false,
         });
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        LModule.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(mapInstance);
 
-        const cityPinIcon = L.divIcon({
+        const cityPinIcon = LModule.divIcon({
           className: "custom-city-pin",
           html: `<div style="display:flex;align-items:center;justify-content:center;transform:translate(-50%,-100%);">
             <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -94,7 +95,7 @@ export default function RadarMap({
           iconAnchor: [16, 40],
         });
 
-        L.marker([latitude, longitude], { icon: cityPinIcon })
+        LModule.marker([latitude, longitude], { icon: cityPinIcon })
           .addTo(mapInstance)
           .bindPopup(cityName);
       } catch {
@@ -131,8 +132,7 @@ export default function RadarMap({
         if (!res.ok) throw new Error("RainViewer API failed");
         const data = (await res.json()) as RainViewerResponse;
 
-        if (isMounted && data.host && data.radar?.past?.length) {
-          setHost(data.host);
+        if (isMounted && data.radar?.past?.length) {
           setFrames(data.radar.past);
           setCurrentFrameIdx(data.radar.past.length - 1);
         } else if (isMounted) {
