@@ -35,6 +35,10 @@ export type SunTimesExtended = {
   blueHourEveningEnd: string;
 };
 
+export function isValidDate(d: Date | null | undefined): d is Date {
+  return !!d && !isNaN(d.getTime());
+}
+
 export function getMoonPhaseName(phase: number): MoonPhaseName {
   const eps = 0.02;
   if (phase < eps || phase > 1 - eps) return "Новолуние";
@@ -59,8 +63,8 @@ export function getMoonData(
   const ageDays = Number((phaseValue * 29.5305877).toFixed(1));
 
   const moonTimes = SunCalc.getMoonTimes(date, latitude, longitude);
-  const moonrise = moonTimes.rise ? moonTimes.rise.toISOString() : null;
-  const moonset = moonTimes.set ? moonTimes.set.toISOString() : null;
+  const moonrise = isValidDate(moonTimes.rise) ? moonTimes.rise.toISOString() : null;
+  const moonset = isValidDate(moonTimes.set) ? moonTimes.set.toISOString() : null;
 
   // Compute next new moon and next full moon dates within 30 days
   let nextNewMoon = "";
@@ -98,7 +102,7 @@ export function getMoonData(
 }
 
 function toIso(d: Date | null | undefined, fallback: Date): string {
-  if (!d || isNaN(d.getTime())) return fallback.toISOString();
+  if (!isValidDate(d)) return fallback.toISOString();
   return d.toISOString();
 }
 
@@ -112,19 +116,30 @@ export function getSunTimesExtended(
   const yesterday = new Date(date.getTime() - 24 * 60 * 60 * 1000);
   const prevTimes = SunCalc.getTimes(yesterday, latitude, longitude);
 
-  const sunriseDate = times.sunrise || date;
-  const sunsetDate = times.sunset || date;
-  const prevSunriseDate = prevTimes.sunrise || yesterday;
-  const prevSunsetDate = prevTimes.sunset || yesterday;
+  const sunriseDate = isValidDate(times.sunrise) ? times.sunrise : null;
+  const sunsetDate = isValidDate(times.sunset) ? times.sunset : null;
+  const prevSunriseDate = isValidDate(prevTimes.sunrise) ? prevTimes.sunrise : null;
+  const prevSunsetDate = isValidDate(prevTimes.sunset) ? prevTimes.sunset : null;
 
-  const todayLen = Math.max(
-    0,
-    (sunsetDate.getTime() - sunriseDate.getTime()) / 60000,
-  );
-  const prevLen = Math.max(
-    0,
-    (prevSunsetDate.getTime() - prevSunriseDate.getTime()) / 60000,
-  );
+  let todayLen = 0;
+  if (sunriseDate && sunsetDate) {
+    todayLen = Math.max(0, (sunsetDate.getTime() - sunriseDate.getTime()) / 60000);
+  } else {
+    // Polar Day / Polar Night handling:
+    // When SunCalc returns Invalid Date for sunrise/sunset, check solar altitude
+    const pos = SunCalc.getPosition(date, latitude, longitude);
+    const isPolarDay = pos.altitude >= -0.01;
+    todayLen = isPolarDay ? 24 * 60 : 0;
+  }
+
+  let prevLen = 0;
+  if (prevSunriseDate && prevSunsetDate) {
+    prevLen = Math.max(0, (prevSunsetDate.getTime() - prevSunriseDate.getTime()) / 60000);
+  } else {
+    const prevPos = SunCalc.getPosition(yesterday, latitude, longitude);
+    const isPrevPolarDay = prevPos.altitude >= -0.01;
+    prevLen = isPrevPolarDay ? 24 * 60 : 0;
+  }
 
   const dayLengthDiffMinutes = Math.round(todayLen - prevLen);
 
@@ -134,16 +149,30 @@ export function getSunTimesExtended(
     solarNoon: toIso(times.solarNoon, date),
     dayLengthMinutes: Math.round(todayLen),
     dayLengthDiffMinutes,
-    goldenHourMorningEnd: toIso(times.goldenHourEnd || times.sunrise, date),
-    goldenHourEveningStart: toIso(times.goldenHour || times.sunset, date),
+    goldenHourMorningEnd: toIso(
+      isValidDate(times.goldenHourEnd) ? times.goldenHourEnd : times.sunrise,
+      date,
+    ),
+    goldenHourEveningStart: toIso(
+      isValidDate(times.goldenHour) ? times.goldenHour : times.sunset,
+      date,
+    ),
     blueHourMorningStart: toIso(
-      times.dawn || times.nightEnd || times.sunrise,
+      isValidDate(times.dawn)
+        ? times.dawn
+        : isValidDate(times.nightEnd)
+          ? times.nightEnd
+          : times.sunrise,
       date,
     ),
     blueHourMorningEnd: toIso(times.sunrise, date),
     blueHourEveningStart: toIso(times.sunset, date),
     blueHourEveningEnd: toIso(
-      times.dusk || times.nauticalDusk || times.sunset,
+      isValidDate(times.dusk)
+        ? times.dusk
+        : isValidDate(times.nauticalDusk)
+          ? times.nauticalDusk
+          : times.sunset,
       date,
     ),
   };

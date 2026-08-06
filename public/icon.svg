@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e0f2fe" />
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Square -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <!-- Sun Element -->
+  <g transform="translate(336, 176)">
+    <circle cx="0" cy="0" r="64" fill="url(#sunGrad)" />
+    <g stroke="#fbbf24" stroke-width="12" stroke-linecap="round">
+      <line x1="0" y1="-92" x2="0" y2="-74" />
+      <line x1="65" y1="-65" x2="52" y2="-52" />
+      <line x1="92" y1="0" x2="74" y2="0" />
+      <line x1="65" y1="65" x2="52" y2="52" />
+    </g>
+  </g>
+  <!-- Cloud Element -->
+  <path d="M 160 368 
+           L 352 368 
+           A 48 48 0 0 0 352 272 
+           A 64 64 0 0 0 236 226 
+           A 56 56 0 0 0 144 288 
+           A 48 48 0 0 0 160 368 Z" 
+        fill="url(#cloudGrad)" />
+</svg>
