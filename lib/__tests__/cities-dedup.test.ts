@@ -20,5 +20,14 @@ describe("Cities Data Single Source of Truth", () => {
     expect(EXPLICIT_SLUGS["Москва"]).toBe("moscow");
     expect(EXPLICIT_SLUGS["Санкт-Петербург"]).toBe("saint-petersburg");
     expect(EXPLICIT_SLUGS["Новосибирск"]).toBe("novosibirsk");
+    expect(EXPLICIT_SLUGS["Екатеринбург"]).toBe("yekaterinburg");
+  });
+
+  it("has zero duplicate slugs or city records", () => {
+    const records = buildCityRecords();
+    const slugSet = new Set(records.map((r) => r.slug));
+    expect(slugSet.size).toBe(records.length);
+    expect(slugSet.has("ekaterinburg")).toBe(false);
+    expect(slugSet.has("yekaterinburg")).toBe(true);
   });
 });

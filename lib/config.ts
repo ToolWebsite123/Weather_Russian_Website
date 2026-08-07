@@ -4,6 +4,9 @@
  */
 
 export const config = {
+  // Canonical base URL default to current live Vercel deployment.
+  // Switch NEXT_PUBLIC_SITE_URL to https://weatherhub.ru in Vercel project settings
+  // ONLY once that custom domain is confirmed live and pointed at this deployment.
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://weather-russian-website.vercel.app",
   cache: {
     ttlMs: process.env.WEATHER_CACHE_TTL_MINUTES

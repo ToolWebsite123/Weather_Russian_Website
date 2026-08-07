@@ -43,7 +43,10 @@ export function CityWeatherFaq({ city, weather }: Props) {
     },
   ];
 
-  const faqs = [...defaultFaqs, ...(profile.faqs ?? [])];
+  const extraFaqs = (profile.faqs ?? []).filter(
+    (f) => !f.question.toLowerCase().includes("давление"),
+  );
+  const faqs = [...defaultFaqs, ...extraFaqs];
 
   // Schema.org FAQPage JSON-LD
   const faqSchema = {
