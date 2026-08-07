@@ -23,10 +23,6 @@ function num(value: number | null | undefined): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-type OpenMeteoUV = {
-  daily?: { uv_index_max?: number[] };
-};
-
 function pm25ToUsAqi(pm25: number): number {
   if (pm25 <= 12.0) return Math.round((50 / 12.0) * pm25);
   if (pm25 <= 35.4) return Math.round(50 + ((100 - 51) / (35.4 - 12.1)) * (pm25 - 12.1));
