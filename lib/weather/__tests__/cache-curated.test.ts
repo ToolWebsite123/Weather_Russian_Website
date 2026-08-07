@@ -1,6 +1,65 @@
 import { describe, it, expect, vi } from "vitest";
 import { upsertCityFromGeo, getBatchCachedWeather } from "../cache";
 import { prisma } from "@/lib/prisma";
+import type { City, WeatherCache, Prisma } from "@prisma/client";
+import type { WeatherBundle } from "@/types/weather";
+
+function mockCity(overrides: Partial<City>): City {
+  return {
+    id: 1,
+    slug: "city-slug",
+    name: "City Name",
+    nameEn: "City Name En",
+    country: "RU",
+    region: null,
+    latitude: 55.75,
+    longitude: 37.61,
+    timezone: "Europe/Moscow",
+    population: 1000000,
+    tier: 1,
+    isCurated: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+function mockWeatherBundle(overrides?: Partial<WeatherBundle>): WeatherBundle {
+  return {
+    provider: "open-meteo",
+    latitude: 55.75,
+    longitude: 37.61,
+    timezone: "Europe/Moscow",
+    current: {
+      time: "2026-08-07T09:00:00Z",
+      temperature: 20,
+      feelsLike: 20,
+      humidity: 50,
+      windSpeed: 5,
+      windDirection: 180,
+      pressure: 750,
+      weatherCode: 0,
+      isDay: true,
+      precipitation: 0,
+      cloudCover: 10,
+    },
+    hourly: [],
+    daily: [],
+    fetchedAt: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+function mockWeatherCacheRow(overrides?: Partial<WeatherCache>): WeatherCache {
+  return {
+    id: "cache-1",
+    cityId: 1,
+    payload: mockWeatherBundle() as unknown as Prisma.JsonValue,
+    fetchedAt: new Date(),
+    expiresAt: new Date(Date.now() + 3600000),
+    ...overrides,
+  };
+}
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -156,33 +215,31 @@ describe("getBatchCachedWeather - cache expiry filtering", () => {
   it("filters query by expiresAt > now and excludes expired cache rows from result", async () => {
     vi.clearAllMocks();
 
-    const mockCity1 = {
+    const mockCity1 = mockCity({
       id: 1,
       slug: "moscow",
       name: "Москва",
       latitude: 55.75,
       longitude: 37.61,
-    } as any;
+    });
 
-    const mockCity2 = {
+    const mockCity2 = mockCity({
       id: 2,
       slug: "saint-petersburg",
       name: "Санкт-Петербург",
       latitude: 59.93,
       longitude: 30.31,
-    } as any;
+    });
 
-    const mockPayload1 = { current: { temperature: 20 } } as any;
+    const mockBundle1 = mockWeatherBundle();
+    const mockRow1 = mockWeatherCacheRow({
+      id: "cache-1",
+      cityId: 1,
+      payload: mockBundle1 as unknown as Prisma.JsonValue,
+      expiresAt: new Date(Date.now() + 3600000),
+    });
 
-    vi.mocked(prisma.weatherCache.findMany).mockResolvedValueOnce([
-      {
-        id: "cache-1",
-        cityId: 1,
-        payload: mockPayload1,
-        fetchedAt: new Date(),
-        expiresAt: new Date(Date.now() + 3600000),
-      },
-    ] as any);
+    vi.mocked(prisma.weatherCache.findMany).mockResolvedValueOnce([mockRow1]);
 
     const result = await getBatchCachedWeather([mockCity1, mockCity2]);
 
@@ -193,7 +250,7 @@ describe("getBatchCachedWeather - cache expiry filtering", () => {
       },
     });
 
-    expect(result[1]).toEqual(mockPayload1);
+    expect(result[1]).toEqual(mockBundle1);
     expect(result[2]).toBeUndefined();
   });
 });
