@@ -5,6 +5,8 @@ import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
 import { config } from "@/lib/config";
 
+export const revalidate = 900; // 15-minute ISR revalidation matching weather cache TTL
+
 type Props = { params: { slug: string } };
 
 export async function generateStaticParams() {
