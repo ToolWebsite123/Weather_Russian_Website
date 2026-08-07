@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { upsertCityFromGeo } from "../cache";
+import { upsertCityFromGeo, getBatchCachedWeather } from "../cache";
 import { prisma } from "@/lib/prisma";
 
 vi.mock("@/lib/prisma", () => ({
@@ -7,6 +7,9 @@ vi.mock("@/lib/prisma", () => ({
     city: {
       findUnique: vi.fn(),
       upsert: vi.fn(),
+    },
+    weatherCache: {
+      findMany: vi.fn(),
     },
   },
 }));
@@ -148,3 +151,50 @@ describe("upsertCityFromGeo - isCurated preservation", () => {
     expect(resultWithUndefined.isCurated).toBe(false);
   });
 });
+
+describe("getBatchCachedWeather - cache expiry filtering", () => {
+  it("filters query by expiresAt > now and excludes expired cache rows from result", async () => {
+    vi.clearAllMocks();
+
+    const mockCity1 = {
+      id: 1,
+      slug: "moscow",
+      name: "Москва",
+      latitude: 55.75,
+      longitude: 37.61,
+    } as any;
+
+    const mockCity2 = {
+      id: 2,
+      slug: "saint-petersburg",
+      name: "Санкт-Петербург",
+      latitude: 59.93,
+      longitude: 30.31,
+    } as any;
+
+    const mockPayload1 = { current: { temperature: 20 } } as any;
+
+    vi.mocked(prisma.weatherCache.findMany).mockResolvedValueOnce([
+      {
+        id: "cache-1",
+        cityId: 1,
+        payload: mockPayload1,
+        fetchedAt: new Date(),
+        expiresAt: new Date(Date.now() + 3600000),
+      },
+    ] as any);
+
+    const result = await getBatchCachedWeather([mockCity1, mockCity2]);
+
+    expect(prisma.weatherCache.findMany).toHaveBeenCalledWith({
+      where: {
+        cityId: { in: [1, 2] },
+        expiresAt: { gt: expect.any(Date) },
+      },
+    });
+
+    expect(result[1]).toEqual(mockPayload1);
+    expect(result[2]).toBeUndefined();
+  });
+});
+

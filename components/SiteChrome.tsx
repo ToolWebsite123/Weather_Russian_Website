@@ -91,6 +91,7 @@ export function SiteHeader({
     { id: "week", label: "Неделя", href: `/pogoda/${currentCitySlug}/7-dney`, active: subRoute === "7-dney" },
     { id: "10days", label: "10 дней", href: `/pogoda/${currentCitySlug}/10-dney`, active: subRoute === "10-dney" },
     { id: "2weeks", label: "2 недели", href: `/pogoda/${currentCitySlug}/14-dney`, active: subRoute === "14-dney" },
+    { id: "weather-archive", label: "Архив", href: `/pogoda/${currentCitySlug}/archiv`, active: subRoute === "archiv" },
     { id: "radar", label: "Радар", href: `${anchorPrefix}#weather-map`, active: false },
     { id: "pollen", label: "Пыльца", href: `${anchorPrefix}#environmental-insights`, active: false },
     { id: "roads", label: "Дороги", href: `${anchorPrefix}#road-conditions`, active: false },

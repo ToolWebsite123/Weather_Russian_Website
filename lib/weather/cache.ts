@@ -187,8 +187,12 @@ export async function getBatchCachedWeather(
   const cityIds = cities.map((c) => c.id).filter((id) => id > 0);
   if (cityIds.length === 0) return {};
   try {
+    const now = new Date();
     const rows = await prisma.weatherCache.findMany({
-      where: { cityId: { in: cityIds } },
+      where: {
+        cityId: { in: cityIds },
+        expiresAt: { gt: now },
+      },
     });
     const map: Record<number, WeatherBundle> = {};
     for (const r of rows) {

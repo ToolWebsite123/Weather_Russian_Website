@@ -523,7 +523,7 @@ export function ForecastTabs({
   active,
 }: {
   slug: string;
-  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14";
+  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "archive";
 }) {
   const tabs = [
     { id: "today" as const, href: `/pogoda/${slug}`, label: ru.today },
@@ -541,6 +541,7 @@ export function ForecastTabs({
     { id: "7" as const, href: `/pogoda/${slug}/7-dney`, label: ru.days7 },
     { id: "10" as const, href: `/pogoda/${slug}/10-dney`, label: ru.days10 },
     { id: "14" as const, href: `/pogoda/${slug}/14-dney`, label: ru.days14 },
+    { id: "archive" as const, href: `/pogoda/${slug}/archiv`, label: "Архив" },
   ];
 
   return (

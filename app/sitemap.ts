@@ -12,6 +12,7 @@ const FORECAST_TABS = [
   "/7-dney",
   "/10-dney",
   "/14-dney",
+  "/archiv",
 ] as const;
 
 async function getSitemapCities(): Promise<Array<{ slug: string }>> {

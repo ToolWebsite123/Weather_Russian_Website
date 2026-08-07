@@ -13,6 +13,11 @@ export function DomNodeFix() {
     const originalRemoveChild = Node.prototype.removeChild;
     Node.prototype.removeChild = function <T extends Node>(child: T): T {
       if (child.parentNode !== this) {
+        if (process.env.NODE_ENV === "development") {
+          console.warn(
+            `[DomNodeFix] removeChild mismatch patch triggered. Parent: <${this.nodeName}>, Child: <${child.nodeName}>. This may indicate a third-party extension (e.g. Google Translate) or a hydration/DOM bug worth investigating.`
+          );
+        }
         if (child.parentNode) {
           return child.parentNode.removeChild(child) as T;
         }
@@ -27,6 +32,11 @@ export function DomNodeFix() {
       referenceNode: Node | null,
     ): T {
       if (referenceNode && referenceNode.parentNode !== this) {
+        if (process.env.NODE_ENV === "development") {
+          console.warn(
+            `[DomNodeFix] insertBefore mismatch patch triggered. Parent: <${this.nodeName}>, NewNode: <${newNode.nodeName}>, ReferenceNode: <${referenceNode.nodeName}>. This may indicate a third-party extension (e.g. Google Translate) or a hydration/DOM bug worth investigating.`
+          );
+        }
         if (referenceNode.parentNode) {
           return referenceNode.parentNode.insertBefore(
             newNode,

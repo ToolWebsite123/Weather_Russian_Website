@@ -21,7 +21,11 @@ import { getBatchCachedWeather } from "@/lib/weather/cache";
 import { getActiveAlerts } from "@/lib/weather/alerts";
 import { resolveCityFromCoords } from "@/lib/weather/geo-resolver";
 
-export const revalidate = 900;
+// Option B: This route uses per-request cookies() and headers() to serve personalized weather
+// (last visited city or IP-based geolocation detection) on initial server-side render.
+// In Next.js App Router, using cookies() and headers() forces fully dynamic SSR per request.
+// We explicitly export force-dynamic to reflect the actual rendering strategy and avoid misleading revalidate configs.
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const store = cookies();

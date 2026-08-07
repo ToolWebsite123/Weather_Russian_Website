@@ -3,6 +3,7 @@ import {
   CurrentWeatherCard,
   DailyForecast,
   DayPartsGrid,
+  ForecastTabs,
   HourlyForecast,
   NearbyCities,
   WeatherMap,
@@ -10,6 +11,7 @@ import {
 import { Suspense } from "react";
 import { AstronomyCard } from "@/components/AstronomyCard";
 import { HistoricalComparisonCard } from "@/components/HistoricalComparisonCard";
+import { HistoricalArchivePanel } from "@/components/HistoricalArchivePanel";
 import { RecommendationsCard } from "@/components/RecommendationsCard";
 import { AlertBanner } from "@/components/AlertBanner";
 import { HourlyChart } from "@/components/HourlyChart";
@@ -46,7 +48,7 @@ export async function CityWeatherView({
   isYesterday = false,
 }: {
   slug: string;
-  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14";
+  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "archive";
   dailyLimit?: number;
   showHourly?: boolean;
   tomorrowOnly?: boolean;
@@ -112,15 +114,25 @@ export async function CityWeatherView({
     <PageShell favorites={favorites}>
       <RememberLastCity slug={city.slug} />
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-4 sm:space-y-8 sm:py-8 sm:px-6">
+        <ForecastTabs slug={city.slug} active={active} />
+
         <AlertBanner alerts={alerts} />
 
-        {hasYesterdayData && weather.yesterday && (
-          <div className="rounded-2xl bg-sky-50 border border-sky-200 p-4 text-sky-950 font-medium text-sm flex items-center justify-between gap-3">
-            <span>
-              🕒 Просмотр архивных метеонаблюдений <strong>за вчера ({weather.yesterday.daily.date})</strong> для {city.name}.
-            </span>
-          </div>
-        )}
+        {active === "archive" ? (
+          <HistoricalArchivePanel
+            latitude={city.latitude}
+            longitude={city.longitude}
+            cityName={city.name}
+          />
+        ) : (
+          <>
+            {hasYesterdayData && weather.yesterday && (
+              <div className="rounded-2xl bg-sky-50 border border-sky-200 p-4 text-sky-950 font-medium text-sm flex items-center justify-between gap-3">
+                <span>
+                  🕒 Просмотр архивных метеонаблюдений <strong>за вчера ({weather.yesterday.daily.date})</strong> для {city.name}.
+                </span>
+              </div>
+            )}
 
         <div className="flex items-center justify-end gap-2 animate-fade-in-up stagger-1 motion-reduce:animate-none">
           <NotificationPrompt />
@@ -218,6 +230,8 @@ export async function CityWeatherView({
           <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
             <RelatedArticles articles={articles} />
           </div>
+        )}
+          </>
         )}
 
         <CityWeatherFaq city={city} weather={weather} />
