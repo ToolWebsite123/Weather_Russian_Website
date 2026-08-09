@@ -91,7 +91,7 @@ async function handleSendAlerts(req: NextRequest) {
             payloads.push({
               title: `🚨 ${alert.title} — ${city.name}`,
               body: alert.description,
-              url: `/city/${city.slug}`,
+              url: `/pogoda/${city.slug}`,
               tag: `alert-${city.slug}-${Date.now()}`,
             });
           }

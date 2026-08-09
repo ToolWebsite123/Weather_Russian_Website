@@ -345,7 +345,6 @@ export function CurrentWeatherCard({
 
   const windDirText = formatWindDir(current.windDirection);
   const pressureMm = formatPressureMmHg(current.pressure);
-  const waterTemp = Math.round(current.temperature > 0 ? current.temperature - 1 : current.temperature);
 
   return (
     <div className="space-y-3 max-w-4xl mx-auto">
@@ -430,7 +429,7 @@ export function CurrentWeatherCard({
                 <span className="shrink-0 text-slate-600">Давление</span>
                 <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
                 <span className="shrink-0 font-medium tabular-nums text-slate-900">
-                  {pressureMm} мм рт. ст.
+                  {pressureMm}
                 </span>
               </div>
 
@@ -439,14 +438,6 @@ export function CurrentWeatherCard({
                 <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
                 <span className="shrink-0 font-medium tabular-nums text-slate-900">
                   {Math.round(current.humidity)} %
-                </span>
-              </div>
-
-              <div className="flex items-baseline justify-between">
-                <span className="shrink-0 text-slate-600">Вода</span>
-                <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
-                <span className="shrink-0 font-medium tabular-nums text-slate-900">
-                  {formatTemp(waterTemp)}
                 </span>
               </div>
 
