@@ -87,7 +87,7 @@ export function SiteHeader({
   const anchorPrefix = isCityPage ? "" : `/pogoda/${currentCitySlug}`;
 
   const horizonTabs = [
-    { id: "yesterday", label: "Вчера", href: `/pogoda/${currentCitySlug}?view=yesterday#hourly-forecast`, active: false },
+    { id: "yesterday", label: "Вчера", href: `/pogoda/${currentCitySlug}/vchera`, active: subRoute === "vchera" },
     { id: "now", label: "Сейчас", href: `/pogoda/${currentCitySlug}`, active: subRoute === "" && (pathname.startsWith("/pogoda") || pathname === "/") },
     { id: "today", label: "Сегодня", href: `/pogoda/${currentCitySlug}`, active: false },
     { id: "tomorrow", label: "Завтра", href: `/pogoda/${currentCitySlug}/zavtra`, active: subRoute === "zavtra" },

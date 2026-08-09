@@ -1,9 +1,14 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   fetchHistoricalRange,
   getYearsAgoComparison,
   getClimateNormal,
   getAnomaly,
+  type HistoricalDailyPoint,
 } from "@/lib/weather/historical";
+import { useUnit } from "@/components/UnitContext";
 
 const MONTH_NAMES_GENITIVE: Record<number, string> = {
   1: "января",
@@ -19,12 +24,6 @@ const MONTH_NAMES_GENITIVE: Record<number, string> = {
   11: "ноября",
   12: "декабря",
 };
-
-function formatTemp(t: number): string {
-  const rounded = Math.round(t);
-  if (rounded > 0) return `+${rounded}°`;
-  return `${rounded}°`;
-}
 
 function getAnomalyBadge(direction: "warmer" | "colder" | "normal"): {
   label: string;
@@ -44,7 +43,7 @@ function getAnomalyBadge(direction: "warmer" | "colder" | "normal"): {
   }
 }
 
-export async function HistoricalComparisonCard({
+export function HistoricalComparisonCard({
   todayTempMax,
   todayDate,
   latitude,
@@ -55,12 +54,14 @@ export async function HistoricalComparisonCard({
   latitude: number;
   longitude: number;
 }) {
-  let history;
-  try {
-    history = await fetchHistoricalRange(latitude, longitude);
-  } catch {
-    return null;
-  }
+  const { formatTemp } = useUnit();
+  const [history, setHistory] = useState<HistoricalDailyPoint[] | null>(null);
+
+  useEffect(() => {
+    fetchHistoricalRange(latitude, longitude)
+      .then(setHistory)
+      .catch(() => setHistory([]));
+  }, [latitude, longitude]);
 
   if (!history || history.length === 0) return null;
 

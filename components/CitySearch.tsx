@@ -36,14 +36,15 @@ export function CitySearch() {
 
   useEffect(() => {
     setActiveIndex(-1);
-    if (query.trim().length < 2) {
+    const normalizedQuery = query.normalize("NFC").trim();
+    if (normalizedQuery.length < 2) {
       setResults([]);
       return;
     }
     const controller = new AbortController();
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(normalizedQuery)}`, {
           signal: controller.signal,
         });
         if (!res.ok) return;
@@ -54,7 +55,7 @@ export function CitySearch() {
       } catch (err: unknown) {
         if ((err as Error)?.name === "AbortError") return;
       }
-    }, 250);
+    }, 200);
     return () => {
       clearTimeout(t);
       controller.abort();

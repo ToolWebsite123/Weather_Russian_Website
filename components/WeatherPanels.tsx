@@ -101,6 +101,86 @@ function formatGismeteoDate(timeStr?: string) {
 
 import { LiveCityDate } from "@/components/LiveCityDate";
 
+export function SunArcTimeline({
+  sunrise,
+  sunset,
+  timezone,
+}: {
+  sunrise?: string;
+  sunset?: string;
+  timezone?: string;
+}) {
+  if (!sunrise || !sunset) return null;
+
+  const sunriseStr = new Date(sunrise).toLocaleTimeString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: timezone || "Europe/Moscow",
+  });
+  const sunsetStr = new Date(sunset).toLocaleTimeString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: timezone || "Europe/Moscow",
+  });
+
+  const now = new Date();
+  const srDate = new Date(sunrise);
+  const ssDate = new Date(sunset);
+
+  const totalMs = ssDate.getTime() - srDate.getTime();
+  const elapsedMs = now.getTime() - srDate.getTime();
+  const progress = Math.max(0, Math.min(1, elapsedMs / totalMs));
+  const isDay = now >= srDate && now <= ssDate;
+
+  const x = 15 + 170 * progress;
+  const y = 50 - 90 * progress * (1 - progress);
+
+  return (
+    <div className="rounded-xl bg-gradient-to-b from-sky-50/80 to-amber-50/50 p-3 ring-1 ring-sky-100/70 mt-3 text-xs">
+      <div className="flex items-center justify-between font-semibold text-slate-700 mb-1">
+        <span className="flex items-center gap-1 text-amber-700">
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2v6" />
+            <path d="M4.93 10.93l4.24 4.24" />
+            <path d="M2 18h20" />
+            <path d="M20 10l-4 4" />
+            <path d="M12 18a6 6 0 0 0 6-6H6a6 6 0 0 0 6 6z" />
+          </svg>
+          Восход {sunriseStr}
+        </span>
+        <span className="text-[11px] text-slate-500 font-normal">Солнце в зените</span>
+        <span className="flex items-center gap-1 text-amber-900">
+          Закат {sunsetStr}
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 10V4" />
+            <path d="M4.93 10.93l4.24 4.24" />
+            <path d="M2 18h20" />
+            <path d="M12 18a6 6 0 0 0 6-6H6a6 6 0 0 0 6 6z" />
+          </svg>
+        </span>
+      </div>
+
+      <div className="relative h-12 w-full">
+        <svg viewBox="0 0 200 60" className="w-full h-full overflow-visible">
+          <line x1="10" y1="50" x2="190" y2="50" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" />
+          <path d="M 15 50 Q 100 5 185 50" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
+
+          {isDay ? (
+            <g transform={`translate(${x}, ${y})`}>
+              <circle r="6" fill="#fbbf24" stroke="#d97706" strokeWidth="2" />
+              <circle r="10" fill="#fef08a" opacity="0.4" />
+            </g>
+          ) : (
+            <g transform="translate(100, 50)">
+              <circle r="5" fill="#94a3b8" />
+            </g>
+          )}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 export function CurrentWeatherCard({
   cityName,
   citySlug,
@@ -118,7 +198,7 @@ export function CurrentWeatherCard({
   geomagneticKp?: number;
   timezone?: string;
 }) {
-  const { formatTemp } = useUnit();
+  const { unit, formatTemp } = useUnit();
   const slug = citySlug || "moscow";
 
   const next5Hours = (() => {
@@ -243,6 +323,13 @@ export function CurrentWeatherCard({
                 </span>
               </div>
             </div>
+
+            {/* Interactive Sun Arc Timeline Widget */}
+            <SunArcTimeline
+              sunrise={today?.sunrise}
+              sunset={today?.sunset}
+              timezone={timezone}
+            />
           </div>
 
           {/* Right Column: 5-Hour Forecast Timeline */}
@@ -277,7 +364,9 @@ export function CurrentWeatherCard({
                 </div>
 
                 {/* Section Header: Air Temperature */}
-                <p className="text-xs text-slate-600 mb-1.5 font-normal">Температура воздуха, °C</p>
+                <p className="text-xs text-slate-600 mb-1.5 font-normal">
+                  Температура воздуха, °{unit}
+                </p>
 
                 {/* Temperature Yellow Strip */}
                 <div className="grid grid-cols-5 gap-1 bg-[#edf4a1] py-1.5 rounded text-center text-xs sm:text-sm font-semibold text-slate-900 mb-4 tabular-nums">
@@ -596,16 +685,17 @@ export function ForecastTabs({
   active,
 }: {
   slug: string;
-  active: "vchera" | "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive";
+  active: "now" | "vchera" | "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive";
 }) {
   const tabs = [
-    { id: "vchera" as const, href: `/pogoda/${slug}/vchera`, label: "Вчера" },
+    { id: "now" as const, href: `/pogoda/${slug}`, label: "Сейчас" },
     { id: "today" as const, href: `/pogoda/${slug}`, label: ru.today },
     {
       id: "tomorrow" as const,
       href: `/pogoda/${slug}/zavtra`,
       label: ru.tomorrow,
     },
+    { id: "vchera" as const, href: `/pogoda/${slug}/vchera`, label: "Вчера" },
     {
       id: "weekend" as const,
       href: `/pogoda/${slug}/vykhodnye`,

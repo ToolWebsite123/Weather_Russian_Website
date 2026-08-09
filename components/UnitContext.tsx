@@ -9,6 +9,7 @@ interface UnitContextType {
   toggleUnit: () => void;
   setUnit: (unit: TempUnit) => void;
   formatTemp: (celsiusTemp?: number | null) => string;
+  formatTempWithUnit: (celsiusTemp?: number | null) => string;
   convertTemp: (celsiusTemp?: number | null) => number | null;
 }
 
@@ -17,6 +18,7 @@ const UnitContext = createContext<UnitContextType>({
   toggleUnit: () => {},
   setUnit: () => {},
   formatTemp: (t) => (t != null ? `${Math.round(t)}°` : "—"),
+  formatTempWithUnit: (t) => (t != null ? `${Math.round(t)}°C` : "—"),
   convertTemp: (t) => (t != null ? Math.round(t) : null),
 });
 
@@ -54,9 +56,15 @@ export function UnitProvider({ children }: { children: React.ReactNode }) {
     return `${val > 0 ? "+" : ""}${val}°`;
   };
 
+  const formatTempWithUnit = (celsiusTemp?: number | null): string => {
+    const val = convertTemp(celsiusTemp);
+    if (val == null) return "—";
+    return `${val > 0 ? "+" : ""}${val}°${unit}`;
+  };
+
   return (
     <UnitContext.Provider
-      value={{ unit, toggleUnit, setUnit, formatTemp, convertTemp }}
+      value={{ unit, toggleUnit, setUnit, formatTemp, formatTempWithUnit, convertTemp }}
     >
       {children}
     </UnitContext.Provider>
