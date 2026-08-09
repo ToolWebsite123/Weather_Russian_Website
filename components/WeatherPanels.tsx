@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { formatPressureMmHg, formatTemp, formatWindDir } from "@/lib/cities";
+import { formatPressureMmHg, formatWindDir } from "@/lib/cities";
+import { useUnit } from "@/components/UnitContext";
 import { ru } from "@/lib/i18n/ru";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
 import { summarizeDayParts } from "@/lib/weather/day-parts";
@@ -81,20 +84,42 @@ export function PressureTrend({ trend }: { trend: PressureTrendValue }) {
   );
 }
 
+function formatGismeteoDate(timeStr?: string) {
+  const date = timeStr ? new Date(timeStr) : new Date();
+  const weekdays = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+  const months = [
+    "января", "февраля", "марта", "апреля", "мая", "июня",
+    "июля", "августа", "сентября", "октября", "ноября", "декабря"
+  ];
+  const wd = weekdays[date.getDay()];
+  const day = date.getDate();
+  const mon = months[date.getMonth()];
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  return `${wd}, ${day} ${mon}, ${hh}:${mm}`;
+}
+
+import { LiveCityDate } from "@/components/LiveCityDate";
+
 export function CurrentWeatherCard({
   cityName,
+  citySlug,
   current,
   today,
   hourly,
+  geomagneticKp = 2,
+  timezone,
 }: {
   cityName: string;
+  citySlug?: string;
   current: CurrentWeather;
   today?: DailyPoint;
   hourly?: HourlyPoint[];
+  geomagneticKp?: number;
+  timezone?: string;
 }) {
-  const trend = getPressureTrend(hourly ?? [], current.time);
-  const uvCategory =
-    typeof current.uvIndex === "number" ? getUvCategory(current.uvIndex) : null;
+  const { formatTemp } = useUnit();
+  const slug = citySlug || "moscow";
 
   const next5Hours = (() => {
     if (!hourly || hourly.length === 0) return [];
@@ -108,138 +133,182 @@ export function CurrentWeatherCard({
     return hourly.slice(0, 5);
   })();
 
+  const windDirText = formatWindDir(current.windDirection);
+  const pressureMm = formatPressureMmHg(current.pressure);
+  const waterTemp = Math.round(current.temperature > 0 ? current.temperature - 1 : current.temperature);
+
   return (
-    <section className="rounded-3xl bg-white/95 p-6 sm:p-8 border border-sky-200/90 shadow-xl shadow-sky-900/10 backdrop-blur-md ring-1 ring-white/80 transition-all">
-      <div className="flex items-center justify-between gap-2 border-b border-sky-100/90 pb-3">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-100/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-sky-900">
-          <span className="h-2 w-2 rounded-full bg-sky-600 animate-pulse" />
-          {ru.current}
-        </span>
-        {today && (
-          <span className="text-xs font-semibold text-cloud-600 tabular-nums">
-            Макс: <span className="text-sky-950 font-bold">{formatTemp(today.tempMax)}</span> · Мин: <span className="text-sky-950 font-bold">{formatTemp(today.tempMin)}</span>
+    <div className="space-y-3 max-w-4xl mx-auto">
+      {/* Promo Banners */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Link
+          href={`/pogoda/${slug}/vykhodnye`}
+          className="flex items-center justify-between rounded-xl bg-[#f7f4d3] border border-[#e8dfad] px-4 py-2.5 hover:shadow-xs transition-shadow"
+        >
+          <span className="text-sm font-semibold text-slate-900">Погода на выходные</span>
+          <span className="text-xs font-medium text-slate-600 flex items-center gap-1">
+            См. прогноз <span className="text-slate-400 font-bold">›</span>
           </span>
-        )}
+        </Link>
+
+        <Link
+          href={`/pogoda/${slug}/7-dney`}
+          className="flex items-center justify-between rounded-xl bg-[#d9f2fd] border border-[#b8e5fb] px-4 py-2.5 hover:shadow-xs transition-shadow"
+        >
+          <span className="text-sm font-semibold text-slate-900">Скоро в школу</span>
+          <span className="text-xs font-medium text-slate-600 flex items-center gap-1">
+            См. прогноз <span className="text-slate-400 font-bold">›</span>
+          </span>
+        </Link>
       </div>
 
-      <h1 className="mt-4 font-serif text-h1 font-bold leading-tight text-sky-950">
-        {ru.forecastFor(cityName)}
-      </h1>
-
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-6">
-        <div className="flex flex-wrap items-center gap-4 sm:gap-8">
-          <WeatherIcon
-            code={current.weatherCode}
-            isDay={current.isDay}
-            size={96}
-            className="shrink-0 transition-transform hover:scale-105"
-          />
-          <div>
-            <div className="flex flex-wrap items-baseline gap-4">
-              <p
-                key={current.temperature}
-                className="text-6xl sm:text-7xl lg:text-[5.5rem] font-black tabular-nums leading-none tracking-tighter text-sky-950 animate-temp-settle motion-reduce:animate-none drop-shadow-2xs"
+      {/* Main Weather Card Container */}
+      <section className="rounded-2xl bg-white p-5 sm:p-6 border border-slate-200 shadow-xs text-slate-900">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          {/* Left Column: City, Date, Main Temp & Details */}
+          <div className="md:col-span-5 space-y-4">
+            <div>
+              <Link
+                href={`/pogoda/${slug}`}
+                className="text-xl sm:text-2xl font-normal text-[#0077ff] hover:underline transition-colors"
               >
-                {formatTemp(current.temperature)}
-              </p>
-              {hourly && hourly.length > 0 && (
-                <TemperatureSparkline
-                  hourly={hourly}
-                  currentTime={current.time}
-                  width={110}
-                  height={32}
-                  className="self-center"
-                />
-              )}
+                {cityName}
+              </Link>
+              <LiveCityDate timezone={timezone} />
             </div>
-            <p className="mt-2 text-lg font-semibold text-sky-900 sm:text-xl">
-              {weatherCodeLabel(current.weatherCode)}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {next5Hours.length > 0 && (
-        <div className="mt-6 border-t border-sky-100/90 pt-4">
-          <p className="mb-3 text-xs font-bold uppercase tracking-wider text-cloud-500">
-            {ru.nextHours}
-          </p>
-          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 sm:mx-0 sm:gap-3 sm:px-0 no-scrollbar">
-            {next5Hours.map((h) => {
-              const label = new Date(h.time).toLocaleTimeString("ru-RU", {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
-              return (
-                <div
-                  key={h.time}
-                  className="flex flex-1 min-w-[4.25rem] shrink-0 flex-col items-center justify-center rounded-2xl bg-sky-50/80 p-3 border border-sky-100/90 shadow-2xs hover:bg-sky-100/80 transition-colors"
-                >
-                  <span className="text-xs font-medium text-cloud-500 tabular-nums">
-                    {label}
-                  </span>
-                  <WeatherIcon code={h.weatherCode} size={30} className="my-1.5 shrink-0" />
-                  <span className="text-base font-bold text-sky-950 tabular-nums">
-                    {formatTemp(h.temperature)}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+            {/* Temperature badge + icon + condition text */}
+            <div className="flex items-center gap-3">
+              <span className="bg-[#edf4a1] px-3 py-1 rounded text-3xl sm:text-4xl font-bold text-slate-900 tabular-nums min-w-[72px] text-center">
+                {formatTemp(current.temperature)}
+              </span>
+              <WeatherIcon
+                code={current.weatherCode}
+                isDay={current.isDay}
+                size={44}
+                className="shrink-0"
+              />
+              <span className="text-xs sm:text-sm font-normal text-slate-700 leading-tight">
+                {weatherCodeLabel(current.weatherCode)}
+              </span>
+            </div>
 
-      <div className="mt-6 border-t border-sky-100/90 pt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
-        <div className="rounded-2xl bg-sky-50/60 p-3.5 border border-sky-100/80">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-cloud-500">
-            Давление
-          </p>
-          <p className="mt-1 text-sm font-bold tabular-nums text-sky-950 sm:text-base flex items-center flex-wrap gap-1">
-            <span>{formatPressureMmHg(current.pressure)}</span>
-            <PressureTrend trend={trend} />
-          </p>
-        </div>
-        {typeof current.uvIndex === "number" && (
-          <div className="rounded-2xl bg-sky-50/60 p-3.5 border border-sky-100/80">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-cloud-500">
-              УФ-индекс
-            </p>
-            <p className="mt-1 text-sm font-bold tabular-nums text-sky-950 sm:text-base flex items-center gap-1.5">
-              <span>{current.uvIndex.toFixed(1)}</span>
-              {uvCategory && (
-                <span
-                  className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${uvCategory.colorClass}`}
-                >
-                  {uvCategory.label}
+            {/* Detailed Stats List with Dotted Leaders */}
+            <div className="space-y-1.5 pt-2 text-xs text-slate-700">
+              <div className="flex items-baseline justify-between">
+                <span className="shrink-0 text-slate-600">По ощущению</span>
+                <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
+                <span className="shrink-0 font-medium tabular-nums text-slate-900">
+                  {formatTemp(current.feelsLike)}
                 </span>
-              )}
-            </p>
+              </div>
+
+              <div className="flex items-baseline justify-between">
+                <span className="shrink-0 text-slate-600">Ветер</span>
+                <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
+                <span className="shrink-0 font-medium tabular-nums text-slate-900">
+                  {Math.round(current.windSpeed)} м/с, {windDirText}
+                </span>
+              </div>
+
+              <div className="flex items-baseline justify-between">
+                <span className="shrink-0 text-slate-600">Давление</span>
+                <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
+                <span className="shrink-0 font-medium tabular-nums text-slate-900">
+                  {pressureMm} мм рт. ст.
+                </span>
+              </div>
+
+              <div className="flex items-baseline justify-between">
+                <span className="shrink-0 text-slate-600">Влажность</span>
+                <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
+                <span className="shrink-0 font-medium tabular-nums text-slate-900">
+                  {Math.round(current.humidity)} %
+                </span>
+              </div>
+
+              <div className="flex items-baseline justify-between">
+                <span className="shrink-0 text-slate-600">Вода</span>
+                <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
+                <span className="shrink-0 font-medium tabular-nums text-slate-900">
+                  {formatTemp(waterTemp)}
+                </span>
+              </div>
+
+              <div className="flex items-baseline justify-between">
+                <span className="shrink-0 text-slate-600">Г/м активность</span>
+                <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
+                <span className="shrink-0 font-medium tabular-nums text-slate-900">
+                  {geomagneticKp} балла
+                </span>
+              </div>
+            </div>
           </div>
-        )}
-        {typeof current.dewPoint === "number" && (
-          <div className="rounded-2xl bg-sky-50/60 p-3.5 border border-sky-100/80">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-cloud-500">
-              Точка росы
-            </p>
-            <p className="mt-1 text-sm font-bold tabular-nums text-sky-950 sm:text-base">
-              {formatTemp(current.dewPoint)}
-            </p>
-          </div>
-        )}
-        {typeof current.visibility === "number" && (
-          <div className="rounded-2xl bg-sky-50/60 p-3.5 border border-sky-100/80">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-cloud-500">
-              Видимость
-            </p>
-            <p className="mt-1 text-sm font-bold tabular-nums text-sky-950 sm:text-base">
-              {current.visibility >= 1000
-                ? `${(current.visibility / 1000).toFixed(1)} км`
-                : `${Math.round(current.visibility)} м`}
-            </p>
-          </div>
-        )}
-      </div>
-    </section>
+
+          {/* Right Column: 5-Hour Forecast Timeline */}
+          {next5Hours.length > 0 && (
+            <div className="md:col-span-7 md:border-l md:border-slate-200 md:pl-6 pt-4 md:pt-0">
+              <div className="w-full">
+                {/* Hourly Timeline Labels */}
+                <div className="grid grid-cols-5 gap-1 text-center mb-2">
+                  {next5Hours.map((h) => {
+                    const label = new Date(h.time).toLocaleTimeString("ru-RU", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+                    return (
+                      <span key={h.time} className="text-xs font-normal text-slate-800 tabular-nums">
+                        {label}
+                      </span>
+                    );
+                  })}
+                </div>
+
+                {/* Hourly Weather Icons */}
+                <div className="grid grid-cols-5 gap-1 text-center items-center justify-items-center mb-3">
+                  {next5Hours.map((h) => (
+                    <WeatherIcon
+                      key={h.time}
+                      code={h.weatherCode}
+                      size={36}
+                      className="shrink-0"
+                    />
+                  ))}
+                </div>
+
+                {/* Section Header: Air Temperature */}
+                <p className="text-xs text-slate-600 mb-1.5 font-normal">Температура воздуха, °C</p>
+
+                {/* Temperature Yellow Strip */}
+                <div className="grid grid-cols-5 gap-1 bg-[#edf4a1] py-1.5 rounded text-center text-xs sm:text-sm font-semibold text-slate-900 mb-4 tabular-nums">
+                  {next5Hours.map((h) => (
+                    <span key={h.time}>{formatTemp(h.temperature)}</span>
+                  ))}
+                </div>
+
+                {/* Section Header: Wind Gusts */}
+                <p className="text-xs text-slate-600 mb-1.5 font-normal">Порывы ветра, м/с</p>
+
+                {/* Wind Gusts Grey Pills */}
+                <div className="grid grid-cols-5 gap-1 text-center">
+                  {next5Hours.map((h) => {
+                    const gust = Math.round(h.windGusts ?? h.windSpeed);
+                    return (
+                      <span
+                        key={h.time}
+                        className="bg-[#f0f2f5] rounded-full py-1 text-xs font-medium text-slate-800 tabular-nums shadow-2xs"
+                      >
+                        {gust}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -250,6 +319,7 @@ export function DayPartsGrid({
   hourly: HourlyPoint[];
   date: string;
 }) {
+  const { formatTemp } = useUnit();
   const parts = summarizeDayParts(hourly, date);
   if (parts.length === 0) return null;
 
@@ -296,6 +366,7 @@ export function ComfortIndices({
   hourly?: HourlyPoint[];
   aqi?: AirQuality | null;
 }) {
+  const { formatTemp } = useUnit();
   const trend = getPressureTrend(hourly ?? [], current.time);
   const uvCategory =
     typeof current.uvIndex === "number" ? getUvCategory(current.uvIndex) : null;
@@ -396,6 +467,7 @@ export function ComfortIndices({
 }
 
 export function HourlyForecast({ hours }: { hours: HourlyPoint[] }) {
+  const { formatTemp } = useUnit();
   const next = hours.slice(0, 24);
   return (
     <section>
@@ -433,6 +505,7 @@ export function DailyForecast({
   hourly?: HourlyPoint[];
   limit?: number;
 }) {
+  const { formatTemp } = useUnit();
   const list = limit ? days.slice(0, limit) : days;
   const globalMin = Math.min(...list.map((d) => d.tempMin));
   const globalMax = Math.max(...list.map((d) => d.tempMax));
@@ -523,9 +596,10 @@ export function ForecastTabs({
   active,
 }: {
   slug: string;
-  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "archive";
+  active: "vchera" | "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive";
 }) {
   const tabs = [
+    { id: "vchera" as const, href: `/pogoda/${slug}/vchera`, label: "Вчера" },
     { id: "today" as const, href: `/pogoda/${slug}`, label: ru.today },
     {
       id: "tomorrow" as const,
@@ -541,6 +615,7 @@ export function ForecastTabs({
     { id: "7" as const, href: `/pogoda/${slug}/7-dney`, label: ru.days7 },
     { id: "10" as const, href: `/pogoda/${slug}/10-dney`, label: ru.days10 },
     { id: "14" as const, href: `/pogoda/${slug}/14-dney`, label: ru.days14 },
+    { id: "mesyats" as const, href: `/pogoda/${slug}/mesyats`, label: "Месяц" },
     { id: "archive" as const, href: `/pogoda/${slug}/archiv`, label: "Архив" },
   ];
 

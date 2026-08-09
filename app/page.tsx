@@ -1,30 +1,17 @@
 import { cookies, headers } from "next/headers";
 import { LAST_CITY_COOKIE, RememberLastCity } from "@/components/RememberLastCity";
 import { PageShell } from "@/components/SiteChrome";
-import { CurrentWeatherCard, DayPartsGrid, DailyForecast } from "@/components/WeatherPanels";
-import { HourlyChart } from "@/components/HourlyChart";
+import { CurrentWeatherCard } from "@/components/WeatherPanels";
 import { AlertBanner } from "@/components/AlertBanner";
-import { PopularCitiesGrid } from "@/components/PopularCitiesGrid";
-import { WeatherMapPreviewSection } from "@/components/WeatherMapPreviewSection";
-import { RelatedArticles } from "@/components/RelatedArticles";
-import { EnvironmentalInsightsBar, RegionalShortcutsBar } from "@/components/PortalSidebar";
 import { GeoLocationBanner } from "@/components/GeoLocationBanner";
-import { getLatestArticles } from "@/lib/content/articles";
-import { fetchAirQuality } from "@/lib/weather/air-quality";
 import { fetchGeomagneticData } from "@/lib/weather/geomagnetic";
 import {
   getFavoritesForSession,
-  listPopularCities,
   loadCityWeather,
 } from "@/lib/weather/city-page";
-import { getBatchCachedWeather } from "@/lib/weather/cache";
 import { getActiveAlerts } from "@/lib/weather/alerts";
 import { resolveCityFromCoords } from "@/lib/weather/geo-resolver";
 
-// Option B: This route uses per-request cookies() and headers() to serve personalized weather
-// (last visited city or IP-based geolocation detection) on initial server-side render.
-// In Next.js App Router, using cookies() and headers() forces fully dynamic SSR per request.
-// We explicitly export force-dynamic to reflect the actual rendering strategy and avoid misleading revalidate configs.
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
@@ -77,30 +64,17 @@ export default async function Home() {
     primaryData = await loadCityWeather("moscow");
   }
 
-  // Load popular cities, favorites, aqi, and geomagnetic data concurrently
-  const [popularCitiesList, favorites, aqiData, geomagneticData] = await Promise.all([
-    listPopularCities(24).catch(() => []),
+  const [favorites, geomagneticData] = await Promise.all([
     getFavoritesForSession().catch(() => []),
-    primaryData ? fetchAirQuality(primaryData.city.latitude, primaryData.city.longitude).catch(() => null) : Promise.resolve(null),
     fetchGeomagneticData().catch(() => null),
   ]);
 
-  // Fetch cached weather payloads for popular cities in 1 fast batch query (~5ms)
-  const weatherMap = await getBatchCachedWeather(popularCitiesList);
-  const popularCityItems = popularCitiesList.map((city) => ({
-    city,
-    weather: weatherMap[city.id] ?? null,
-  }));
-
   const activeAlerts = primaryData ? getActiveAlerts(primaryData.weather) : [];
-  const latestArticles = getLatestArticles(5);
-
-  const focusDate = primaryData?.weather.daily[0]?.date;
 
   return (
     <PageShell favorites={favorites}>
       {primaryData && <RememberLastCity slug={primaryData.city.slug} />}
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8 space-y-8 sm:space-y-10">
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 space-y-4">
         {isIpDetected && primaryData && (
           <GeoLocationBanner cityName={primaryData.city.name} />
         )}
@@ -108,61 +82,16 @@ export default async function Home() {
         {activeAlerts.length > 0 && <AlertBanner alerts={activeAlerts} />}
 
         {primaryData && (
-          <>
-            {/* 1. Hero Primary Weather Panel */}
-            <CurrentWeatherCard
-              cityName={primaryData.city.name}
-              current={primaryData.weather.current}
-              today={primaryData.weather.daily[0]}
-              hourly={primaryData.weather.hourly}
-            />
-
-            {/* 2. Environmental & Geomagnetic Insights Bar */}
-            <EnvironmentalInsightsBar
-              aqi={aqiData}
-              geomagnetic={geomagneticData}
-              current={primaryData.weather.current}
-            />
-
-            {/* 3. 24-Hour Temperature Curve Chart */}
-            <HourlyChart hours={primaryData.weather.hourly} />
-
-            {/* 4. Dayparts Breakdown (Morning, Afternoon, Evening, Night) */}
-            {focusDate && (
-              <DayPartsGrid
-                hourly={primaryData.weather.hourly}
-                date={focusDate}
-              />
-            )}
-
-            {/* 5. Extended Daily Forecast */}
-            <DailyForecast
-              days={primaryData.weather.daily}
-              hourly={primaryData.weather.hourly}
-            />
-          </>
+          <CurrentWeatherCard
+            cityName={primaryData.city.name}
+            citySlug={primaryData.city.slug}
+            current={primaryData.weather.current}
+            today={primaryData.weather.daily[0]}
+            hourly={primaryData.weather.hourly}
+            geomagneticKp={geomagneticData?.kp ? Math.round(geomagneticData.kp) : 2}
+            timezone={primaryData.weather.timezone || primaryData.city.timezone || undefined}
+          />
         )}
-
-        <div className="my-6 h-px bg-gradient-to-r from-transparent via-sky-200/80 to-transparent" aria-hidden="true" />
-
-        {/* 6. Regional Quick Navigator Pill Strip */}
-        <RegionalShortcutsBar />
-
-        {/* 7. Popular Cities Weather Grid (24 Cities) */}
-        <PopularCitiesGrid items={popularCityItems} />
-
-        {/* 8. Related Articles Section */}
-        {latestArticles.length > 0 && (
-          <RelatedArticles articles={latestArticles} showViewAll />
-        )}
-
-        <div className="my-6 h-px bg-gradient-to-r from-transparent via-sky-200/80 to-transparent" aria-hidden="true" />
-
-        {/* 9. Interactive Weather Radar Section */}
-        <div id="weather-map">
-          <WeatherMapPreviewSection />
-        </div>
-
       </main>
     </PageShell>
   );

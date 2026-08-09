@@ -1,24 +1,20 @@
 import type { GeomagneticData } from "@/lib/weather/geomagnetic";
 
-/**
- * Geomagnetic severity badge styles mapped to design system palette tokens.
- * Visually quiet outline styling to avoid competing with primary AlertBanner warnings.
- */
 const BADGE_STYLES: Record<
   GeomagneticData["severity"],
   { badge: string; text: string }
 > = {
   calm: {
-    badge: "bg-sky-50/80 text-sky-800 ring-sky-200/60",
-    text: "text-sky-900",
+    badge: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+    text: "text-emerald-950",
   },
   minor: {
-    badge: "bg-sun-50 text-sun-900 ring-sun-200/80",
-    text: "text-sun-900",
+    badge: "bg-amber-50 text-amber-900 ring-amber-200",
+    text: "text-amber-900",
   },
   storm: {
-    badge: "bg-sun-100 text-sun-950 ring-sun-300",
-    text: "text-sun-950",
+    badge: "bg-orange-100 text-orange-950 ring-orange-300",
+    text: "text-orange-950",
   },
   severe: {
     badge: "bg-red-50 text-red-800 ring-red-200",
@@ -30,9 +26,10 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
   if (!data) return null;
 
   const style = BADGE_STYLES[data.severity] ?? BADGE_STYLES.calm;
+  const currentKp = Math.min(8, Math.max(1, Math.round(data.kp)));
 
   return (
-    <div className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5">
+    <div id="geomagnetic" className="rounded-2xl bg-white/95 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <svg
@@ -52,29 +49,49 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
           </svg>
           <div>
             <h3 className="text-h3 font-semibold text-cloud-900">
-              Геомагнитная активность
+              Геомагнитная обстановка
             </h3>
-            <p className="text-xs text-cloud-500">Данные NOAA (индекс Kp)</p>
+            <p className="text-xs text-cloud-500">Г/м: {data.kpDisplay} балла из 9</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight text-cloud-900 tabular-nums">
-            {data.kpDisplay} <span className="text-xs text-cloud-400 font-normal">/ 9 Kp</span>
-          </span>
           <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${style.badge}`}
+            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${style.badge}`}
           >
-            {data.label}
+            {data.kpDisplay} балла из 9 · {data.label}
           </span>
         </div>
       </div>
 
+      {/* 9-Point Kp Scale Bar matching Gismeteo */}
+      <div className="mt-4 grid grid-cols-9 gap-1.5">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => {
+          const isCurrent = level === Math.min(9, Math.max(1, Math.round(data.kp)));
+          let colorClass = "bg-emerald-400";
+          if (level >= 4 && level <= 5) colorClass = "bg-amber-400";
+          if (level >= 6) colorClass = "bg-red-500";
+
+          return (
+            <div key={level} className="flex flex-col items-center gap-1">
+              <div
+                className={`h-3 w-full rounded-full transition-all ${
+                  isCurrent ? `${colorClass} ring-2 ring-sky-600 scale-105` : `${colorClass} opacity-30`
+                }`}
+              />
+              <span className={`text-[10px] ${isCurrent ? "font-bold text-sky-950" : "text-slate-400"}`}>
+                {level}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
       {data.isElevated && (
-        <div className="mt-3 rounded-xl bg-sun-50/80 p-3 text-xs text-sun-950 ring-1 ring-sun-200/70">
-          <p className="font-medium">⚠️ Повышенный уровень активности</p>
-          <p className="mt-0.5 text-sun-900">
-            Возможны недомогание и головные боли у метеозависимых людей. Старайтесь избегать переутомления.
+        <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-950 ring-1 ring-amber-200">
+          <p className="font-medium">⚠️ Повышенный уровень активности ({data.kpDisplay} балла)</p>
+          <p className="mt-0.5 text-amber-900">
+            Возможны недомогания у метеозависимых людей.
           </p>
         </div>
       )}

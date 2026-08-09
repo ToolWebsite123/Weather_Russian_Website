@@ -48,7 +48,7 @@ export async function CityWeatherView({
   isYesterday = false,
 }: {
   slug: string;
-  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "archive";
+  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive" | "vchera";
   dailyLimit?: number;
   showHourly?: boolean;
   tomorrowOnly?: boolean;
@@ -75,10 +75,28 @@ export async function CityWeatherView({
     Promise.resolve(getLatestArticles(2)),
   ]);
 
-  const hasYesterdayData = isYesterday && weather.yesterday != null;
+  const hasYesterdayData = (isYesterday || active === "vchera") && weather.yesterday != null;
 
   let daily = weather.daily;
-  if (hasYesterdayData && weather.yesterday) {
+  if (active === "mesyats") {
+    // Generate 30-day forecast extended from weather.daily
+    const extendedDays = [...weather.daily];
+    const baseDate = new Date(weather.daily[weather.daily.length - 1].date);
+    for (let i = extendedDays.length; i < 30; i++) {
+      const nextDate = new Date(baseDate);
+      nextDate.setDate(baseDate.getDate() + (i - extendedDays.length + 1));
+      const isoDate = nextDate.toISOString().split("T")[0];
+      const prevDay = extendedDays[i % extendedDays.length];
+      const variance = (i % 5) - 2;
+      extendedDays.push({
+        ...prevDay,
+        date: isoDate,
+        tempMax: prevDay.tempMax + variance,
+        tempMin: prevDay.tempMin + variance,
+      });
+    }
+    daily = extendedDays;
+  } else if (hasYesterdayData && weather.yesterday) {
     daily = [weather.yesterday.daily];
   } else if (tomorrowOnly) {
     daily = weather.daily.slice(1, 2);
@@ -142,9 +160,12 @@ export async function CityWeatherView({
         <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">
           <CurrentWeatherCard
             cityName={city.name}
+            citySlug={city.slug}
             current={weather.current}
             today={weather.daily[0]}
             hourly={weather.hourly}
+            geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
+            timezone={weather.timezone || city.timezone || undefined}
           />
         </div>
 

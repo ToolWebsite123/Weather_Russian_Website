@@ -23,23 +23,51 @@ const REGIONAL_HUBS = [
   { id: "ekaterinburg", name: "Екатеринбург и Урал", slug: "yekaterinburg", lat: 56.8389, lon: 60.6057 },
 ];
 
+const MAP_LAYERS = [
+  { id: "precip", label: "Осадки", icon: "🌧️" },
+  { id: "temp", label: "Температура", icon: "🌡️" },
+  { id: "wind", label: "Ветер", icon: "💨" },
+  { id: "clouds", label: "Облачность", icon: "☁️" },
+];
+
 export function WeatherMapPreviewSection() {
   const [selectedHub, setSelectedHub] = useState(REGIONAL_HUBS[0]);
+  const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].id);
 
   return (
-    <section className="rounded-3xl bg-white/95 p-6 border border-sky-200/90 shadow-lg shadow-sky-900/5 backdrop-blur-md ring-1 ring-white/80 space-y-4">
-      <SectionHeading
-        action={
-          <Link
-            href={`/pogoda/${selectedHub.slug}`}
-            className="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline transition-colors"
-          >
-            Карта погоды {selectedHub.name} &rarr;
-          </Link>
-        }
-      >
-        {ru.weatherOnMap}
-      </SectionHeading>
+    <section id="weather-map" className="rounded-3xl bg-white/95 p-6 border border-sky-200/90 shadow-lg shadow-sky-900/5 backdrop-blur-md ring-1 ring-white/80 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <SectionHeading
+          action={
+            <Link
+              href={`/pogoda/${selectedHub.slug}`}
+              className="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline transition-colors"
+            >
+              Карта погоды {selectedHub.name} &rarr;
+            </Link>
+          }
+        >
+          {ru.weatherOnMap}
+        </SectionHeading>
+
+        {/* Map Layer Switcher Tabs matching Gismeteo */}
+        <div className="flex items-center gap-1 rounded-xl bg-sky-100/70 p-1 text-xs font-medium">
+          {MAP_LAYERS.map((layer) => (
+            <button
+              key={layer.id}
+              onClick={() => setActiveLayer(layer.id)}
+              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 transition-all ${
+                activeLayer === layer.id
+                  ? "bg-white text-sky-950 font-bold shadow-2xs ring-1 ring-sky-200"
+                  : "text-sky-800 hover:text-sky-950 hover:bg-sky-200/50"
+              }`}
+            >
+              <span>{layer.icon}</span>
+              <span>{layer.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {REGIONAL_HUBS.map((hub) => {
@@ -61,7 +89,7 @@ export function WeatherMapPreviewSection() {
                   isSelected ? "text-sky-100" : "text-cloud-500"
                 }`}
               >
-                Радар осадков
+                Карта: {MAP_LAYERS.find((l) => l.id === activeLayer)?.label}
               </span>
             </button>
           );
@@ -70,11 +98,11 @@ export function WeatherMapPreviewSection() {
 
       <div className="relative min-h-[18rem] sm:min-h-[24rem] w-full overflow-hidden rounded-xl ring-1 ring-sky-100/80">
         <DynamicRadarMap
-          key={selectedHub.id}
+          key={`${selectedHub.id}-${activeLayer}`}
           latitude={selectedHub.lat}
           longitude={selectedHub.lon}
           cityName={selectedHub.name}
-          showPrecip={true}
+          showPrecip={activeLayer === "precip"}
         />
       </div>
     </section>

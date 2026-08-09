@@ -12,9 +12,11 @@ import {
 } from "recharts";
 import type { HourlyPoint } from "@/types/weather";
 import { ru } from "@/lib/i18n/ru";
+import { useUnit } from "@/components/UnitContext";
 
 type TooltipProps = {
   active?: boolean;
+  unitLabel?: string;
   payload?: Array<{
     name: string;
     value: number;
@@ -24,7 +26,7 @@ type TooltipProps = {
   label?: string;
 };
 
-function CustomTooltip({ active, payload, label }: TooltipProps) {
+function CustomTooltip({ active, payload, label, unitLabel = "°C" }: TooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const tempData = payload.find((p) => p.dataKey === "temp");
@@ -39,7 +41,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
           <p className="flex items-center justify-between gap-4 font-medium text-sky-900">
             <span>Температура:</span>
             <span className="tabular-nums font-bold">
-              {tempData.value > 0 ? `+${tempData.value}` : tempData.value}°C
+              {tempData.value > 0 ? `+${tempData.value}` : tempData.value}{unitLabel}
             </span>
           </p>
         )}
@@ -50,7 +52,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
               {feelsLikeData.value > 0
                 ? `+${feelsLikeData.value}`
                 : feelsLikeData.value}
-              °C
+              {unitLabel}
             </span>
           </p>
         )}
@@ -68,6 +70,9 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
 }
 
 export function HourlyChart({ hours }: { hours: HourlyPoint[] }) {
+  const { unit, convertTemp } = useUnit();
+  const unitLabel = unit === "F" ? "°F" : "°C";
+
   if (!hours || hours.length === 0) {
     return (
       <section className="rounded-3xl bg-white/95 p-6 border border-sky-200/90 shadow-lg shadow-sky-900/5 backdrop-blur-md ring-1 ring-white/80">
@@ -97,11 +102,10 @@ export function HourlyChart({ hours }: { hours: HourlyPoint[] }) {
         }
       }
 
-      const tempNum = Math.round(h.temperature);
-      const feelsLikeNum =
-        typeof h.feelsLike === "number" && !isNaN(h.feelsLike)
-          ? Math.round(h.feelsLike)
-          : tempNum;
+      const rawTemp = convertTemp(h.temperature) ?? Math.round(h.temperature);
+      const tempNum = rawTemp != null ? rawTemp : Math.round(h.temperature);
+      const rawFeelsLike = convertTemp(h.feelsLike) ?? tempNum;
+      const feelsLikeNum = rawFeelsLike != null ? rawFeelsLike : tempNum;
       const precipNum =
         typeof h.precipitation === "number" && !isNaN(h.precipitation)
           ? Math.max(0, h.precipitation)
@@ -182,7 +186,7 @@ export function HourlyChart({ hours }: { hours: HourlyPoint[] }) {
               domain={[0, (dataMax: number) => Math.max(5, dataMax * 1.5)]}
               hide
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip unitLabel={unitLabel} />} />
             <Bar
               yAxisId="precip"
               dataKey="precip"

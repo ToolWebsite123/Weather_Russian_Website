@@ -33,6 +33,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
 };
 
+import { UnitProvider } from "@/components/UnitContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,7 +48,7 @@ export default function RootLayout({
       >
         <DomNodeFix />
         <ServiceWorkerRegister />
-        {children}
+        <UnitProvider>{children}</UnitProvider>
       </body>
     </html>
   );
