@@ -4,6 +4,8 @@ import { upsertCityFromGeo } from "@/lib/weather/cache";
 import { searchQuerySchema } from "@/lib/validations/schemas";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const rateLimit = await checkRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
   if (!rateLimit.success) return rateLimitResponse();
