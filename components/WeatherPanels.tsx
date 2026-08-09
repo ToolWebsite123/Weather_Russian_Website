@@ -227,6 +227,56 @@ export function CurrentWeatherCard({
 
       {/* Main Weather Card Container */}
       <section className="rounded-2xl bg-white p-5 sm:p-6 border border-slate-200 shadow-xs text-slate-900">
+        {/* Section Anchor Chips (Радар, Пыльца, Дороги, Г/м активность) */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3 mb-5 text-xs font-medium">
+          <a
+            href="#weather-map"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200/70 px-2.5 py-1 text-slate-700 hover:bg-sky-50 hover:border-sky-200 hover:text-sky-700 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 2a7 7 0 1 0 10 10" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>Радар</span>
+          </a>
+
+          <a
+            href="#environmental-insights"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200/70 px-2.5 py-1 text-slate-700 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.1 2 7a9 9 0 0 1-10 11z" />
+              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+            </svg>
+            <span>Пыльца</span>
+          </a>
+
+          <a
+            href="#road-conditions"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200/70 px-2.5 py-1 text-slate-700 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="8" rx="2" />
+              <circle cx="7" cy="15" r="1.5" />
+              <circle cx="17" cy="15" r="1.5" />
+              <path d="M5 11l2-5h10l2 5" />
+            </svg>
+            <span>Дороги</span>
+          </a>
+
+          <a
+            href="#geomagnetic"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200/70 px-2.5 py-1 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 15v-2a6 6 0 1 1 12 0v2" />
+              <path d="M6 15h4v5H6zM14 15h4v5h-4z" />
+            </svg>
+            <span>Г/м активность</span>
+          </a>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           {/* Left Column: City, Date, Main Temp & Details */}
           <div className="md:col-span-5 space-y-4">
@@ -671,20 +721,12 @@ export function ForecastTabs({
   active: "now" | "vchera" | "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive";
 }) {
   const tabs = [
+    { id: "vchera" as const, href: `/pogoda/${slug}/vchera`, label: "Вчера" },
     { id: "now" as const, href: `/pogoda/${slug}`, label: "Сейчас" },
     { id: "today" as const, href: `/pogoda/${slug}`, label: ru.today },
-    {
-      id: "tomorrow" as const,
-      href: `/pogoda/${slug}/zavtra`,
-      label: ru.tomorrow,
-    },
-    { id: "vchera" as const, href: `/pogoda/${slug}/vchera`, label: "Вчера" },
-    {
-      id: "weekend" as const,
-      href: `/pogoda/${slug}/vykhodnye`,
-      label: "Выходные",
-    },
+    { id: "tomorrow" as const, href: `/pogoda/${slug}/zavtra`, label: ru.tomorrow },
     { id: "3" as const, href: `/pogoda/${slug}/3-dnya`, label: ru.days3 },
+    { id: "weekend" as const, href: `/pogoda/${slug}/vykhodnye`, label: "Выходные" },
     { id: "7" as const, href: `/pogoda/${slug}/7-dney`, label: ru.days7 },
     { id: "10" as const, href: `/pogoda/${slug}/10-dney`, label: ru.days10 },
     { id: "14" as const, href: `/pogoda/${slug}/14-dney`, label: ru.days14 },
@@ -694,7 +736,7 @@ export function ForecastTabs({
 
   return (
     <nav
-      className="sticky top-0 z-20 -mx-4 flex gap-2 overflow-x-auto border-b border-sky-100/80 bg-sky-50/90 px-4 py-3 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border sm:border-sky-100 sm:bg-white/80"
+      className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto no-scrollbar rounded-2xl bg-white p-2 border border-slate-200 shadow-2xs text-xs sm:text-sm backdrop-blur-md"
       aria-label="Период прогноза"
     >
       {tabs.map((tab) => {
@@ -703,11 +745,11 @@ export function ForecastTabs({
           <Link
             key={tab.id}
             href={tab.href}
-            className={
+            className={`shrink-0 rounded-xl px-3 py-1.5 font-medium transition-colors whitespace-nowrap ${
               isActive
-                ? "shrink-0 rounded-full bg-sky-700 px-3 py-1.5 text-sm font-medium text-white"
-                : "shrink-0 rounded-full bg-white/90 px-3 py-1.5 text-sm text-sky-800 ring-1 ring-sky-100 hover:bg-sky-50"
-            }
+                ? "bg-sky-600 text-white font-semibold shadow-xs"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            }`}
           >
             {tab.label}
           </Link>

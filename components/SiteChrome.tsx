@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ru } from "@/lib/i18n/ru";
@@ -61,14 +61,19 @@ export function SiteHeader({
   cityCount?: number;
 }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isAppModalOpen, setIsAppModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<{ id: number; slug: string; name: string; admin1?: string; country?: string }[]>([]);
+  const [isFavOpen, setIsFavOpen] = useState(false);
   const { unit, toggleUnit } = useUnit();
   const pathname = usePathname() || "/";
+  const searchBoxRef = useRef<HTMLDivElement>(null);
 
-  // Parse current city slug and sub-route dynamically from pathname
+  // Parse current city slug dynamically from pathname
   const pathSegments = pathname.split("/").filter(Boolean);
   const currentCitySlug = pathSegments[0] === "pogoda" && pathSegments[1] ? pathSegments[1] : "moscow";
-  const subRoute = pathSegments[0] === "pogoda" ? (pathSegments[2] || "") : "";
+
+  const isCityPage = pathname.startsWith("/pogoda");
+  const anchorPrefix = isCityPage ? "" : `/pogoda/${currentCitySlug}`;
 
   function handleSearchClick() {
     const pageSearchInput = document.querySelector<HTMLInputElement>(
@@ -82,216 +87,237 @@ export function SiteHeader({
     }
   }
 
-  const isCityPage = pathname.startsWith("/pogoda");
-  const anchorPrefix = isCityPage ? "" : `/pogoda/${currentCitySlug}`;
-
-  const horizonTabs = [
-    { id: "yesterday", label: "Вчера", href: `/pogoda/${currentCitySlug}/vchera`, active: subRoute === "vchera" },
-    { id: "now", label: "Сейчас", href: `/pogoda/${currentCitySlug}`, active: subRoute === "" && (pathname.startsWith("/pogoda") || pathname === "/") },
-    { id: "today", label: "Сегодня", href: `/pogoda/${currentCitySlug}`, active: false },
-    { id: "tomorrow", label: "Завтра", href: `/pogoda/${currentCitySlug}/zavtra`, active: subRoute === "zavtra" },
-    { id: "3days", label: "3 дня", href: `/pogoda/${currentCitySlug}/3-dnya`, active: subRoute === "3-dnya" },
-    { id: "weekend", label: "Выходные", href: `/pogoda/${currentCitySlug}/vykhodnye`, active: subRoute === "vykhodnye" },
-    { id: "week", label: "Неделя", href: `/pogoda/${currentCitySlug}/7-dney`, active: subRoute === "7-dney" },
-    { id: "10days", label: "10 дней", href: `/pogoda/${currentCitySlug}/10-dney`, active: subRoute === "10-dney" },
-    { id: "2weeks", label: "2 недели", href: `/pogoda/${currentCitySlug}/14-dney`, active: subRoute === "14-dney" },
-    { id: "month", label: "Месяц", href: `/pogoda/${currentCitySlug}/mesyats`, active: subRoute === "mesyats" },
-    { id: "weather-archive", label: "Архив", href: `/pogoda/${currentCitySlug}/archiv`, active: subRoute === "archiv" },
-    { id: "radar", label: "Радар", href: `${anchorPrefix}#weather-map`, active: false },
-    { id: "pollen", label: "Пыльца", href: `${anchorPrefix}#environmental-insights`, active: false },
-    { id: "roads", label: "Дороги", href: `${anchorPrefix}#road-conditions`, active: false },
-    { id: "gm", label: "Г/м активность", href: `${anchorPrefix}#geomagnetic`, active: false },
-    { id: "archive", label: "Статьи", href: "/articles", active: pathname.startsWith("/articles") },
-  ];
-
-  function scrollNav(direction: "left" | "right") {
-    const container = document.getElementById("horizon-nav-container");
-    if (container) {
-      const amount = direction === "left" ? -240 : 240;
-      container.scrollBy({ left: amount, behavior: "smooth" });
+  // Handle live geocoding search inside inline navbar search input
+  useEffect(() => {
+    const query = searchQuery.trim();
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
     }
-  }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setSearchResults(data.results || []);
+      } catch (err: unknown) {
+        if ((err as Error)?.name === "AbortError") return;
+      }
+    }, 200);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchQuery]);
+
+  // Click outside listener to close search / favorites dropdowns
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
+        setIsSearchOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <>
-      <header className="sticky top-0 z-30 border-b border-sky-200/60 bg-white/95 backdrop-blur-md transition-all shadow-xs">
-        {/* Top Header Bar */}
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
-          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
-            <Link
-              href="/"
-              className="flex items-center gap-2 font-serif text-h2 font-semibold text-sky-950 hover:text-sky-800 transition-colors shrink-0"
-            >
-              <SunCloudLogo />
-              <span>{ru.brand}</span>
-            </Link>
+    <header className="sticky top-0 z-30 border-b border-sky-200/60 bg-white/95 backdrop-blur-md transition-all shadow-xs">
+      {/* Single-Row Navbar Header */}
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
+        <div className="flex items-center gap-4 sm:gap-8 shrink-0">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-serif text-h2 font-semibold text-sky-950 hover:text-sky-800 transition-colors shrink-0"
+          >
+            <SunCloudLogo />
+            <span>{ru.brand}</span>
+          </Link>
 
-            {/* Primary Header Tabs matching Gismeteo */}
-            <nav className="hidden md:flex items-center gap-5 text-xs font-semibold text-sky-900">
-              <Link href="/" className="hover:text-sky-600 transition-colors">
-                Погода
-              </Link>
-              <Link href="/articles" className="hover:text-sky-600 transition-colors">
-                Новости
-              </Link>
-              <Link href={`${anchorPrefix}#weather-map`} className="hover:text-sky-600 transition-colors">
-                Карты
-              </Link>
+          {/* Center-Left 3 Nav Links */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-sky-900">
+            <Link href="/" className="hover:text-sky-600 transition-colors">
+              Погода
+            </Link>
+            <Link href="/articles" className="hover:text-sky-600 transition-colors">
+              Статьи
+            </Link>
+            <Link href={`${anchorPrefix}#weather-map`} className="hover:text-sky-600 transition-colors">
+              Карта
+            </Link>
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          {/* Expandable Inline Search Input */}
+          <div ref={searchBoxRef} className="relative flex items-center">
+            <div
+              className={`flex h-9 items-center rounded-xl border border-sky-200/80 bg-sky-50/80 transition-all duration-300 ease-in-out ${
+                isSearchOpen
+                  ? "w-48 sm:w-[220px] bg-white ring-2 ring-sky-300 px-2.5 shadow-xs"
+                  : "w-9 justify-center cursor-pointer hover:bg-sky-100"
+              }`}
+            >
               <button
                 type="button"
-                onClick={() => setIsAppModalOpen(true)}
-                className="hover:text-sky-600 transition-colors cursor-pointer"
+                onClick={handleSearchClick}
+                className="flex items-center justify-center shrink-0 text-sky-700 hover:text-sky-950 focus:outline-none"
+                aria-label="Поиск города"
+                title="Поиск города"
               >
-                Приложения
+                <SearchIcon className="h-4 w-4" />
               </button>
-            </nav>
-          </div>
+              {isSearchOpen && (
+                <input
+                  type="text"
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Поиск города..."
+                  className="w-full bg-transparent ml-2 text-xs font-medium text-sky-950 outline-none placeholder:text-cloud-400"
+                />
+              )}
+            </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            {favorites.length > 0 && (
-              <nav className="hidden items-center gap-2 lg:flex" aria-label={ru.favorites}>
-                <span className="text-xs uppercase tracking-wide text-cloud-500 font-medium">
-                  {ru.favorites}:
-                </span>
-                {favorites.map((f) => (
+            {/* Live Search Results Dropdown */}
+            {isSearchOpen && searchResults.length > 0 && (
+              <div className="absolute right-0 top-full mt-2 w-64 sm:w-72 rounded-xl border border-sky-100 bg-white py-1.5 shadow-xl z-50 max-h-64 overflow-y-auto">
+                {searchResults.map((r) => (
                   <Link
-                    key={f.slug}
-                    href={`/pogoda/${f.slug}`}
-                    className="rounded-lg bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800 hover:bg-sky-100 hover:text-sky-950 transition-colors truncate max-w-[110px]"
+                    key={`${r.id}-${r.slug}`}
+                    href={`/pogoda/${r.slug}`}
+                    className="block px-3 py-2 text-left hover:bg-sky-50 transition-colors"
+                    onClick={() => {
+                      setIsSearchOpen(false);
+                      setSearchQuery("");
+                    }}
                   >
-                    {f.name}
+                    <div className="text-xs font-semibold text-sky-950">{r.name}</div>
+                    <div className="text-[11px] text-cloud-500">
+                      {[r.admin1, r.country].filter(Boolean).join(", ")}
+                    </div>
                   </Link>
                 ))}
-              </nav>
+              </div>
             )}
-
-            {/* Temperature Unit Switcher (°C / °F) */}
-            <button
-              type="button"
-              onClick={toggleUnit}
-              className="flex items-center justify-center h-8 rounded-lg bg-sky-100/80 px-2.5 text-xs font-bold text-sky-900 hover:bg-sky-200 transition-colors"
-              title="Переключить единицу измерения температуры"
-            >
-              °{unit}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSearchClick}
-              className="flex h-9 items-center gap-2 rounded-xl border border-sky-200/80 bg-sky-50/80 px-3 text-xs font-semibold text-sky-900 shadow-2xs transition hover:bg-sky-100 hover:text-sky-950 focus:outline-none focus:ring-2 focus:ring-sky-400"
-              aria-label="Поиск города"
-              title="Поиск города"
-            >
-              <SearchIcon className="h-4 w-4 text-sky-700" />
-              <span className="hidden sm:inline">Поиск города...</span>
-            </button>
           </div>
-        </div>
 
-        {/* Sub-Header Horizon Quick Navigation Strip with Scroll Arrows */}
-        <div className="relative border-t border-sky-200/80 bg-sky-600 px-2 py-1.5 sm:px-4 shadow-inner">
-          <div className="mx-auto flex max-w-7xl items-center gap-1">
-            <button
-              type="button"
-              onClick={() => scrollNav("left")}
-              className="hidden sm:flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sky-700/80 text-white hover:bg-sky-800 transition-colors"
-              aria-label="Скролл влево"
-            >
-              ‹
-            </button>
+          {/* Temperature Unit Switcher (°C / °F) */}
+          <button
+            type="button"
+            onClick={toggleUnit}
+            className="flex items-center justify-center h-9 rounded-xl bg-sky-100/80 px-2.5 text-xs font-bold text-sky-900 hover:bg-sky-200 transition-colors"
+            title="Переключить единицу измерения температуры"
+          >
+            °{unit}
+          </button>
 
-            <div
-              id="horizon-nav-container"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-              className="flex flex-1 items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth text-xs text-white"
-            >
-              {horizonTabs.map((tab) => (
-                <Link
-                  key={tab.id}
-                  href={tab.href}
-                  className={`shrink-0 rounded-md px-3 py-1.5 font-medium transition-all whitespace-nowrap ${
-                    tab.active
-                      ? "bg-sky-100 text-sky-950 font-bold shadow-xs"
-                      : "text-sky-50 hover:bg-sky-500/80 hover:text-white"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              ))}
+          {/* Favorites Dropdown Pill */}
+          {favorites.length > 0 && (
+            <div className="relative" onMouseLeave={() => setIsFavOpen(false)}>
+              <button
+                type="button"
+                onClick={() => setIsFavOpen((prev) => !prev)}
+                onMouseEnter={() => setIsFavOpen(true)}
+                className="flex h-9 items-center gap-1.5 rounded-xl bg-amber-50/90 border border-amber-200/80 px-2.5 text-xs font-bold text-amber-900 hover:bg-amber-100 transition-colors cursor-pointer"
+                aria-label="Избранное"
+              >
+                <span>⭐</span>
+                <span>{favorites.length}</span>
+              </button>
+
+              {isFavOpen && (
+                <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl border border-sky-100 bg-white p-1.5 shadow-lg z-50">
+                  <div className="px-2.5 py-1 text-[10px] font-bold text-cloud-400 uppercase tracking-wider">
+                    {ru.favorites}
+                  </div>
+                  <div className="max-h-60 overflow-y-auto space-y-0.5">
+                    {favorites.map((f) => (
+                      <Link
+                        key={f.slug}
+                        href={`/pogoda/${f.slug}`}
+                        className="block rounded-lg px-2.5 py-1.5 text-xs font-medium text-sky-950 hover:bg-sky-50 transition-colors truncate"
+                        onClick={() => setIsFavOpen(false)}
+                      >
+                        {f.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-
-            <button
-              type="button"
-              onClick={() => scrollNav("right")}
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sky-500 text-white hover:bg-sky-400 transition-colors shadow-xs font-bold"
-              aria-label="Скролл вправо"
-            >
-              ›
-            </button>
-          </div>
+          )}
         </div>
-
-        {isSearchOpen && (
-          <div className="border-t border-sky-100/80 bg-white/95 px-4 py-3 shadow-inner sm:px-6">
-            <div className="mx-auto max-w-4xl flex justify-center">
-              <CitySearch />
-            </div>
-          </div>
-        )}
-        <AppInstallModal
-          isOpen={isAppModalOpen}
-          onClose={() => setIsAppModalOpen(false)}
-        />
-      </header>
-    </>
+      </div>
+    </header>
   );
 }
 
 export function SiteFooter({ cityCount = 272 }: { cityCount?: number }) {
+  const [isAppModalOpen, setIsAppModalOpen] = useState(false);
+
   return (
-    <footer className="relative z-10 border-t border-sky-200/40 py-8 text-center text-sm text-cloud-500 space-y-3">
-      <nav className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-sky-900">
-        <Link href="/" className="hover:underline">
-          Главная
-        </Link>
-        <span>·</span>
-        <Link href="/gorod" className="hover:underline">
-          Каталог всех {cityCount} городов
-        </Link>
-        <span>·</span>
-        <Link href="/articles" className="hover:underline">
-          Статьи и гайды
-        </Link>
-        <span>·</span>
-        <Link href="/terms" className="hover:underline">
-          Условия
-        </Link>
-        <span>·</span>
-        <Link href="/privacy" className="hover:underline">
-          Конфиденциальность
-        </Link>
-        <span>·</span>
-        <Link href="/contact" className="hover:underline">
-          Контакты
-        </Link>
-      </nav>
-      <p className="text-xs text-cloud-500">
-        Данные о погоде предоставлены{" "}
-        <a
-          href="https://open-meteo.com/"
-          className="underline decoration-sky-300 underline-offset-2 hover:text-sky-800"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Open-Meteo
-        </a>
-      </p>
-      <p className="text-xs text-cloud-400">
-        WeatherHub · точный прогноз погоды без рекламного шума
-      </p>
-    </footer>
+    <>
+      <footer className="relative z-10 border-t border-sky-200/40 py-8 text-center text-sm text-cloud-500 space-y-3">
+        <nav className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-sky-900">
+          <Link href="/" className="hover:underline">
+            Главная
+          </Link>
+          <span>·</span>
+          <Link href="/gorod" className="hover:underline">
+            Каталог всех {cityCount} городов
+          </Link>
+          <span>·</span>
+          <Link href="/articles" className="hover:underline">
+            Статьи и гайды
+          </Link>
+          <span>·</span>
+          <button
+            type="button"
+            onClick={() => setIsAppModalOpen(true)}
+            className="hover:underline cursor-pointer font-medium text-sky-900"
+          >
+            Приложения
+          </button>
+          <span>·</span>
+          <Link href="/terms" className="hover:underline">
+            Условия
+          </Link>
+          <span>·</span>
+          <Link href="/privacy" className="hover:underline">
+            Конфиденциальность
+          </Link>
+          <span>·</span>
+          <Link href="/contact" className="hover:underline">
+            Контакты
+          </Link>
+        </nav>
+        <p className="text-xs text-cloud-500">
+          Данные о погоде предоставлены{" "}
+          <a
+            href="https://open-meteo.com/"
+            className="underline decoration-sky-300 underline-offset-2 hover:text-sky-800"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open-Meteo
+          </a>
+        </p>
+        <p className="text-xs text-cloud-400">
+          WeatherHub · точный прогноз погоды без рекламного шума
+        </p>
+      </footer>
+      <AppInstallModal
+        isOpen={isAppModalOpen}
+        onClose={() => setIsAppModalOpen(false)}
+      />
+    </>
   );
 }
+
 export function PageShell({
   children,
   favorites,
@@ -313,3 +339,4 @@ export function PageShell({
     </div>
   );
 }
+
