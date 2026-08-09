@@ -4,6 +4,7 @@ import { PageShell } from "@/components/SiteChrome";
 import { CategoryTabBar, CurrentWeatherCard } from "@/components/WeatherPanels";
 import { AlertBanner } from "@/components/AlertBanner";
 import { GeoLocationBanner } from "@/components/GeoLocationBanner";
+import { PopularCitiesSection } from "@/components/PopularCitiesSection";
 import { fetchGeomagneticData } from "@/lib/weather/geomagnetic";
 import {
   getFavoritesForSession,
@@ -86,15 +87,18 @@ export default async function Home() {
         {activeAlerts.length > 0 && <AlertBanner alerts={activeAlerts} />}
 
         {primaryData && (
-          <CurrentWeatherCard
-            cityName={primaryData.city.name}
-            citySlug={primaryData.city.slug}
-            current={primaryData.weather.current}
-            today={primaryData.weather.daily[0]}
-            hourly={primaryData.weather.hourly}
-            geomagneticKp={geomagneticData?.kp ? Math.round(geomagneticData.kp) : 2}
-            timezone={primaryData.weather.timezone || primaryData.city.timezone || undefined}
-          />
+          <>
+            <CurrentWeatherCard
+              cityName={primaryData.city.name}
+              citySlug={primaryData.city.slug}
+              current={primaryData.weather.current}
+              today={primaryData.weather.daily[0]}
+              hourly={primaryData.weather.hourly}
+              geomagneticKp={geomagneticData?.kp ? Math.round(geomagneticData.kp) : 2}
+              timezone={primaryData.weather.timezone || primaryData.city.timezone || undefined}
+            />
+            <PopularCitiesSection />
+          </>
         )}
       </main>
     </PageShell>
