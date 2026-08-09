@@ -164,6 +164,149 @@ export function SunArcTimeline({
   );
 }
 
+export function CategoryTabBar({
+  slug,
+  active = "now",
+  anchorPrefix = "",
+}: {
+  slug: string;
+  active?: string;
+  anchorPrefix?: string;
+}) {
+  const activeNormalized =
+    {
+      tomorrow: "zavtra",
+      weekend: "vykhodnye",
+      "3": "3-dnya",
+      "7": "7-dney",
+      "10": "10-dney",
+      "14": "14-dney",
+      archive: "archiv",
+    }[active] || active;
+
+  const tabs = [
+    { id: "vchera", href: `/pogoda/${slug}/vchera`, label: "Вчера" },
+    { id: "now", href: `/pogoda/${slug}`, label: "Сейчас" },
+    { id: "today", href: `/pogoda/${slug}`, label: ru.today },
+    { id: "zavtra", href: `/pogoda/${slug}/zavtra`, label: ru.tomorrow },
+    { id: "3-dnya", href: `/pogoda/${slug}/3-dnya`, label: ru.days3 },
+    { id: "vykhodnye", href: `/pogoda/${slug}/vykhodnye`, label: "Выходные" },
+    { id: "7-dney", href: `/pogoda/${slug}/7-dney`, label: ru.days7 },
+    { id: "10-dney", href: `/pogoda/${slug}/10-dney`, label: ru.days10 },
+    { id: "14-dney", href: `/pogoda/${slug}/14-dney`, label: ru.days14 },
+    { id: "mesyats", href: `/pogoda/${slug}/mesyats`, label: "Месяц" },
+    { id: "archiv", href: `/pogoda/${slug}/archiv`, label: "Архив" },
+  ];
+
+  return (
+    <nav
+      className="w-full overflow-x-auto no-scrollbar scroll-smooth whitespace-nowrap bg-[#0f3d3a] rounded-xl px-2.5 py-2 text-sm shadow-xs"
+      aria-label="Категории и период прогноза"
+    >
+      {tabs.map((tab) => {
+        const isActive = tab.id === activeNormalized;
+        return (
+          <Link
+            key={tab.id}
+            href={tab.href}
+            className={`inline-block px-3.5 py-2 rounded-lg text-sm transition-colors ${
+              isActive
+                ? "bg-white text-[#0f3d3a] font-semibold"
+                : "text-[#bcd8d4] hover:bg-white/10"
+            }`}
+          >
+            {tab.label}
+          </Link>
+        );
+      })}
+
+      <span
+        className="inline-block w-px h-4 bg-[#2e6a63] mx-1.5 align-middle"
+        aria-hidden="true"
+      />
+
+      <a
+        href={`${anchorPrefix}#weather-map`}
+        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm text-[#bcd8d4] hover:bg-white/10 transition-colors align-middle"
+      >
+        <svg
+          className="w-4 h-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2a7 7 0 1 0 10 10" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        <span>Радар</span>
+      </a>
+
+      <a
+        href={`${anchorPrefix}#environmental-insights`}
+        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm text-[#bcd8d4] hover:bg-white/10 transition-colors align-middle"
+      >
+        <svg
+          className="w-4 h-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.1 2 7a9 9 0 0 1-10 11z" />
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        </svg>
+        <span>Пыльца</span>
+      </a>
+
+      <a
+        href={`${anchorPrefix}#road-conditions`}
+        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm text-[#bcd8d4] hover:bg-white/10 transition-colors align-middle"
+      >
+        <svg
+          className="w-4 h-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="3" y="11" width="18" height="8" rx="2" />
+          <circle cx="7" cy="15" r="1.5" />
+          <circle cx="17" cy="15" r="1.5" />
+          <path d="M5 11l2-5h10l2 5" />
+        </svg>
+        <span>Дороги</span>
+      </a>
+
+      <a
+        href={`${anchorPrefix}#geomagnetic`}
+        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm text-[#bcd8d4] hover:bg-white/10 transition-colors align-middle"
+      >
+        <svg
+          className="w-4 h-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M6 15v-2a6 6 0 1 1 12 0v2" />
+          <path d="M6 15h4v5H6zM14 15h4v5h-4z" />
+        </svg>
+        <span>Г/м активность</span>
+      </a>
+    </nav>
+  );
+}
+
 export function CurrentWeatherCard({
   cityName,
   citySlug,
@@ -172,6 +315,8 @@ export function CurrentWeatherCard({
   hourly,
   geomagneticKp = 2,
   timezone,
+  active = "now",
+  anchorPrefix = "",
 }: {
   cityName: string;
   citySlug?: string;
@@ -180,6 +325,8 @@ export function CurrentWeatherCard({
   hourly?: HourlyPoint[];
   geomagneticKp?: number;
   timezone?: string;
+  active?: string;
+  anchorPrefix?: string;
 }) {
   const { unit, formatTemp } = useUnit();
   const slug = citySlug || "moscow";
@@ -227,70 +374,9 @@ export function CurrentWeatherCard({
 
       {/* Main Weather Card Container */}
       <section className="rounded-2xl bg-white p-5 sm:p-6 border border-slate-200 shadow-xs text-slate-900">
-        {/* Section Anchor Circular Icons (Радар, Пыльца, Дороги, Г/м активность) */}
-        <div className="grid grid-cols-4 gap-2 sm:flex sm:items-center sm:justify-around border-b border-slate-100 pb-4 mb-5">
-          <a
-            href="#weather-map"
-            className="group flex flex-col items-center gap-1.5 transition-transform"
-          >
-            <div className="w-10 h-10 rounded-full bg-sky-50 text-sky-600 border border-sky-100/80 flex items-center justify-center transition-all duration-200 shadow-2xs group-hover:bg-sky-100 group-hover:text-sky-700 group-hover:scale-105">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 2a7 7 0 1 0 10 10" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-            </div>
-            <span className="text-[11px] sm:text-xs font-medium text-slate-700 group-hover:text-sky-700 transition-colors text-center">
-              Радар
-            </span>
-          </a>
-
-          <a
-            href="#environmental-insights"
-            className="group flex flex-col items-center gap-1.5 transition-transform"
-          >
-            <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/80 flex items-center justify-center transition-all duration-200 shadow-2xs group-hover:bg-emerald-100 group-hover:text-emerald-700 group-hover:scale-105">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.1 2 7a9 9 0 0 1-10 11z" />
-                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-              </svg>
-            </div>
-            <span className="text-[11px] sm:text-xs font-medium text-slate-700 group-hover:text-emerald-700 transition-colors text-center">
-              Пыльца
-            </span>
-          </a>
-
-          <a
-            href="#road-conditions"
-            className="group flex flex-col items-center gap-1.5 transition-transform"
-          >
-            <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 border border-amber-100/80 flex items-center justify-center transition-all duration-200 shadow-2xs group-hover:bg-amber-100 group-hover:text-amber-700 group-hover:scale-105">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="11" width="18" height="8" rx="2" />
-                <circle cx="7" cy="15" r="1.5" />
-                <circle cx="17" cy="15" r="1.5" />
-                <path d="M5 11l2-5h10l2 5" />
-              </svg>
-            </div>
-            <span className="text-[11px] sm:text-xs font-medium text-slate-700 group-hover:text-amber-700 transition-colors text-center">
-              Дороги
-            </span>
-          </a>
-
-          <a
-            href="#geomagnetic"
-            className="group flex flex-col items-center gap-1.5 transition-transform"
-          >
-            <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 border border-purple-100/80 flex items-center justify-center transition-all duration-200 shadow-2xs group-hover:bg-purple-100 group-hover:text-purple-700 group-hover:scale-105">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 15v-2a6 6 0 1 1 12 0v2" />
-                <path d="M6 15h4v5H6zM14 15h4v5h-4z" />
-              </svg>
-            </div>
-            <span className="text-[11px] sm:text-xs font-medium text-slate-700 group-hover:text-purple-700 transition-colors text-center">
-              Г/м активность
-            </span>
-          </a>
+        {/* Category Tab Bar (Period Selector + Insight Anchor Links) */}
+        <div className="mb-5">
+          <CategoryTabBar slug={slug} active={active} anchorPrefix={anchorPrefix} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
@@ -726,52 +812,6 @@ export function DailyForecast({
         })}
       </ul>
     </section>
-  );
-}
-
-export function ForecastTabs({
-  slug,
-  active,
-}: {
-  slug: string;
-  active: "now" | "vchera" | "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive";
-}) {
-  const tabs = [
-    { id: "vchera" as const, href: `/pogoda/${slug}/vchera`, label: "Вчера" },
-    { id: "now" as const, href: `/pogoda/${slug}`, label: "Сейчас" },
-    { id: "today" as const, href: `/pogoda/${slug}`, label: ru.today },
-    { id: "tomorrow" as const, href: `/pogoda/${slug}/zavtra`, label: ru.tomorrow },
-    { id: "3" as const, href: `/pogoda/${slug}/3-dnya`, label: ru.days3 },
-    { id: "weekend" as const, href: `/pogoda/${slug}/vykhodnye`, label: "Выходные" },
-    { id: "7" as const, href: `/pogoda/${slug}/7-dney`, label: ru.days7 },
-    { id: "10" as const, href: `/pogoda/${slug}/10-dney`, label: ru.days10 },
-    { id: "14" as const, href: `/pogoda/${slug}/14-dney`, label: ru.days14 },
-    { id: "mesyats" as const, href: `/pogoda/${slug}/mesyats`, label: "Месяц" },
-    { id: "archive" as const, href: `/pogoda/${slug}/archiv`, label: "Архив" },
-  ];
-
-  return (
-    <nav
-      className="sticky top-14 z-20 flex w-full items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 px-0.5 text-xs sm:text-sm"
-      aria-label="Период прогноза"
-    >
-      {tabs.map((tab) => {
-        const isActive = tab.id === active;
-        return (
-          <Link
-            key={tab.id}
-            href={tab.href}
-            className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
-              isActive
-                ? "bg-slate-900 text-white font-semibold shadow-xs border border-transparent"
-                : "bg-white text-slate-700 border border-slate-200/80 hover:bg-slate-100 hover:text-slate-950 hover:border-slate-300 shadow-2xs"
-            }`}
-          >
-            {tab.label}
-          </Link>
-        );
-      })}
-    </nav>
   );
 }
 

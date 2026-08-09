@@ -1,7 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { LAST_CITY_COOKIE, RememberLastCity } from "@/components/RememberLastCity";
 import { PageShell } from "@/components/SiteChrome";
-import { CurrentWeatherCard, ForecastTabs } from "@/components/WeatherPanels";
+import { CurrentWeatherCard } from "@/components/WeatherPanels";
 import { AlertBanner } from "@/components/AlertBanner";
 import { GeoLocationBanner } from "@/components/GeoLocationBanner";
 import { fetchGeomagneticData } from "@/lib/weather/geomagnetic";
@@ -82,18 +82,16 @@ export default async function Home() {
         {activeAlerts.length > 0 && <AlertBanner alerts={activeAlerts} />}
 
         {primaryData && (
-          <>
-            <ForecastTabs slug={primaryData.city.slug} active="today" />
-            <CurrentWeatherCard
-              cityName={primaryData.city.name}
-              citySlug={primaryData.city.slug}
-              current={primaryData.weather.current}
-              today={primaryData.weather.daily[0]}
-              hourly={primaryData.weather.hourly}
-              geomagneticKp={geomagneticData?.kp ? Math.round(geomagneticData.kp) : 2}
-              timezone={primaryData.weather.timezone || primaryData.city.timezone || undefined}
-            />
-          </>
+          <CurrentWeatherCard
+            cityName={primaryData.city.name}
+            citySlug={primaryData.city.slug}
+            current={primaryData.weather.current}
+            today={primaryData.weather.daily[0]}
+            hourly={primaryData.weather.hourly}
+            geomagneticKp={geomagneticData?.kp ? Math.round(geomagneticData.kp) : 2}
+            timezone={primaryData.weather.timezone || primaryData.city.timezone || undefined}
+            active="today"
+          />
         )}
       </main>
     </PageShell>
