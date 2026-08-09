@@ -1,4 +1,5 @@
 import {
+  CategoryTabBar,
   ComfortIndices,
   CurrentWeatherCard,
   DailyForecast,
@@ -130,7 +131,8 @@ export async function CityWeatherView({
   return (
     <PageShell favorites={favorites}>
       <RememberLastCity slug={city.slug} />
-      <main className="mx-auto max-w-5xl space-y-6 px-4 py-4 sm:space-y-8 sm:py-8 sm:px-6">
+      <CategoryTabBar slug={city.slug} active={active} />
+      <main className="mx-auto max-w-5xl space-y-4 px-4 py-4 sm:space-y-6 sm:py-6 sm:px-6">
         <AlertBanner alerts={alerts} />
 
         {active === "archive" ? (
@@ -163,7 +165,6 @@ export async function CityWeatherView({
             hourly={weather.hourly}
             geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
             timezone={weather.timezone || city.timezone || undefined}
-            active={active}
           />
         </div>
 

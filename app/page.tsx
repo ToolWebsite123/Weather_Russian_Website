@@ -1,7 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { LAST_CITY_COOKIE, RememberLastCity } from "@/components/RememberLastCity";
 import { PageShell } from "@/components/SiteChrome";
-import { CurrentWeatherCard } from "@/components/WeatherPanels";
+import { CategoryTabBar, CurrentWeatherCard } from "@/components/WeatherPanels";
 import { AlertBanner } from "@/components/AlertBanner";
 import { GeoLocationBanner } from "@/components/GeoLocationBanner";
 import { fetchGeomagneticData } from "@/lib/weather/geomagnetic";
@@ -74,7 +74,11 @@ export default async function Home() {
   return (
     <PageShell favorites={favorites}>
       {primaryData && <RememberLastCity slug={primaryData.city.slug} />}
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 space-y-4">
+      {primaryData && (
+        <CategoryTabBar slug={primaryData.city.slug} active="today" />
+      )}
+      <main className="mx-auto max-w-5xl px-4 py-4 sm:py-6 sm:px-6 space-y-4">
+
         {isIpDetected && primaryData && (
           <GeoLocationBanner cityName={primaryData.city.name} />
         )}
@@ -90,7 +94,6 @@ export default async function Home() {
             hourly={primaryData.weather.hourly}
             geomagneticKp={geomagneticData?.kp ? Math.round(geomagneticData.kp) : 2}
             timezone={primaryData.weather.timezone || primaryData.city.timezone || undefined}
-            active="today"
           />
         )}
       </main>
