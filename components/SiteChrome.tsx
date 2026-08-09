@@ -4,8 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ru } from "@/lib/i18n/ru";
-import { CitySearch } from "@/components/CitySearch";
-
 import { useUnit } from "@/components/UnitContext";
 import { AppInstallModal } from "@/components/AppInstallModal";
 

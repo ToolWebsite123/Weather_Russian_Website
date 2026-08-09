@@ -227,53 +227,69 @@ export function CurrentWeatherCard({
 
       {/* Main Weather Card Container */}
       <section className="rounded-2xl bg-white p-5 sm:p-6 border border-slate-200 shadow-xs text-slate-900">
-        {/* Section Anchor Chips (Радар, Пыльца, Дороги, Г/м активность) */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3 mb-5 text-xs font-medium">
+        {/* Section Anchor Circular Icons (Радар, Пыльца, Дороги, Г/м активность) */}
+        <div className="grid grid-cols-4 gap-2 sm:flex sm:items-center sm:justify-around border-b border-slate-100 pb-4 mb-5">
           <a
             href="#weather-map"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200/70 px-2.5 py-1 text-slate-700 hover:bg-sky-50 hover:border-sky-200 hover:text-sky-700 transition-colors"
+            className="group flex flex-col items-center gap-1.5 transition-transform"
           >
-            <svg className="w-3.5 h-3.5 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 2a7 7 0 1 0 10 10" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <span>Радар</span>
+            <div className="w-10 h-10 rounded-full bg-sky-50 text-sky-600 border border-sky-100/80 flex items-center justify-center transition-all duration-200 shadow-2xs group-hover:bg-sky-100 group-hover:text-sky-700 group-hover:scale-105">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2a7 7 0 1 0 10 10" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </div>
+            <span className="text-[11px] sm:text-xs font-medium text-slate-700 group-hover:text-sky-700 transition-colors text-center">
+              Радар
+            </span>
           </a>
 
           <a
             href="#environmental-insights"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200/70 px-2.5 py-1 text-slate-700 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-colors"
+            className="group flex flex-col items-center gap-1.5 transition-transform"
           >
-            <svg className="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.1 2 7a9 9 0 0 1-10 11z" />
-              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-            </svg>
-            <span>Пыльца</span>
+            <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/80 flex items-center justify-center transition-all duration-200 shadow-2xs group-hover:bg-emerald-100 group-hover:text-emerald-700 group-hover:scale-105">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.1 2 7a9 9 0 0 1-10 11z" />
+                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+              </svg>
+            </div>
+            <span className="text-[11px] sm:text-xs font-medium text-slate-700 group-hover:text-emerald-700 transition-colors text-center">
+              Пыльца
+            </span>
           </a>
 
           <a
             href="#road-conditions"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200/70 px-2.5 py-1 text-slate-700 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700 transition-colors"
+            className="group flex flex-col items-center gap-1.5 transition-transform"
           >
-            <svg className="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="11" width="18" height="8" rx="2" />
-              <circle cx="7" cy="15" r="1.5" />
-              <circle cx="17" cy="15" r="1.5" />
-              <path d="M5 11l2-5h10l2 5" />
-            </svg>
-            <span>Дороги</span>
+            <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 border border-amber-100/80 flex items-center justify-center transition-all duration-200 shadow-2xs group-hover:bg-amber-100 group-hover:text-amber-700 group-hover:scale-105">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="8" rx="2" />
+                <circle cx="7" cy="15" r="1.5" />
+                <circle cx="17" cy="15" r="1.5" />
+                <path d="M5 11l2-5h10l2 5" />
+              </svg>
+            </div>
+            <span className="text-[11px] sm:text-xs font-medium text-slate-700 group-hover:text-amber-700 transition-colors text-center">
+              Дороги
+            </span>
           </a>
 
           <a
             href="#geomagnetic"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200/70 px-2.5 py-1 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-colors"
+            className="group flex flex-col items-center gap-1.5 transition-transform"
           >
-            <svg className="w-3.5 h-3.5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 15v-2a6 6 0 1 1 12 0v2" />
-              <path d="M6 15h4v5H6zM14 15h4v5h-4z" />
-            </svg>
-            <span>Г/м активность</span>
+            <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 border border-purple-100/80 flex items-center justify-center transition-all duration-200 shadow-2xs group-hover:bg-purple-100 group-hover:text-purple-700 group-hover:scale-105">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 15v-2a6 6 0 1 1 12 0v2" />
+                <path d="M6 15h4v5H6zM14 15h4v5h-4z" />
+              </svg>
+            </div>
+            <span className="text-[11px] sm:text-xs font-medium text-slate-700 group-hover:text-purple-700 transition-colors text-center">
+              Г/м активность
+            </span>
           </a>
         </div>
 
@@ -736,7 +752,7 @@ export function ForecastTabs({
 
   return (
     <nav
-      className="sticky top-14 z-20 flex gap-1.5 overflow-x-auto no-scrollbar rounded-2xl bg-white p-2 border border-slate-200 shadow-2xs text-xs sm:text-sm backdrop-blur-md"
+      className="sticky top-14 z-20 flex w-full items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 px-0.5 text-xs sm:text-sm"
       aria-label="Период прогноза"
     >
       {tabs.map((tab) => {
@@ -745,10 +761,10 @@ export function ForecastTabs({
           <Link
             key={tab.id}
             href={tab.href}
-            className={`shrink-0 rounded-xl px-3 py-1.5 font-medium transition-colors whitespace-nowrap ${
+            className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
               isActive
-                ? "bg-sky-600 text-white font-semibold shadow-xs"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                ? "bg-slate-900 text-white font-semibold shadow-xs border border-transparent"
+                : "bg-white text-slate-700 border border-slate-200/80 hover:bg-slate-100 hover:text-slate-950 hover:border-slate-300 shadow-2xs"
             }`}
           >
             {tab.label}
