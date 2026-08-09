@@ -1,40 +1,34 @@
 import {
   CategoryTabBar,
-  ComfortIndices,
   CurrentWeatherCard,
   DailyForecast,
-  DayPartsGrid,
   HourlyForecast,
   NearbyCities,
-  WeatherMap,
+  NowWeatherHeroCard,
 } from "@/components/WeatherPanels";
 import { Suspense } from "react";
-import { AstronomyCard } from "@/components/AstronomyCard";
 import { HistoricalComparisonCard } from "@/components/HistoricalComparisonCard";
 import { HistoricalArchivePanel } from "@/components/HistoricalArchivePanel";
-import { RecommendationsCard } from "@/components/RecommendationsCard";
 import { AlertBanner } from "@/components/AlertBanner";
 import { HourlyChart } from "@/components/HourlyChart";
-import { AirQualityBlock } from "@/components/AirQualityBlock";
-import { GeomagneticCard } from "@/components/GeomagneticCard";
-import { RoadConditionCard } from "@/components/RoadConditionCard";
-import { CityWeatherFaq } from "@/components/CityWeatherFaq";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { NotificationPrompt } from "@/components/NotificationPrompt";
 import { PageShell } from "@/components/SiteChrome";
 import { RememberLastCity } from "@/components/RememberLastCity";
-import { RelatedArticles } from "@/components/RelatedArticles";
+import { RoadConditionCard } from "@/components/RoadConditionCard";
+import { GeomagneticCard } from "@/components/GeomagneticCard";
+import { AirQualityBlock } from "@/components/AirQualityBlock";
+import RadarMap from "@/components/RadarMap";
 import {
   getFavoritesForSession,
   isCityFavorited,
   loadCityWeather,
 } from "@/lib/weather/city-page";
 import { getNearbyCities } from "@/lib/weather/nearby";
-import { fetchAirQuality } from "@/lib/weather/air-quality";
 import { fetchGeomagneticData } from "@/lib/weather/geomagnetic";
+import { fetchAirQuality } from "@/lib/weather/air-quality";
 import { getActiveAlerts } from "@/lib/weather/alerts";
 import { getUpcomingWeekendDays } from "@/lib/weather/weekend";
-import { getLatestArticles } from "@/lib/content/articles";
 import { ru } from "@/lib/i18n/ru";
 import { notFound } from "next/navigation";
 
@@ -46,14 +40,16 @@ export async function CityWeatherView({
   tomorrowOnly = false,
   weekendOnly = false,
   isYesterday = false,
+  topBanner,
 }: {
   slug: string;
-  active: "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive" | "vchera";
+  active: "now" | "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive" | "vchera";
   dailyLimit?: number;
   showHourly?: boolean;
   tomorrowOnly?: boolean;
   weekendOnly?: boolean;
   isYesterday?: boolean;
+  topBanner?: React.ReactNode;
 }) {
   let data;
   try {
@@ -66,13 +62,12 @@ export async function CityWeatherView({
   const { city, weather } = data;
   const alerts = getActiveAlerts(weather);
 
-  const [favorites, favorited, nearby, aqi, geomagnetic, articles] = await Promise.all([
+  const [favorites, favorited, nearby, geomagnetic, airQuality] = await Promise.all([
     getFavoritesForSession().catch(() => []),
     isCityFavorited(city.id).catch(() => false),
     getNearbyCities(city, 8).catch(() => []),
-    fetchAirQuality(city.latitude, city.longitude).catch(() => null),
     fetchGeomagneticData().catch(() => null),
-    Promise.resolve(getLatestArticles(2)),
+    fetchAirQuality(city.latitude, city.longitude).catch(() => null),
   ]);
 
   const hasYesterdayData = (isYesterday || active === "vchera") && weather.yesterday != null;
@@ -105,14 +100,6 @@ export async function CityWeatherView({
   } else if (dailyLimit) {
     daily = weather.daily.slice(0, dailyLimit);
   }
-
-  const focusDate = hasYesterdayData && weather.yesterday
-    ? weather.yesterday.daily.date
-    : tomorrowOnly
-      ? weather.daily[1]?.date
-      : weekendOnly
-        ? daily[0]?.date
-        : weather.daily[0]?.date;
 
   const hours = hasYesterdayData && weather.yesterday
     ? weather.yesterday.hourly
@@ -151,111 +138,83 @@ export async function CityWeatherView({
               </div>
             )}
 
-        <div className="flex items-center justify-end gap-2 animate-fade-in-up stagger-1 motion-reduce:animate-none">
-          <NotificationPrompt />
-          <FavoriteButton cityId={city.id} initialFavorited={favorited} />
-        </div>
-
-        <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">
-          <CurrentWeatherCard
-            cityName={city.name}
-            citySlug={city.slug}
-            current={weather.current}
-            today={weather.daily[0]}
-            hourly={weather.hourly}
-            geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
-            timezone={weather.timezone || city.timezone || undefined}
-            fetchedAt={weather.fetchedAt}
-          />
-        </div>
-
-        <div className="animate-fade-in-up stagger-3 motion-reduce:animate-none">
-          <RoadConditionCard current={weather.current} />
-        </div>
-
-        <div className="animate-fade-in-up stagger-4 motion-reduce:animate-none">
-          <AstronomyCard
-            today={tomorrowOnly ? weather.daily[1] : weather.daily[0]}
-            latitude={city.latitude}
-            longitude={city.longitude}
-            timezone={weather.timezone || city.timezone || undefined}
-          />
-        </div>
-
-        {focusDate && (
-          <div className="animate-fade-in-up stagger-5 motion-reduce:animate-none">
-            <DayPartsGrid hourly={weather.hourly} date={focusDate} />
-          </div>
-        )}
-
-        <div className="animate-fade-in-up stagger-5 motion-reduce:animate-none">
-          <ComfortIndices current={weather.current} hourly={weather.hourly} aqi={aqi} />
-        </div>
-
-        {active === "today" && (
-          <div className="animate-fade-in-up stagger-6 motion-reduce:animate-none">
-            <RecommendationsCard
-              current={weather.current}
-              today={weather.daily[0]}
-              hourly={weather.hourly}
-              aqi={aqi}
-              activeAlerts={alerts}
-            />
-          </div>
-        )}
-
-        <div className="animate-fade-in-up stagger-6 motion-reduce:animate-none">
-          <GeomagneticCard data={geomagnetic} />
-        </div>
-
-        {aqi && (
-          <div className="animate-fade-in-up stagger-7 motion-reduce:animate-none">
-            <AirQualityBlock aqi={aqi} uvIndex={weather.current.uvIndex} />
-          </div>
-        )}
-
-        {showHourly && hours.length > 0 && (
-          <div className="space-y-6 sm:space-y-8 animate-fade-in-up stagger-7 motion-reduce:animate-none">
-            <HourlyChart hours={hours} />
-            <HourlyForecast hours={hours} />
-          </div>
-        )}
-
-        <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
-          <DailyForecast days={daily} hourly={weather.hourly} />
-        </div>
-
-        {active === "today" && (
-          <Suspense fallback={null}>
-            <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
-              <HistoricalComparisonCard
-                todayTempMax={weather.daily[0].tempMax}
-                todayDate={weather.daily[0].date}
-                latitude={city.latitude}
-                longitude={city.longitude}
-              />
+            <div className="flex items-center justify-end gap-2 animate-fade-in-up stagger-1 motion-reduce:animate-none">
+              <NotificationPrompt />
+              <FavoriteButton cityId={city.id} initialFavorited={favorited} />
             </div>
-          </Suspense>
-        )}
 
-        <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
-          <WeatherMap
-            latitude={city.latitude}
-            longitude={city.longitude}
-            cityName={city.name}
-            showPrecip
-          />
-        </div>
+            <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">
+              {active === "now" ? (
+                <div className="space-y-6">
+                  <NowWeatherHeroCard
+                    cityName={city.name}
+                    citySlug={city.slug}
+                    current={weather.current}
+                    today={weather.daily[0]}
+                    tomorrow={weather.daily[1]}
+                    geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
+                    timezone={weather.timezone || city.timezone || undefined}
+                    fetchedAt={weather.fetchedAt}
+                  />
 
-        {articles.length > 0 && (
-          <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
-            <RelatedArticles articles={articles} />
-          </div>
-        )}
+                  <RoadConditionCard current={weather.current} />
+
+                  <section className="space-y-3">
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-sky-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      </svg>
+                      Радар осадков в режиме реального времени ({city.name})
+                    </h2>
+                    <RadarMap latitude={city.latitude} longitude={city.longitude} cityName={city.name} />
+                  </section>
+
+                  <GeomagneticCard data={geomagnetic} />
+
+                  {airQuality && (
+                    <AirQualityBlock aqi={airQuality} />
+                  )}
+                </div>
+              ) : (
+                <CurrentWeatherCard
+                  cityName={city.name}
+                  citySlug={city.slug}
+                  current={weather.current}
+                  today={tomorrowOnly ? weather.daily[1] : weather.daily[0]}
+                  hourly={weather.hourly}
+                  geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
+                  timezone={weather.timezone || city.timezone || undefined}
+                  fetchedAt={weather.fetchedAt}
+                  activeTab={active}
+                />
+              )}
+            </div>
+
+            {showHourly && hours.length > 0 && (
+              <div className="space-y-6 sm:space-y-8 animate-fade-in-up stagger-3 motion-reduce:animate-none">
+                <HourlyChart hours={hours} />
+                <HourlyForecast hours={hours} />
+              </div>
+            )}
+
+            <div className="animate-fade-in-up stagger-7 motion-reduce:animate-none">
+              <DailyForecast days={daily} hourly={weather.hourly} />
+            </div>
+
+            {active === "today" && (
+              <Suspense fallback={null}>
+                <div className="animate-fade-in-up stagger-7 motion-reduce:animate-none">
+                  <HistoricalComparisonCard
+                    todayTempMax={weather.daily[0].tempMax}
+                    todayDate={weather.daily[0].date}
+                    latitude={city.latitude}
+                    longitude={city.longitude}
+                  />
+                </div>
+              </Suspense>
+            )}
           </>
         )}
-
-        <CityWeatherFaq city={city} weather={weather} />
 
         <NearbyCities cities={nearby} />
 

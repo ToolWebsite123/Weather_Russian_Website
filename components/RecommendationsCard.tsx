@@ -18,11 +18,11 @@ export function RecommendationsCard({
   current: CurrentWeather;
   today?: DailyPoint;
   hourly?: HourlyPoint[];
-  aqi: AirQuality | null;
+  aqi?: AirQuality | null;
   activeAlerts: WeatherAlert[];
 }) {
   const clothing = getClothingRecommendation(current, today);
-  const activity = getActivityIndex(current, today, hourly, aqi, activeAlerts);
+  const activity = getActivityIndex(current, today, hourly, aqi || null, activeAlerts);
 
   return (
     <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5 space-y-4">

@@ -186,7 +186,7 @@ export function CategoryTabBar({
 
   const tabs = [
     { id: "vchera", href: `/pogoda/${slug}/vchera`, label: "Вчера" },
-    { id: "now", href: `/pogoda/${slug}`, label: "Сейчас" },
+    { id: "now", href: `/pogoda/${slug}/now`, label: "Сейчас" },
     { id: "today", href: `/pogoda/${slug}`, label: ru.today },
     { id: "zavtra", href: `/pogoda/${slug}/zavtra`, label: ru.tomorrow },
     { id: "3-dnya", href: `/pogoda/${slug}/3-dnya`, label: ru.days3 },
@@ -211,11 +211,10 @@ export function CategoryTabBar({
               <Link
                 key={tab.id}
                 href={tab.href}
-                className={`inline-block px-3.5 py-1.5 rounded-lg text-sm transition-colors ${
-                  isActive
+                className={`inline-block px-3.5 py-1.5 rounded-lg text-sm transition-colors ${isActive
                     ? "bg-white text-[#0f3d3a] font-semibold shadow-xs"
                     : "text-[#bcd8d4] hover:bg-white/10"
-                }`}
+                  }`}
               >
                 {tab.label}
               </Link>
@@ -320,6 +319,7 @@ export function CurrentWeatherCard({
   geomagneticKp = 2,
   timezone,
   fetchedAt,
+  activeTab,
 }: {
   cityName: string;
   citySlug?: string;
@@ -329,9 +329,37 @@ export function CurrentWeatherCard({
   geomagneticKp?: number;
   timezone?: string;
   fetchedAt?: string;
+  activeTab?: string;
 }) {
   const { unit, formatTemp } = useUnit();
   const slug = citySlug || "moscow";
+
+  const periodBadge = (() => {
+    if (!activeTab || activeTab === "today" || activeTab === "now") return null;
+    const labels: Record<string, { label: string; bg: string }> = {
+      tomorrow: { label: "Прогноз на завтра", bg: "bg-sky-100 text-sky-800 border-sky-200" },
+      zavtra: { label: "Прогноз на завтра", bg: "bg-sky-100 text-sky-800 border-sky-200" },
+      vchera: { label: "Архив за вчера", bg: "bg-amber-100 text-amber-800 border-amber-200" },
+      "3": { label: "Прогноз на 3 дня", bg: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+      "3-dnya": { label: "Прогноз на 3 дня", bg: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+      "7": { label: "Прогноз на 7 дней", bg: "bg-teal-100 text-teal-800 border-teal-200" },
+      "7-dney": { label: "Прогноз на 7 дней", bg: "bg-teal-100 text-teal-800 border-teal-200" },
+      "10": { label: "Прогноз на 10 дней", bg: "bg-blue-100 text-blue-800 border-blue-200" },
+      "10-dney": { label: "Прогноз на 10 дней", bg: "bg-blue-100 text-blue-800 border-blue-200" },
+      "14": { label: "Прогноз на 14 дней", bg: "bg-indigo-100 text-indigo-800 border-indigo-200" },
+      "14-dney": { label: "Прогноз на 14 дней", bg: "bg-indigo-100 text-indigo-800 border-indigo-200" },
+      mesyats: { label: "Прогноз на месяц (30 дней)", bg: "bg-purple-100 text-purple-800 border-purple-200" },
+      weekend: { label: "Прогноз на выходные", bg: "bg-rose-100 text-rose-800 border-rose-200" },
+      vykhodnye: { label: "Прогноз на выходные", bg: "bg-rose-100 text-rose-800 border-rose-200" },
+    };
+    const b = labels[activeTab];
+    if (!b) return null;
+    return (
+      <span className={`inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full border ${b.bg} ml-2 align-middle`}>
+        {b.label}
+      </span>
+    );
+  })();
 
   const next5Hours = (() => {
     if (!hourly || hourly.length === 0) return [];
@@ -525,6 +553,271 @@ export function CurrentWeatherCard({
   );
 }
 
+export function NowWeatherHeroCard({
+  cityName,
+  citySlug,
+  current,
+  today,
+  tomorrow,
+  geomagneticKp = 2,
+  timezone,
+  fetchedAt,
+}: {
+  cityName: string;
+  citySlug?: string;
+  current: CurrentWeather;
+  today?: DailyPoint;
+  tomorrow?: DailyPoint;
+  geomagneticKp?: number;
+  timezone?: string;
+  fetchedAt?: string;
+}) {
+  const { formatTemp } = useUnit();
+  const slug = citySlug || "moscow";
+
+  const windDirText = formatWindDir(current.windDirection);
+  const pressureMm = formatPressureMmHg(current.pressure);
+
+  const sunriseStr = today?.sunrise
+    ? new Date(today.sunrise).toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: timezone || "Europe/Moscow",
+      })
+    : "04:49";
+
+  const sunsetStr = today?.sunset
+    ? new Date(today.sunset).toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: timezone || "Europe/Moscow",
+      })
+    : "20:19";
+
+  // Calculate sun arc progress (0..1)
+  const now = new Date();
+  const srDate = today?.sunrise ? new Date(today.sunrise) : null;
+  const ssDate = today?.sunset ? new Date(today.sunset) : null;
+  let sunProgress = 0.5;
+  if (srDate && ssDate) {
+    const totalMs = ssDate.getTime() - srDate.getTime();
+    const elapsedMs = now.getTime() - srDate.getTime();
+    sunProgress = Math.max(0, Math.min(1, elapsedMs / totalMs));
+  }
+
+  // Bezier curve calculations for SVG sun trajectory: P0=(30,65), P1=(150,15), P2=(270,65)
+  const t = sunProgress;
+  const sunX = (1 - t) * (1 - t) * 30 + 2 * (1 - t) * t * 150 + t * t * 270;
+  const sunY = (1 - t) * (1 - t) * 65 + 2 * (1 - t) * t * 15 + t * t * 65;
+
+  const isDay = current.isDay ?? true;
+
+  // Calculate daylight duration
+  let daylightStr = "";
+  if (srDate && ssDate) {
+    const durationMs = ssDate.getTime() - srDate.getTime();
+    if (durationMs > 0) {
+      const totalMinutes = Math.floor(durationMs / (1000 * 60));
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      daylightStr = `Долгота дня: ${hours} ч ${minutes} мин`;
+    }
+  }
+
+  return (
+    <div className="space-y-4 max-w-4xl mx-auto">
+      {/* Top 3 Quick Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Card 1: Сейчас */}
+        <div className="rounded-xl bg-white p-3.5 border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <div className="text-xs text-slate-500 font-medium mb-1">
+              Сейчас {now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: timezone || "Europe/Moscow" })}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="bg-[#edf4a1] px-2.5 py-0.5 rounded text-lg font-bold text-slate-900 tabular-nums">
+                {formatTemp(current.temperature)}
+              </span>
+              <span className="text-xs text-slate-600">
+                По ощущению {formatTemp(current.feelsLike)}
+              </span>
+            </div>
+          </div>
+          <WeatherIcon code={current.weatherCode} isDay={current.isDay} size={36} className="shrink-0" />
+        </div>
+
+        {/* Card 2: Сегодня */}
+        <div className="rounded-xl bg-white p-3.5 border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <div className="text-xs text-slate-500 font-medium mb-1">Сегодня</div>
+            {today ? (
+              <div className="flex items-center gap-1.5">
+                <span className="bg-[#edf4a1] px-2 py-0.5 rounded text-sm font-semibold text-slate-900 tabular-nums">
+                  {formatTemp(today.tempMin)}
+                </span>
+                <span className="text-xs text-slate-400">...</span>
+                <span className="bg-[#edf4a1] px-2 py-0.5 rounded text-sm font-semibold text-slate-900 tabular-nums">
+                  {formatTemp(today.tempMax)}
+                </span>
+              </div>
+            ) : (
+              <span className="text-xs text-slate-400">—</span>
+            )}
+          </div>
+          {today && <WeatherIcon code={today.weatherCode} size={36} className="shrink-0" />}
+        </div>
+
+        {/* Card 3: Завтра */}
+        <div className="rounded-xl bg-white p-3.5 border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <div className="text-xs text-slate-500 font-medium mb-1">Завтра</div>
+            {tomorrow ? (
+              <div className="flex items-center gap-1.5">
+                <span className="bg-[#edf4a1] px-2 py-0.5 rounded text-sm font-semibold text-slate-900 tabular-nums">
+                  {formatTemp(tomorrow.tempMin)}
+                </span>
+                <span className="text-xs text-slate-400">...</span>
+                <span className="bg-[#edf4a1] px-2 py-0.5 rounded text-sm font-semibold text-slate-900 tabular-nums">
+                  {formatTemp(tomorrow.tempMax)}
+                </span>
+              </div>
+            ) : (
+              <span className="text-xs text-slate-400">—</span>
+            )}
+          </div>
+          {tomorrow && <WeatherIcon code={tomorrow.weatherCode} size={36} className="shrink-0" />}
+        </div>
+      </div>
+
+      {/* Main Sky Hero Card Container */}
+      <section
+        className={`relative overflow-hidden rounded-2xl shadow-lg border border-sky-300/30 text-white ${
+          isDay
+            ? "bg-gradient-to-b from-[#2a80d8] via-[#3fa1f7] to-[#5bb2ff]"
+            : "bg-gradient-to-b from-[#0b132b] via-[#1c2541] to-[#3a506b]"
+        }`}
+      >
+        {/* Soft Cloud Overlays */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/40 via-transparent to-transparent" />
+
+        <div className="relative pt-6 pb-4 px-4 sm:px-8 text-center space-y-4">
+          {/* Header Live Time */}
+          <div className="text-sm sm:text-base font-medium text-white/90 drop-shadow-xs">
+            <LiveCityDate timezone={timezone} />
+          </div>
+
+          {/* Sun / Moon Arc Diagram */}
+          <div className="relative mx-auto w-full max-w-[320px] h-24 my-2">
+            <svg viewBox="0 0 300 80" className="w-full h-full overflow-visible">
+              {/* Arc curve */}
+              <path
+                d="M 30 65 Q 150 15 270 65"
+                fill="none"
+                stroke="rgba(255, 255, 255, 0.45)"
+                strokeWidth="2"
+                strokeDasharray="4 4"
+              />
+
+              {/* Sun position marker */}
+              <circle cx={sunX} cy={sunY} r="7" fill="#fcf003" filter="drop-shadow(0px 0px 6px #fcf003)" />
+              <circle cx={sunX} cy={sunY} r="3" fill="#ffffff" />
+
+              {/* Daylight duration center badge */}
+              {daylightStr && (
+                <text x="150" y="45" fill="rgba(255,255,255,0.85)" fontSize="9" textAnchor="middle" fontWeight="500">
+                  {daylightStr}
+                </text>
+              )}
+
+              {/* Sunrise label (left) */}
+              <text x="25" y="78" fill="rgba(255,255,255,0.9)" fontSize="10" textAnchor="middle" fontWeight="500">
+                {sunriseStr}
+              </text>
+              <text x="25" y="90" fill="rgba(255,255,255,0.7)" fontSize="9" textAnchor="middle">
+                Восход
+              </text>
+
+              {/* Sunset label (right) */}
+              <text x="275" y="78" fill="rgba(255,255,255,0.9)" fontSize="10" textAnchor="middle" fontWeight="500">
+                {sunsetStr}
+              </text>
+              <text x="275" y="90" fill="rgba(255,255,255,0.7)" fontSize="9" textAnchor="middle">
+                Заход
+              </text>
+            </svg>
+          </div>
+
+          {/* Main GIANT Temperature */}
+          <div className="space-y-2 py-2">
+            <div className="text-6xl sm:text-8xl font-bold tracking-tight text-white drop-shadow-md tabular-nums">
+              {formatTemp(current.temperature)}
+            </div>
+
+            {/* Feels-Like Translucent Pill */}
+            <div className="inline-block">
+              <span className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium text-white shadow-xs border border-white/25">
+                По ощущению {formatTemp(current.feelsLike)}
+              </span>
+            </div>
+
+            {/* Condition Label */}
+            <div className="text-base sm:text-xl font-normal text-white/95 drop-shadow-xs pt-1">
+              {weatherCodeLabel(current.weatherCode)}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom 5-Stat Frosted Glass Bar */}
+        <div className="bg-black/20 backdrop-blur-md border-t border-white/20 px-4 py-4 sm:px-6">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center text-white">
+            {/* Stat 1: Ветер */}
+            <div className="space-y-1">
+              <div className="text-[11px] text-white/70 font-normal">Ветер</div>
+              <div className="text-sm sm:text-base font-semibold tabular-nums">
+                {Math.round(current.windSpeed)} <span className="text-xs font-normal">м/с {windDirText}</span>
+              </div>
+            </div>
+
+            {/* Stat 2: Давление */}
+            <div className="space-y-1 sm:border-l sm:border-white/20 sm:pl-2">
+              <div className="text-[11px] text-white/70 font-normal">Давление</div>
+              <div className="text-sm sm:text-base font-semibold tabular-nums">
+                {pressureMm}
+              </div>
+            </div>
+
+            {/* Stat 3: Влажность */}
+            <div className="space-y-1 sm:border-l sm:border-white/20 sm:pl-2">
+              <div className="text-[11px] text-white/70 font-normal">Влажность</div>
+              <div className="text-sm sm:text-base font-semibold tabular-nums">
+                {Math.round(current.humidity)} <span className="text-xs font-normal">%</span>
+              </div>
+            </div>
+
+            {/* Stat 4: Г/м */}
+            <div className="space-y-1 sm:border-l sm:border-white/20 sm:pl-2">
+              <div className="text-[11px] text-white/70 font-normal">Г/м</div>
+              <div className="text-sm sm:text-base font-semibold tabular-nums">
+                {geomagneticKp} <span className="text-xs font-normal">балла из 9</span>
+              </div>
+            </div>
+
+            {/* Stat 5: Вода */}
+            <div className="space-y-1 sm:border-l sm:border-white/20 sm:pl-2 col-span-2 sm:col-span-1">
+              <div className="text-[11px] text-white/70 font-normal">Вода</div>
+              <div className="text-sm sm:text-base font-semibold tabular-nums">
+                {typeof current.waterTemperature === "number"
+                  ? formatTemp(current.waterTemperature)
+                  : "—"}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export function DayPartsGrid({
   hourly,
   date,
@@ -558,7 +851,7 @@ export function DayPartsGrid({
             <p className="mt-0.5 text-[11px] tabular-nums text-cloud-500 text-center">
               {p.precipitation.toFixed(1)} мм
               {typeof p.precipitationProbability === "number" &&
-              p.precipitationProbability > 0
+                p.precipitationProbability > 0
                 ? ` (${Math.round(p.precipitationProbability)}%)`
                 : ""}{" "}
               · {p.windSpeed.toFixed(0)} м/с
