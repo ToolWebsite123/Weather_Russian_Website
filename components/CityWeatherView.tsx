@@ -40,7 +40,6 @@ export async function CityWeatherView({
   tomorrowOnly = false,
   weekendOnly = false,
   isYesterday = false,
-  topBanner,
 }: {
   slug: string;
   active: "now" | "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive" | "vchera";
@@ -147,14 +146,11 @@ export async function CityWeatherView({
               {active === "now" ? (
                 <div className="space-y-6">
                   <NowWeatherHeroCard
-                    cityName={city.name}
-                    citySlug={city.slug}
                     current={weather.current}
                     today={weather.daily[0]}
                     tomorrow={weather.daily[1]}
                     geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
                     timezone={weather.timezone || city.timezone || undefined}
-                    fetchedAt={weather.fetchedAt}
                   />
 
                   <RoadConditionCard current={weather.current} />

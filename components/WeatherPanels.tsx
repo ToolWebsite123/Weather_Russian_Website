@@ -391,6 +391,7 @@ export function CurrentWeatherCard({
               >
                 {cityName}
               </Link>
+              {periodBadge}
               <LiveCityDate timezone={timezone} />
               {lastUpdatedText && (
                 <div className="text-[11px] text-slate-500 font-normal mt-0.5">
@@ -554,16 +555,13 @@ export function CurrentWeatherCard({
 }
 
 export function NowWeatherHeroCard({
-  cityName,
-  citySlug,
   current,
   today,
   tomorrow,
   geomagneticKp = 2,
   timezone,
-  fetchedAt,
 }: {
-  cityName: string;
+  cityName?: string;
   citySlug?: string;
   current: CurrentWeather;
   today?: DailyPoint;
@@ -573,7 +571,6 @@ export function NowWeatherHeroCard({
   fetchedAt?: string;
 }) {
   const { formatTemp } = useUnit();
-  const slug = citySlug || "moscow";
 
   const windDirText = formatWindDir(current.windDirection);
   const pressureMm = formatPressureMmHg(current.pressure);
