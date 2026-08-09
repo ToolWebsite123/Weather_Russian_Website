@@ -123,9 +123,13 @@ export async function upsertCityFromGeo(input: {
 export async function refreshCityWeatherCache(
   city: City,
 ): Promise<WeatherBundle> {
-  const bundle = await getWeatherBundle(city.latitude, city.longitude, 14, {
-    cache: "no-store",
-  });
+  const bundle = await getWeatherBundle(
+    city.latitude,
+    city.longitude,
+    14,
+    { cache: "no-store" },
+    city.slug,
+  );
   const now = new Date();
   const expiresAt = new Date(now.getTime() + CACHE_TTL_MS);
 
@@ -158,9 +162,13 @@ export async function getCachedWeatherForCity(
 ): Promise<WeatherBundle> {
   // Skip DB caching for transient (negative/non-persisted) cities
   if (city.id < 0) {
-    return getWeatherBundle(city.latitude, city.longitude, 14, {
-      cache: "no-store",
-    });
+    return getWeatherBundle(
+      city.latitude,
+      city.longitude,
+      14,
+      { cache: "no-store" },
+      city.slug,
+    );
   }
 
   const now = new Date();

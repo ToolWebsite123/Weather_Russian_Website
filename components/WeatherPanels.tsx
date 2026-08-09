@@ -422,10 +422,18 @@ export function CurrentWeatherCard({
               </div>
 
               {typeof current.waterTemperature === "number" && (
-                <div className="flex items-baseline justify-between">
+                <div
+                  className="flex items-baseline justify-between"
+                  title={
+                    current.waterTemperatureSource === "estimated"
+                      ? "Оценочное значение на основе температуры воздуха за последние 10 дней"
+                      : undefined
+                  }
+                >
                   <span className="shrink-0 text-slate-600">Вода</span>
                   <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
                   <span className="shrink-0 font-medium tabular-nums text-slate-900">
+                    {current.waterTemperatureSource === "estimated" ? "≈" : ""}
                     {formatTemp(current.waterTemperature)}
                   </span>
                 </div>

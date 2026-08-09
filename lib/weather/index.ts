@@ -9,6 +9,7 @@ export async function getWeatherBundle(
   longitude: number,
   forecastDays = 14,
   options?: RequestInit,
+  citySlug?: string,
 ): Promise<WeatherBundle> {
-  return fetchOpenMeteoForecast(latitude, longitude, forecastDays, options);
+  return fetchOpenMeteoForecast(latitude, longitude, forecastDays, options, citySlug);
 }

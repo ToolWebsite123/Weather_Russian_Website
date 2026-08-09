@@ -6,6 +6,7 @@ import type {
 } from "@/types/weather";
 import { slugifyCity } from "@/lib/cities";
 import { reportError } from "@/lib/monitoring";
+import { isRiverCity } from "@/lib/weather/river-cities";
 
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
@@ -138,12 +139,13 @@ export async function fetchOpenMeteoForecast(
   longitude: number,
   forecastDays = 14,
   options?: RequestInit,
+  citySlug?: string,
 ): Promise<WeatherBundle> {
   const url = new URL(FORECAST_URL);
   url.searchParams.set("latitude", String(latitude));
   url.searchParams.set("longitude", String(longitude));
   url.searchParams.set("timezone", "auto");
-  url.searchParams.set("past_days", "1");
+  url.searchParams.set("past_days", "10");
   url.searchParams.set("forecast_days", String(Math.min(16, forecastDays)));
   url.searchParams.set(
     "current",
@@ -235,17 +237,35 @@ export async function fetchOpenMeteoForecast(
   }));
 
   const currentDateIso = data.current.time.split("T")[0];
-  const hasPast = allDaily.length > 1 && allDaily[0].date < currentDateIso;
+  const pastDailyPoints = allDaily.filter((d) => d.date < currentDateIso);
 
-  const yesterdayDaily = hasPast ? allDaily[0] : undefined;
-  const daily = hasPast ? allDaily.slice(1) : allDaily;
+  const yesterdayDaily = pastDailyPoints.length > 0 ? pastDailyPoints[pastDailyPoints.length - 1] : undefined;
+  const daily = allDaily.filter((d) => d.date >= currentDateIso);
 
   const yesterdayHourly = yesterdayDaily
     ? allHourly.filter((h) => h.time.startsWith(yesterdayDaily.date))
     : [];
   const hourly = yesterdayDaily
-    ? allHourly.filter((h) => !h.time.startsWith(yesterdayDaily.date))
-    : allHourly;
+    ? allHourly.filter((h) => !h.time.startsWith(yesterdayDaily.date) && h.time >= currentDateIso)
+    : allHourly.filter((h) => h.time >= currentDateIso);
+
+  const trailing10 = pastDailyPoints.slice(-10);
+  let riverEstimatedWaterTemp: number | undefined;
+  if (trailing10.length > 0) {
+    const sum = trailing10.reduce((acc, d) => acc + (d.tempMax + d.tempMin) / 2, 0);
+    riverEstimatedWaterTemp = Math.round((sum / trailing10.length) * 10) / 10;
+  }
+
+  let finalWaterTemp: number | undefined;
+  let finalWaterSource: "marine" | "estimated" | undefined;
+
+  if (typeof marineWaterTemp === "number" && !isNaN(marineWaterTemp)) {
+    finalWaterTemp = marineWaterTemp;
+    finalWaterSource = "marine";
+  } else if (citySlug && isRiverCity(citySlug) && typeof riverEstimatedWaterTemp === "number") {
+    finalWaterTemp = riverEstimatedWaterTemp;
+    finalWaterSource = "estimated";
+  }
 
   return {
     provider: "open-meteo",
@@ -268,7 +288,8 @@ export async function fetchOpenMeteoForecast(
       dewPoint: data.current.dew_point_2m,
       visibility: data.current.visibility,
       windGusts: data.current.wind_gusts_10m,
-      waterTemperature: marineWaterTemp,
+      waterTemperature: finalWaterTemp,
+      waterTemperatureSource: finalWaterSource,
     },
     hourly,
     daily,

@@ -31,6 +31,7 @@ export type CurrentWeather = {
   visibility?: number;
   windGusts?: number;
   waterTemperature?: number;
+  waterTemperatureSource?: "marine" | "estimated";
 };
 
 export type HourlyPoint = {
