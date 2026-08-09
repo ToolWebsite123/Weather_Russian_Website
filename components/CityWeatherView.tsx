@@ -15,10 +15,25 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import { NotificationPrompt } from "@/components/NotificationPrompt";
 import { PageShell } from "@/components/SiteChrome";
 import { RememberLastCity } from "@/components/RememberLastCity";
+import dynamic from "next/dynamic";
 import { RoadConditionCard } from "@/components/RoadConditionCard";
 import { GeomagneticCard } from "@/components/GeomagneticCard";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
-import RadarMap from "@/components/RadarMap";
+
+const RadarMap = dynamic(() => import("@/components/RadarMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-64 sm:h-80 w-full rounded-2xl bg-slate-100 animate-pulse flex items-center justify-center text-slate-400 text-sm border border-slate-200">
+      <span className="flex items-center gap-2">
+        <svg className="w-5 h-5 animate-spin text-sky-600" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        Загрузка интерактивного радара осадков...
+      </span>
+    </div>
+  ),
+});
 import {
   getFavoritesForSession,
   isCityFavorited,

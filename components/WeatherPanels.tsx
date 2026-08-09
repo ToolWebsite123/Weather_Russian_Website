@@ -211,6 +211,7 @@ export function CategoryTabBar({
               <Link
                 key={tab.id}
                 href={tab.href}
+                prefetch={true}
                 className={`inline-block px-3.5 py-1.5 rounded-lg text-sm transition-colors ${isActive
                     ? "bg-white text-[#0f3d3a] font-semibold shadow-xs"
                     : "text-[#bcd8d4] hover:bg-white/10"
