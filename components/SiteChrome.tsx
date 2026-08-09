@@ -56,10 +56,10 @@ function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
 
 export function SiteHeader({
   favorites = [],
-  cityCount = 272,
+  _cityCount = 272,
 }: {
   favorites?: { slug: string; name: string }[];
-  cityCount?: number;
+  _cityCount?: number;
 }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);

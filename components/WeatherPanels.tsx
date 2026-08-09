@@ -8,11 +8,11 @@ import { ru } from "@/lib/i18n/ru";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
 import { summarizeDayParts } from "@/lib/weather/day-parts";
 import { WeatherIcon } from "@/components/WeatherIcon";
-import { TemperatureSparkline } from "@/components/TemperatureSparkline";
 import type { AirQuality, CurrentWeather, DailyPoint, HourlyPoint } from "@/types/weather";
 import { getPressureTrend, type PressureTrendValue } from "@/lib/weather/pressure-trend";
 import { getUvCategory } from "@/lib/weather/uv-scale";
 import { computeComfortPenalties } from "@/lib/weather/activity-index";
+import { LiveCityDate } from "@/components/LiveCityDate";
 
 export function PressureTrend({ trend }: { trend: PressureTrendValue }) {
   if (trend === "rising") {
@@ -83,23 +83,6 @@ export function PressureTrend({ trend }: { trend: PressureTrendValue }) {
     </span>
   );
 }
-
-function formatGismeteoDate(timeStr?: string) {
-  const date = timeStr ? new Date(timeStr) : new Date();
-  const weekdays = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
-  const months = [
-    "января", "февраля", "марта", "апреля", "мая", "июня",
-    "июля", "августа", "сентября", "октября", "ноября", "декабря"
-  ];
-  const wd = weekdays[date.getDay()];
-  const day = date.getDate();
-  const mon = months[date.getMonth()];
-  const hh = String(date.getHours()).padStart(2, "0");
-  const mm = String(date.getMinutes()).padStart(2, "0");
-  return `${wd}, ${day} ${mon}, ${hh}:${mm}`;
-}
-
-import { LiveCityDate } from "@/components/LiveCityDate";
 
 export function SunArcTimeline({
   sunrise,
