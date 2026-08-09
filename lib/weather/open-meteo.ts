@@ -9,6 +9,7 @@ import { reportError } from "@/lib/monitoring";
 
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
+const MARINE_URL = "https://marine-api.open-meteo.com/v1/marine";
 
 type OpenMeteoForecast = {
   latitude: number;
@@ -106,10 +107,37 @@ export async function searchPlaces(
     }));
 }
 
+export async function fetchOpenMeteoMarine(
+  latitude: number,
+  longitude: number,
+  options?: RequestInit,
+): Promise<number | undefined> {
+  try {
+    const url = new URL(MARINE_URL);
+    url.searchParams.set("latitude", String(latitude));
+    url.searchParams.set("longitude", String(longitude));
+    url.searchParams.set("current", "sea_surface_temperature");
+
+    const fetchOptions = options ?? { cache: "no-store" };
+    const res = await fetch(url.toString(), fetchOptions);
+    if (!res.ok) return undefined;
+
+    const data = await res.json();
+    const sst = data?.current?.sea_surface_temperature;
+    if (typeof sst === "number" && !isNaN(sst)) {
+      return Math.round(sst * 10) / 10;
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function fetchOpenMeteoForecast(
   latitude: number,
   longitude: number,
   forecastDays = 14,
+  options?: RequestInit,
 ): Promise<WeatherBundle> {
   const url = new URL(FORECAST_URL);
   url.searchParams.set("latitude", String(latitude));
@@ -165,9 +193,13 @@ export async function fetchOpenMeteoForecast(
   );
   url.searchParams.set("wind_speed_unit", "ms");
 
-  const res = await fetch(url.toString(), {
-    next: { revalidate: 900 },
-  });
+  const fetchOptions = options ?? { cache: "no-store" };
+
+  const [res, marineWaterTemp] = await Promise.all([
+    fetch(url.toString(), fetchOptions),
+    fetchOpenMeteoMarine(latitude, longitude, fetchOptions).catch(() => undefined),
+  ]);
+
   if (!res.ok) {
     const err = new Error(`Forecast fetch failed with status ${res.status}`);
     reportError(err, { latitude, longitude });
@@ -236,6 +268,7 @@ export async function fetchOpenMeteoForecast(
       dewPoint: data.current.dew_point_2m,
       visibility: data.current.visibility,
       windGusts: data.current.wind_gusts_10m,
+      waterTemperature: marineWaterTemp,
     },
     hourly,
     daily,

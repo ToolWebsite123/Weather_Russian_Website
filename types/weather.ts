@@ -30,6 +30,7 @@ export type CurrentWeather = {
   dewPoint?: number;
   visibility?: number;
   windGusts?: number;
+  waterTemperature?: number;
 };
 
 export type HourlyPoint = {

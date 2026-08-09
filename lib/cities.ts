@@ -76,3 +76,41 @@ export function formatPressureMmHg(hPa: number): string {
   return `${mmHg} мм рт. ст.`;
 }
 
+export function formatTimeAgo(isoString?: string): string | null {
+  if (!isoString) return null;
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return null;
+
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  if (diffMs < 0) return "обновлено только что";
+
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) {
+    return "обновлено меньше минуты назад";
+  }
+  if (diffMins < 60) {
+    const mod10 = diffMins % 10;
+    const mod100 = diffMins % 100;
+    let unitStr = "минут";
+    if (mod10 === 1 && mod100 !== 11) {
+      unitStr = "минуту";
+    } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+      unitStr = "минуты";
+    }
+    return `обновлено ${diffMins} ${unitStr} назад`;
+  }
+
+  const diffHours = Math.floor(diffMins / 60);
+  let hStr = "часов";
+  const mod10 = diffHours % 10;
+  const mod100 = diffHours % 100;
+  if (mod10 === 1 && mod100 !== 11) {
+    hStr = "час";
+  } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+    hStr = "часа";
+  }
+  return `обновлено ${diffHours} ${hStr} назад`;
+}
+
+

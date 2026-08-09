@@ -120,12 +120,47 @@ export async function upsertCityFromGeo(input: {
   }
 }
 
+export async function refreshCityWeatherCache(
+  city: City,
+): Promise<WeatherBundle> {
+  const bundle = await getWeatherBundle(city.latitude, city.longitude, 14, {
+    cache: "no-store",
+  });
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + CACHE_TTL_MS);
+
+  if (city.id > 0) {
+    try {
+      await prisma.weatherCache.upsert({
+        where: { cityId: city.id },
+        update: {
+          payload: bundle as object,
+          fetchedAt: now,
+          expiresAt,
+        },
+        create: {
+          cityId: city.id,
+          payload: bundle as object,
+          fetchedAt: now,
+          expiresAt,
+        },
+      });
+    } catch {
+      // Ignore cache persistence failures on read-only/serverless edge environments
+    }
+  }
+
+  return bundle;
+}
+
 export async function getCachedWeatherForCity(
   city: City,
 ): Promise<WeatherBundle> {
   // Skip DB caching for transient (negative/non-persisted) cities
   if (city.id < 0) {
-    return getWeatherBundle(city.latitude, city.longitude, 14);
+    return getWeatherBundle(city.latitude, city.longitude, 14, {
+      cache: "no-store",
+    });
   }
 
   const now = new Date();
@@ -142,29 +177,7 @@ export async function getCachedWeatherForCity(
     // If DB cache check fails, proceed directly to fetch live weather
   }
 
-  const bundle = await getWeatherBundle(city.latitude, city.longitude, 14);
-  const expiresAt = new Date(Date.now() + CACHE_TTL_MS);
-
-  try {
-    await prisma.weatherCache.upsert({
-      where: { cityId: city.id },
-      update: {
-        payload: bundle as object,
-        fetchedAt: now,
-        expiresAt,
-      },
-      create: {
-        cityId: city.id,
-        payload: bundle as object,
-        fetchedAt: now,
-        expiresAt,
-      },
-    });
-  } catch {
-    // Ignore cache persistence failures on read-only/serverless edge environments
-  }
-
-  return bundle;
+  return refreshCityWeatherCache(city);
 }
 
 export async function listPopularCities(limit = 12): Promise<City[]> {

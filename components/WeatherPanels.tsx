@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { formatPressureMmHg, formatWindDir } from "@/lib/cities";
+import { formatPressureMmHg, formatTimeAgo, formatWindDir } from "@/lib/cities";
 import { useUnit } from "@/components/UnitContext";
 import { ru } from "@/lib/i18n/ru";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
@@ -319,6 +319,7 @@ export function CurrentWeatherCard({
   hourly,
   geomagneticKp = 2,
   timezone,
+  fetchedAt,
 }: {
   cityName: string;
   citySlug?: string;
@@ -327,6 +328,7 @@ export function CurrentWeatherCard({
   hourly?: HourlyPoint[];
   geomagneticKp?: number;
   timezone?: string;
+  fetchedAt?: string;
 }) {
   const { unit, formatTemp } = useUnit();
   const slug = citySlug || "moscow";
@@ -345,7 +347,7 @@ export function CurrentWeatherCard({
 
   const windDirText = formatWindDir(current.windDirection);
   const pressureMm = formatPressureMmHg(current.pressure);
-  const waterTemp = Math.round(current.temperature > 0 ? current.temperature - 1 : current.temperature);
+  const lastUpdatedText = formatTimeAgo(fetchedAt);
 
   return (
     <div className="space-y-3 max-w-4xl mx-auto">
@@ -362,6 +364,11 @@ export function CurrentWeatherCard({
                 {cityName}
               </Link>
               <LiveCityDate timezone={timezone} />
+              {lastUpdatedText && (
+                <div className="text-[11px] text-slate-500 font-normal mt-0.5">
+                  {lastUpdatedText}
+                </div>
+              )}
             </div>
 
             {/* Temperature badge + icon + condition text */}
@@ -414,13 +421,15 @@ export function CurrentWeatherCard({
                 </span>
               </div>
 
-              <div className="flex items-baseline justify-between">
-                <span className="shrink-0 text-slate-600">Вода</span>
-                <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
-                <span className="shrink-0 font-medium tabular-nums text-slate-900">
-                  {formatTemp(waterTemp)}
-                </span>
-              </div>
+              {typeof current.waterTemperature === "number" && (
+                <div className="flex items-baseline justify-between">
+                  <span className="shrink-0 text-slate-600">Вода</span>
+                  <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
+                  <span className="shrink-0 font-medium tabular-nums text-slate-900">
+                    {formatTemp(current.waterTemperature)}
+                  </span>
+                </div>
+              )}
 
               <div className="flex items-baseline justify-between">
                 <span className="shrink-0 text-slate-600">Г/м активность</span>

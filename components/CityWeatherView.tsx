@@ -165,6 +165,7 @@ export async function CityWeatherView({
             hourly={weather.hourly}
             geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
             timezone={weather.timezone || city.timezone || undefined}
+            fetchedAt={weather.fetchedAt}
           />
         </div>
 

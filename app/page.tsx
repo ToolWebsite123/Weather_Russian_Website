@@ -96,6 +96,7 @@ export default async function Home() {
               hourly={primaryData.weather.hourly}
               geomagneticKp={geomagneticData?.kp ? Math.round(geomagneticData.kp) : 2}
               timezone={primaryData.weather.timezone || primaryData.city.timezone || undefined}
+              fetchedAt={primaryData.weather.fetchedAt}
             />
             <PopularCitiesSection />
           </>
