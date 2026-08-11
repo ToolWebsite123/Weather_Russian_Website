@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ru } from "@/lib/i18n/ru";
 import { useUnit } from "@/components/UnitContext";
 import { AppInstallModal } from "@/components/AppInstallModal";
@@ -63,7 +62,6 @@ export function SiteHeader({
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isFavOpen, setIsFavOpen] = useState(false);
   const { unit, toggleUnit } = useUnit();
-  const pathname = usePathname() || "/";
   const searchBoxRef = useRef<HTMLDivElement>(null);
 
 
