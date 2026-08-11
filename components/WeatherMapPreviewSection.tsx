@@ -35,7 +35,7 @@ export function WeatherMapPreviewSection() {
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].id);
 
   return (
-    <section id="weather-map" className="rounded-3xl bg-white/95 p-6 border border-sky-200/90 shadow-lg shadow-sky-900/5 backdrop-blur-md ring-1 ring-white/80 space-y-4">
+    <section id="weather-map" className="scroll-mt-24 rounded-3xl bg-white/95 p-6 border border-sky-200/90 shadow-lg shadow-sky-900/5 backdrop-blur-md ring-1 ring-white/80 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <SectionHeading
           action={

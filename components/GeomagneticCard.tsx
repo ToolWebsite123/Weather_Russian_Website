@@ -53,7 +53,7 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
   ];
 
   return (
-    <div id="geomagnetic" className="rounded-2xl bg-white/95 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5">
+    <div id="geomagnetic" className="scroll-mt-24 rounded-2xl bg-white/95 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <svg

@@ -1016,11 +1016,18 @@ export function DailyForecast({
   const range = Math.max(1, globalMax - globalMin);
 
   return (
-    <section>
-      <h2 className="mb-2 font-serif text-h2 text-sky-950">{ru.daily}</h2>
-      <ul className="divide-y divide-sky-100 overflow-hidden rounded-xl bg-white/80 ring-1 ring-sky-100">
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-serif text-h2 text-sky-950">{ru.daily}</h2>
+        <span className="text-xs text-cloud-500 font-medium hidden sm:inline-block">
+          Мин / Макс температура · Осадки · Ветер
+        </span>
+      </div>
+      <ul className="divide-y divide-sky-100 overflow-hidden rounded-2xl bg-white/95 border border-sky-200/80 shadow-xs ring-1 ring-sky-100/50">
         {list.map((d) => {
-          const dateLabel = new Date(d.date + "T12:00:00").toLocaleDateString(
+          const dateObj = new Date(d.date + "T12:00:00");
+          const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+          const dateLabel = dateObj.toLocaleDateString(
             "ru-RU",
             { weekday: "short", day: "numeric", month: "short" },
           );
@@ -1029,20 +1036,23 @@ export function DailyForecast({
           const widthPercent = Math.max(6, ((d.tempMax - d.tempMin) / range) * 100);
 
           return (
-            <li key={d.date} className="px-3 py-2.5 sm:px-4">
-              <div className="flex items-center gap-2 text-sm sm:gap-3 sm:text-base">
-                <span className="w-24 capitalize text-cloud-600 sm:w-32 shrink-0 truncate">
+            <li key={d.date} className="px-3 py-3 sm:px-5 hover:bg-sky-50/40 transition-colors">
+              <div className="flex items-center gap-2 text-sm sm:gap-4 sm:text-base">
+                <span className={`w-24 capitalize font-semibold sm:w-32 shrink-0 truncate ${
+                  isWeekend ? "text-rose-600" : "text-sky-950"
+                }`}>
                   {dateLabel}
                 </span>
-                <WeatherIcon code={d.weatherCode} size={28} className="shrink-0" />
-                <span className="hidden flex-1 text-cloud-600 md:block truncate">
+                <WeatherIcon code={d.weatherCode} size={30} className="shrink-0" />
+                <span className="hidden flex-1 text-cloud-600 md:block truncate text-xs sm:text-sm">
                   {weatherCodeLabel(d.weatherCode)}
                 </span>
 
-                <div className="hidden sm:flex flex-1 items-center mx-2 max-w-[140px]">
-                  <div className="h-2 w-full rounded-full bg-cloud-100 relative overflow-hidden">
+                {/* Min/Max Temperature Visual Bar */}
+                <div className="hidden sm:flex flex-1 items-center mx-2 max-w-[160px]">
+                  <div className="h-2 w-full rounded-full bg-slate-100 relative overflow-hidden ring-1 ring-slate-200/60">
                     <div
-                      className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 to-sun-400"
+                      className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 via-amber-300 to-amber-500"
                       style={{
                         left: `${leftPercent}%`,
                         width: `${widthPercent}%`,
@@ -1051,19 +1061,38 @@ export function DailyForecast({
                   </div>
                 </div>
 
-                <span className="ml-auto tabular-nums text-sky-950 font-medium shrink-0">
-                  {formatTemp(d.tempMin)} / {formatTemp(d.tempMax)}
-                </span>
-                <span className="hidden w-12 text-right tabular-nums text-cloud-500 sm:block shrink-0">
-                  {d.precipitationSum.toFixed(1)}
+                {/* Night / Day Temperatures */}
+                <div className="ml-auto flex items-center gap-1.5 tabular-nums shrink-0">
+                  <span className="text-cloud-500 text-xs sm:text-sm font-normal">
+                    {formatTemp(d.tempMin)}
+                  </span>
+                  <span className="text-cloud-300 text-xs font-light">/</span>
+                  <span className="text-sky-950 text-sm sm:text-base font-bold">
+                    {formatTemp(d.tempMax)}
+                  </span>
+                </div>
+
+                {/* Wind Max */}
+                {typeof d.windSpeedMax === "number" && (
+                  <span className="hidden md:flex items-center gap-1 w-20 justify-end text-xs text-slate-600 shrink-0 font-medium tabular-nums" title="Максимальная скорость ветра">
+                    <svg className="w-3 h-3 text-sky-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>
+                    {Math.round(d.windSpeedMax)} м/с
+                  </span>
+                )}
+
+                {/* Precipitation Sum */}
+                <span className={`w-14 text-right tabular-nums text-xs sm:text-sm font-medium shrink-0 ${
+                  d.precipitationSum > 0 ? "text-sky-700 font-bold" : "text-cloud-400"
+                }`}>
+                  {d.precipitationSum > 0 ? `${d.precipitationSum.toFixed(1)} мм` : "0 мм"}
                 </span>
               </div>
 
               {/* Mobile range bar row */}
-              <div className="mt-1 sm:hidden flex items-center px-1">
-                <div className="h-1.5 w-full rounded-full bg-cloud-100 relative overflow-hidden">
+              <div className="mt-1.5 sm:hidden flex items-center px-1">
+                <div className="h-1.5 w-full rounded-full bg-slate-100 relative overflow-hidden">
                   <div
-                    className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 to-sun-400"
+                    className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 to-amber-400"
                     style={{
                       left: `${leftPercent}%`,
                       width: `${widthPercent}%`,
@@ -1073,14 +1102,14 @@ export function DailyForecast({
               </div>
 
               {parts.length > 0 && (
-                <div className="mt-1.5 grid grid-cols-4 gap-1 sm:hidden">
+                <div className="mt-2 grid grid-cols-4 gap-1 sm:hidden">
                   {parts.map((p) => (
                     <div
                       key={p.key}
-                      className="rounded-lg bg-sky-50/80 px-1 py-1 text-center"
+                      className="rounded-lg bg-sky-50/80 px-1 py-1 text-center border border-sky-100/60"
                     >
-                      <p className="text-[9px] text-cloud-500">{p.label}</p>
-                      <p className="text-xs font-medium tabular-nums">
+                      <p className="text-[9px] text-cloud-500 font-medium">{p.label}</p>
+                      <p className="text-xs font-semibold tabular-nums text-sky-950">
                         {formatTemp(p.temperature)}
                       </p>
                     </div>

@@ -78,7 +78,7 @@ export function RoadConditionCard({ current }: { current: CurrentWeather }) {
   const road = getRoadCondition(current);
 
   return (
-    <div className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5">
+    <div id="road-conditions" className="scroll-mt-24 rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <RoadIcon type={road.type} />

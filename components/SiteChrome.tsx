@@ -58,34 +58,17 @@ export function SiteHeader({
   favorites?: { slug: string; name: string }[];
   cityCount?: number;
 }) {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: number; slug: string; name: string; admin1?: string; country?: string }[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isFavOpen, setIsFavOpen] = useState(false);
   const { unit, toggleUnit } = useUnit();
   const pathname = usePathname() || "/";
   const searchBoxRef = useRef<HTMLDivElement>(null);
 
-  // Parse current city slug dynamically from pathname
-  const pathSegments = pathname.split("/").filter(Boolean);
-  const currentCitySlug = pathSegments[0] === "pogoda" && pathSegments[1] ? pathSegments[1] : "moscow";
 
-  const isCityPage = pathname.startsWith("/pogoda");
-  const anchorPrefix = isCityPage ? "" : `/pogoda/${currentCitySlug}`;
 
-  function handleSearchClick() {
-    const pageSearchInput = document.querySelector<HTMLInputElement>(
-      'input[placeholder*="Поиск по 272"], input[placeholder*="Поиск города"]',
-    );
-    if (pageSearchInput && !isSearchOpen) {
-      pageSearchInput.scrollIntoView({ behavior: "smooth", block: "center" });
-      pageSearchInput.focus();
-    } else {
-      setIsSearchOpen((prev) => !prev);
-    }
-  }
-
-  // Handle live geocoding search inside inline navbar search input
+  // Handle live geocoding search inside navbar search input
   useEffect(() => {
     const query = searchQuery.trim();
     if (query.length < 2) {
@@ -115,7 +98,7 @@ export function SiteHeader({
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
-        setIsSearchOpen(false);
+        setIsSearchFocused(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -124,72 +107,50 @@ export function SiteHeader({
 
   return (
     <header className="sticky top-0 z-30 border-b border-sky-200/60 bg-white/95 backdrop-blur-md transition-all shadow-xs">
-      {/* Single-Row Navbar Header */}
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
-        <div className="flex items-center gap-4 sm:gap-8 shrink-0">
+      {/* Top Navbar Row */}
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:px-6">
+        <div className="flex items-center gap-2 sm:gap-6 shrink-0 min-w-0">
           <Link
             href="/"
-            className="flex items-center gap-2 font-serif text-h2 font-semibold text-sky-950 hover:text-sky-800 transition-colors shrink-0"
+            className="flex items-center gap-1.5 font-serif text-h2 font-semibold text-sky-950 hover:text-sky-800 transition-colors shrink-0"
           >
             <SunCloudLogo />
-            <span>{ru.brand}</span>
+            <span className="hidden sm:inline">{ru.brand}</span>
           </Link>
 
-          {/* Center-Left 3 Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-sky-900">
-            <Link href="/" className="hover:text-sky-600 transition-colors">
-              Погода
-            </Link>
-            <Link href="/articles" className="hover:text-sky-600 transition-colors">
-              Статьи
-            </Link>
-            <Link href={`${anchorPrefix}#weather-map`} className="hover:text-sky-600 transition-colors">
-              Карта
-            </Link>
-          </nav>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          {/* Expandable Inline Search Input */}
-          <div ref={searchBoxRef} className="relative flex items-center">
-            <div
-              className={`flex h-9 items-center rounded-xl border border-sky-200/80 bg-sky-50/80 transition-all duration-300 ease-in-out ${
-                isSearchOpen
-                  ? "w-48 sm:w-[220px] bg-white ring-2 ring-sky-300 px-2.5 shadow-xs"
-                  : "w-9 justify-center cursor-pointer hover:bg-sky-100"
-              }`}
-            >
-              <button
-                type="button"
-                onClick={handleSearchClick}
-                className="flex items-center justify-center shrink-0 text-sky-700 hover:text-sky-950 focus:outline-none"
-                aria-label="Поиск города"
-                title="Поиск города"
-              >
-                <SearchIcon className="h-4 w-4" />
-              </button>
-              {isSearchOpen && (
-                <input
-                  type="text"
-                  autoFocus
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Поиск города..."
-                  className="w-full bg-transparent ml-2 text-xs font-medium text-sky-950 outline-none placeholder:text-cloud-400"
-                />
+          {/* Prominent Always-Visible Search Input */}
+          <div ref={searchBoxRef} className="relative flex items-center min-w-0">
+            <div className="flex h-9 w-36 sm:w-64 md:w-80 items-center rounded-xl border border-sky-200 bg-sky-50/90 px-2.5 transition-all focus-within:border-sky-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200 shadow-xs">
+              <SearchIcon className="h-4 w-4 shrink-0 text-sky-600" />
+              <input
+                type="text"
+                value={searchQuery}
+                onFocus={() => setIsSearchFocused(true)}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Поиск..."
+                className="w-full bg-transparent ml-1.5 text-xs sm:text-sm font-medium text-sky-950 outline-none placeholder:text-sky-400 truncate"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="text-xs text-sky-400 hover:text-sky-700 ml-1 font-bold"
+                >
+                  ✕
+                </button>
               )}
             </div>
 
             {/* Live Search Results Dropdown */}
-            {isSearchOpen && searchResults.length > 0 && (
-              <div className="absolute right-0 top-full mt-2 w-64 sm:w-72 rounded-xl border border-sky-100 bg-white py-1.5 shadow-xl z-50 max-h-64 overflow-y-auto">
+            {isSearchFocused && searchResults.length > 0 && (
+              <div className="absolute left-0 top-full mt-1.5 w-64 sm:w-80 rounded-xl border border-sky-100 bg-white py-1.5 shadow-xl z-50 max-h-72 overflow-y-auto">
                 {searchResults.map((r) => (
                   <Link
                     key={`${r.id}-${r.slug}`}
                     href={`/pogoda/${r.slug}`}
                     className="block px-3 py-2 text-left hover:bg-sky-50 transition-colors"
                     onClick={() => {
-                      setIsSearchOpen(false);
+                      setIsSearchFocused(false);
                       setSearchQuery("");
                     }}
                   >
@@ -202,12 +163,23 @@ export function SiteHeader({
               </div>
             )}
           </div>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <nav className="hidden lg:flex items-center gap-4 text-xs font-medium text-sky-900">
+            <Link href="/articles" className="hover:text-sky-600 transition-colors">
+              Статьи
+            </Link>
+            <Link href="/gorod" className="hover:text-sky-600 transition-colors">
+              Все города
+            </Link>
+          </nav>
 
           {/* Temperature Unit Switcher (°C / °F) */}
           <button
             type="button"
             onClick={toggleUnit}
-            className="flex items-center justify-center h-9 rounded-xl bg-sky-100/80 px-2.5 text-xs font-bold text-sky-900 hover:bg-sky-200 transition-colors"
+            className="flex items-center justify-center h-8 sm:h-9 rounded-xl bg-sky-100/90 border border-sky-200/80 px-2 text-xs font-bold text-sky-900 hover:bg-sky-200 transition-colors cursor-pointer"
             title="Переключить единицу измерения температуры"
           >
             °{unit}
@@ -220,7 +192,7 @@ export function SiteHeader({
                 type="button"
                 onClick={() => setIsFavOpen((prev) => !prev)}
                 onMouseEnter={() => setIsFavOpen(true)}
-                className="flex h-9 items-center gap-1.5 rounded-xl bg-amber-50/90 border border-amber-200/80 px-2.5 text-xs font-bold text-amber-900 hover:bg-amber-100 transition-colors cursor-pointer"
+                className="flex h-8 sm:h-9 items-center gap-1 rounded-xl bg-amber-50/90 border border-amber-200/80 px-2 text-xs font-bold text-amber-900 hover:bg-amber-100 transition-colors cursor-pointer"
                 aria-label="Избранное"
               >
                 <span>⭐</span>

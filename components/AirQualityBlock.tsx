@@ -54,7 +54,7 @@ export function AirQualityBlock({ aqi, uvIndex }: { aqi: AirQuality; uvIndex?: n
   );
 
   return (
-    <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5 space-y-3">
+    <section id="air-quality" className="scroll-mt-24 rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <h2 className="font-serif text-h2 font-semibold text-sky-950">
           Качество воздуха
