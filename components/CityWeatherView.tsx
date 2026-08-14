@@ -161,33 +161,13 @@ export async function CityWeatherView({
 
             <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">
               {active === "now" ? (
-                <div className="space-y-6">
-                  <NowWeatherHeroCard
-                    current={weather.current}
-                    today={weather.daily[0]}
-                    tomorrow={weather.daily[1]}
-                    geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
-                    timezone={weather.timezone || city.timezone || undefined}
-                  />
-
-                  <RoadConditionCard current={weather.current} />
-
-                  <section className="space-y-3">
-                    <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-sky-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                      </svg>
-                      Радар осадков в режиме реального времени ({city.name})
-                    </h2>
-                    <RadarMap latitude={city.latitude} longitude={city.longitude} cityName={city.name} layer="precip" />
-                  </section>
-
-                  <GeomagneticCard data={geomagnetic} />
-
-                  {airQuality && (
-                    <AirQualityBlock aqi={airQuality} />
-                  )}
-                </div>
+                <NowWeatherHeroCard
+                  current={weather.current}
+                  today={weather.daily[0]}
+                  tomorrow={weather.daily[1]}
+                  geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
+                  timezone={weather.timezone || city.timezone || undefined}
+                />
               ) : (
                 <CurrentWeatherCard
                   cityName={city.name}
@@ -225,13 +205,34 @@ export async function CityWeatherView({
               />
             </div>
 
-            <div className="animate-fade-in-up stagger-7 motion-reduce:animate-none">
+            <div className="animate-fade-in-up stagger-6 motion-reduce:animate-none">
               <DailyForecast days={daily} hourly={weather.hourly} />
+            </div>
+
+            {/* Environmental & Radar Anchor Sections (#weather-map, #environmental-insights, #road-conditions, #geomagnetic) */}
+            <div className="space-y-6 pt-4 border-t border-sky-100/60 animate-fade-in-up stagger-7 motion-reduce:animate-none">
+              <section id="weather-map" className="scroll-mt-24 space-y-3">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-sky-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  Радар осадков в режиме реального времени ({city.name})
+                </h2>
+                <RadarMap latitude={city.latitude} longitude={city.longitude} cityName={city.name} layer="precip" />
+              </section>
+
+              {airQuality && (
+                <AirQualityBlock aqi={airQuality} />
+              )}
+
+              <RoadConditionCard current={weather.current} />
+
+              <GeomagneticCard data={geomagnetic} />
             </div>
 
             {active === "today" && (
               <Suspense fallback={null}>
-                <div className="animate-fade-in-up stagger-7 motion-reduce:animate-none">
+                <div className="animate-fade-in-up stagger-8 motion-reduce:animate-none">
                   <HistoricalComparisonCard
                     todayTempMax={weather.daily[0].tempMax}
                     todayDate={weather.daily[0].date}
