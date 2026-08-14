@@ -41,10 +41,13 @@ type OpenMeteoForecast = {
     weather_code: number[];
     wind_speed_10m: number[];
     apparent_temperature: number[];
+    relative_humidity_2m?: number[];
+    wind_direction_10m?: number[];
     precipitation_probability?: number[];
     dew_point_2m?: number[];
     wind_gusts_10m?: number[];
     pressure_msl?: number[];
+    uv_index?: number[];
   };
   daily: {
     time: string[];
@@ -174,10 +177,13 @@ export async function fetchOpenMeteoForecast(
       "weather_code",
       "wind_speed_10m",
       "apparent_temperature",
+      "relative_humidity_2m",
+      "wind_direction_10m",
       "precipitation_probability",
       "dew_point_2m",
       "wind_gusts_10m",
       "pressure_msl",
+      "uv_index",
     ].join(","),
   );
   url.searchParams.set(
@@ -222,6 +228,9 @@ export async function fetchOpenMeteoForecast(
     dewPoint: data.hourly.dew_point_2m?.[i],
     windGusts: data.hourly.wind_gusts_10m?.[i],
     pressure: data.hourly.pressure_msl?.[i],
+    humidity: data.hourly.relative_humidity_2m?.[i],
+    windDirection: data.hourly.wind_direction_10m?.[i],
+    uvIndex: data.hourly.uv_index?.[i],
   }));
 
   const allDaily: DailyPoint[] = data.daily.time.map((date, i) => ({

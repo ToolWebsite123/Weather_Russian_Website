@@ -5,6 +5,7 @@ import {
   HourlyForecast,
   NearbyCities,
   NowWeatherHeroCard,
+  YesterdayHourlyTable,
 } from "@/components/WeatherPanels";
 import { Suspense } from "react";
 import { HistoricalComparisonCard } from "@/components/HistoricalComparisonCard";
@@ -19,6 +20,7 @@ import dynamic from "next/dynamic";
 import { RoadConditionCard } from "@/components/RoadConditionCard";
 import { GeomagneticCard } from "@/components/GeomagneticCard";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
+import { AstronomyCard } from "@/components/AstronomyCard";
 
 const RadarMap = dynamic(() => import("@/components/RadarMap"), {
   ssr: false,
@@ -191,7 +193,7 @@ export async function CityWeatherView({
                   cityName={city.name}
                   citySlug={city.slug}
                   current={weather.current}
-                  today={tomorrowOnly ? weather.daily[1] : weather.daily[0]}
+                  today={tomorrowOnly ? weather.daily[1] : (hasYesterdayData && weather.yesterday ? weather.yesterday.daily : weather.daily[0])}
                   hourly={weather.hourly}
                   geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
                   timezone={weather.timezone || city.timezone || undefined}
@@ -201,12 +203,27 @@ export async function CityWeatherView({
               )}
             </div>
 
+            {hasYesterdayData && hours.length > 0 && (
+              <div className="animate-fade-in-up stagger-3 motion-reduce:animate-none">
+                <YesterdayHourlyTable hours={hours} />
+              </div>
+            )}
+
             {showHourly && hours.length > 0 && (
-              <div className="space-y-6 sm:space-y-8 animate-fade-in-up stagger-3 motion-reduce:animate-none">
+              <div className="space-y-6 sm:space-y-8 animate-fade-in-up stagger-4 motion-reduce:animate-none">
                 <HourlyChart hours={hours} />
                 <HourlyForecast hours={hours} />
               </div>
             )}
+
+            <div className="animate-fade-in-up stagger-5 motion-reduce:animate-none">
+              <AstronomyCard
+                today={hasYesterdayData && weather.yesterday ? weather.yesterday.daily : weather.daily[0]}
+                latitude={city.latitude}
+                longitude={city.longitude}
+                timezone={weather.timezone || city.timezone || undefined}
+              />
+            </div>
 
             <div className="animate-fade-in-up stagger-7 motion-reduce:animate-none">
               <DailyForecast days={daily} hourly={weather.hourly} />

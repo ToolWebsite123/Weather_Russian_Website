@@ -1165,3 +1165,117 @@ export function WeatherMap(props: {
 }) {
   return <DynamicRadarMap {...props} />;
 }
+
+export function YesterdayHourlyTable({ hours }: { hours: HourlyPoint[] }) {
+  const { formatTemp } = useUnit();
+
+  // Show 3-hour interval points for structured table display (or all if <= 8 points)
+  const displayHours =
+    hours.length > 8 ? hours.filter((_, idx) => idx % 3 === 0) : hours;
+
+  if (displayHours.length === 0) return null;
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-serif text-h2 text-sky-950">
+          Почасовой архив метеонаблюдений за вчера
+        </h2>
+        <span className="text-xs text-cloud-500 font-medium hidden sm:inline-block">
+          Интервал: 3 часа · Метеоданные
+        </span>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-sky-200/80 bg-white/95 shadow-xs ring-1 ring-sky-100/50">
+        <table className="w-full text-left text-xs sm:text-sm">
+          <thead>
+            <tr className="border-b border-sky-100 bg-sky-50/70 text-cloud-600 font-semibold">
+              <th className="px-3 py-2.5 sm:px-4">Время</th>
+              <th className="px-3 py-2.5 sm:px-4">Погода</th>
+              <th className="px-3 py-2.5 sm:px-4 text-right">Темп.</th>
+              <th className="px-3 py-2.5 sm:px-4 text-right">Ощущается</th>
+              <th className="px-3 py-2.5 sm:px-4">Ветер</th>
+              <th className="px-3 py-2.5 sm:px-4 text-right">Давление</th>
+              <th className="px-3 py-2.5 sm:px-4 text-right">Влажность</th>
+              <th className="px-3 py-2.5 sm:px-4 text-right">Осадки</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-sky-100/80">
+            {displayHours.map((h) => {
+              const timeLabel = new Date(h.time).toLocaleTimeString("ru-RU", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+
+              const windDirStr =
+                typeof h.windDirection === "number"
+                  ? formatWindDir(h.windDirection)
+                  : "";
+              const windSpeedStr = `${Math.round(h.windSpeed)} м/с${
+                windDirStr ? ` ${windDirStr}` : ""
+              }`;
+              const windGustsStr =
+                h.windGusts && h.windGusts > h.windSpeed + 1
+                  ? ` (порывы ${Math.round(h.windGusts)})`
+                  : "";
+
+              const pressureStr =
+                typeof h.pressure === "number"
+                  ? formatPressureMmHg(h.pressure)
+                  : "—";
+              const humidityStr =
+                typeof h.humidity === "number"
+                  ? `${Math.round(h.humidity)}%`
+                  : "—";
+
+              return (
+                <tr key={h.time} className="hover:bg-sky-50/40 transition-colors">
+                  <td className="px-3 py-3 sm:px-4 font-semibold text-sky-950 tabular-nums whitespace-nowrap">
+                    {timeLabel}
+                  </td>
+                  <td className="px-3 py-3 sm:px-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <WeatherIcon code={h.weatherCode} size={28} className="shrink-0" />
+                      <span className="text-xs text-slate-700 hidden md:inline">
+                        {weatherCodeLabel(h.weatherCode)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-3 sm:px-4 text-right font-bold text-sky-950 tabular-nums whitespace-nowrap">
+                    {formatTemp(h.temperature)}
+                  </td>
+                  <td className="px-3 py-3 sm:px-4 text-right text-cloud-600 tabular-nums whitespace-nowrap">
+                    {typeof h.feelsLike === "number"
+                      ? formatTemp(h.feelsLike)
+                      : "—"}
+                  </td>
+                  <td className="px-3 py-3 sm:px-4 text-slate-800 text-xs tabular-nums whitespace-nowrap">
+                    <span>{windSpeedStr}</span>
+                    {windGustsStr && (
+                      <span className="text-cloud-400 text-[11px]">
+                        {windGustsStr}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-3 sm:px-4 text-right text-slate-800 tabular-nums whitespace-nowrap">
+                    {pressureStr}
+                  </td>
+                  <td className="px-3 py-3 sm:px-4 text-right text-slate-800 tabular-nums whitespace-nowrap">
+                    {humidityStr}
+                  </td>
+                  <td
+                    className={`px-3 py-3 sm:px-4 text-right tabular-nums whitespace-nowrap font-medium ${
+                      h.precipitation > 0 ? "text-sky-700 font-bold" : "text-cloud-400"
+                    }`}
+                  >
+                    {h.precipitation > 0 ? `${h.precipitation.toFixed(1)} мм` : "0 мм"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}

@@ -45,6 +45,9 @@ export type HourlyPoint = {
   dewPoint?: number;
   windGusts?: number;
   pressure?: number;
+  humidity?: number;
+  windDirection?: number;
+  uvIndex?: number;
 };
 
 export type DailyPoint = {
