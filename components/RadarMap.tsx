@@ -19,12 +19,21 @@ type RainViewerResponse = {
   };
 };
 
+type MapLayer = "precip" | "temp" | "wind" | "clouds";
+
 const RADAR_HUBS = [
   { name: "Москва и Центр", slug: "moscow", lat: 55.7558, lon: 37.6173 },
   { name: "Санкт-Петербург", slug: "saint-petersburg", lat: 59.9343, lon: 30.3351 },
   { name: "Сочи и Юг", slug: "sochi", lat: 43.6028, lon: 39.7342 },
   { name: "Екатеринбург и Урал", slug: "yekaterinburg", lat: 56.8389, lon: 60.6057 },
 ];
+
+const LAYER_LABELS: Record<MapLayer, string> = {
+  precip: "Радар осадков",
+  temp: "Температура",
+  wind: "Ветер",
+  clouds: "Облачность",
+};
 
 function findNearestHub(lat: number, lon: number) {
   let nearest = RADAR_HUBS[0];
@@ -43,11 +52,13 @@ export default function RadarMap({
   latitude,
   longitude,
   cityName,
+  layer = "precip",
   showPrecip = true,
 }: {
   latitude: number;
   longitude: number;
   cityName: string;
+  layer?: MapLayer;
   showPrecip?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -56,13 +67,13 @@ export default function RadarMap({
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [precipError, setPrecipError] = useState<boolean>(false);
   const [mapError, setMapError] = useState<boolean>(false);
+  const mapRef = useRef<L.Map | null>(null);
+  const overlayRef = useRef<L.Layer | null>(null);
 
   const { hub: nearestHub, dist } = findNearestHub(latitude, longitude);
-  // Strictly check if location is outside covered geographic regions
   const isOutside =
     dist > 25 && (latitude < 30 || latitude > 75 || longitude < 15 || longitude > 180);
 
-  // Initialize Leaflet map safely in client effect
   useEffect(() => {
     if (isOutside || !containerRef.current) return;
 
@@ -98,6 +109,8 @@ export default function RadarMap({
         LModule.marker([latitude, longitude], { icon: cityPinIcon })
           .addTo(mapInstance)
           .bindPopup(cityName);
+
+        mapRef.current = mapInstance;
       } catch {
         setMapError(true);
       }
@@ -108,13 +121,13 @@ export default function RadarMap({
     return () => {
       if (mapInstance) {
         mapInstance.remove();
+        mapRef.current = null;
       }
     };
   }, [latitude, longitude, cityName, isOutside]);
 
-  // Fetch RainViewer radar frames safely
   useEffect(() => {
-    if (!showPrecip || isOutside) return;
+    if (!mapRef.current || !showPrecip || isOutside || layer !== "precip") return;
 
     let isMounted = true;
     const controller = new AbortController();
@@ -149,9 +162,80 @@ export default function RadarMap({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [showPrecip, isOutside]);
+  }, [showPrecip, isOutside, layer]);
 
-  // Animation loop
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || isOutside) return;
+
+    async function loadOverlay() {
+      try {
+        const LModule = await import("leaflet");
+
+        if (layer === "precip" && frames.length > 0 && !precipError) {
+          const currentFrame = frames[currentFrameIdx];
+          if (currentFrame) {
+            const tileLayer = LModule.tileLayer(currentFrame.path, {
+              opacity: 0.65,
+              zIndex: 1000,
+            });
+            if (tileLayer) {
+              tileLayer.addTo(map);
+              overlayRef.current = tileLayer;
+            }
+          }
+        } else if (layer === "temp") {
+          const tileLayer = LModule.tileLayer(
+            "https://tile.open-meteo.com/static/out/visualt.png",
+            {
+              opacity: 0.7,
+              zIndex: 1000,
+            }
+          );
+          if (tileLayer) {
+            tileLayer.addTo(map);
+            overlayRef.current = tileLayer;
+          }
+        } else if (layer === "wind") {
+          const tileLayer = LModule.tileLayer(
+            "https://tile.open-meteo.com/static/out/wind.png",
+            {
+              opacity: 0.7,
+              zIndex: 1000,
+            }
+          );
+          if (tileLayer) {
+            tileLayer.addTo(map);
+            overlayRef.current = tileLayer;
+          }
+        } else if (layer === "clouds") {
+          const tileLayer = LModule.tileLayer(
+            "https://tile.open-meteo.com/static/out/clouds.png",
+            {
+              opacity: 0.7,
+              zIndex: 1000,
+            }
+          );
+          if (tileLayer) {
+            tileLayer.addTo(map);
+            overlayRef.current = tileLayer;
+          }
+        }
+      } catch {
+        // Overlay load failed silently
+      }
+    }
+
+    loadOverlay();
+
+    return () => {
+      if (overlayRef.current && map) {
+        map.removeLayer(overlayRef.current);
+        overlayRef.current = null;
+      }
+    };
+  }, [layer, frames, currentFrameIdx, precipError, isOutside]);
+
   useEffect(() => {
     if (!isPlaying || frames.length <= 1) return;
 
@@ -203,19 +287,23 @@ export default function RadarMap({
       })
     : "";
 
+  const isPrecipLayer = layer === "precip";
+
   return (
     <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-6 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-serif text-h2 font-semibold text-sky-950">
-          Карта осадков и радар
+          Карта погоды
         </h2>
-        <span className="text-xs text-cloud-500">RainViewer & OpenStreetMap</span>
+        <span className="text-xs text-cloud-500">
+          {LAYER_LABELS[layer]} · OpenStreetMap
+        </span>
       </div>
 
       <div className="relative h-80 w-full overflow-hidden rounded-xl ring-1 ring-sky-100/80 sm:h-96">
         <div ref={containerRef} className="h-full w-full z-0" />
 
-        {showPrecip && frames.length > 0 && !precipError && (
+        {isPrecipLayer && frames.length > 0 && !precipError && (
           <div className="absolute bottom-3 left-3 z-[1000] flex items-center gap-3 rounded-xl bg-white/95 px-3 py-2 text-xs shadow-md ring-1 ring-sky-100/80 backdrop-blur">
             <button
               type="button"
@@ -232,6 +320,12 @@ export default function RadarMap({
                 {currentFrameTimeLabel}
               </p>
             </div>
+          </div>
+        )}
+
+        {!isPrecipLayer && (
+          <div className="absolute top-3 left-3 z-[1000] rounded-lg bg-white/90 px-3 py-1.5 text-[10px] font-medium text-cloud-600 shadow-sm ring-1 ring-sky-100/80 backdrop-blur">
+            {LAYER_LABELS[layer]}
           </div>
         )}
       </div>

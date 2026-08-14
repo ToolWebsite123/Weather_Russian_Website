@@ -102,7 +102,7 @@ export function WeatherMapPreviewSection() {
           latitude={selectedHub.lat}
           longitude={selectedHub.lon}
           cityName={selectedHub.name}
-          showPrecip={activeLayer === "precip"}
+          layer={activeLayer as "precip" | "temp" | "wind" | "clouds"}
         />
       </div>
     </section>

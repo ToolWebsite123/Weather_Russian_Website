@@ -177,7 +177,7 @@ export async function CityWeatherView({
                       </svg>
                       Радар осадков в режиме реального времени ({city.name})
                     </h2>
-                    <RadarMap latitude={city.latitude} longitude={city.longitude} cityName={city.name} />
+                    <RadarMap latitude={city.latitude} longitude={city.longitude} cityName={city.name} layer="precip" />
                   </section>
 
                   <GeomagneticCard data={geomagnetic} />

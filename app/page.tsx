@@ -12,6 +12,8 @@ import {
 } from "@/lib/weather/city-page";
 import { getActiveAlerts } from "@/lib/weather/alerts";
 import { resolveCityFromCoords } from "@/lib/weather/geo-resolver";
+import { NewsSection } from "@/components/NewsSection";
+import { WeatherEventsBanner } from "@/components/WeatherEventsBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -86,6 +88,8 @@ export default async function Home() {
 
         {activeAlerts.length > 0 && <AlertBanner alerts={activeAlerts} />}
 
+        <WeatherEventsBanner />
+
         {primaryData && (
           <>
             <CurrentWeatherCard
@@ -99,6 +103,7 @@ export default async function Home() {
               fetchedAt={primaryData.weather.fetchedAt}
             />
             <PopularCitiesSection />
+            <NewsSection />
           </>
         )}
       </main>
