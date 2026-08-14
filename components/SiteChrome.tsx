@@ -51,6 +51,49 @@ function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+function MenuIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="18" x2="20" y2="18" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 export function SiteHeader({
   favorites = [],
 }: {
@@ -61,10 +104,11 @@ export function SiteHeader({
   const [searchResults, setSearchResults] = useState<{ id: number; slug: string; name: string; admin1?: string; country?: string }[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isFavOpen, setIsFavOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { unit, toggleUnit } = useUnit();
   const searchBoxRef = useRef<HTMLDivElement>(null);
-
-
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   // Handle live geocoding search inside navbar search input
   useEffect(() => {
@@ -92,16 +136,79 @@ export function SiteHeader({
     };
   }, [searchQuery]);
 
-  // Click outside listener to close search / favorites dropdowns
+  // Click outside listener to close search / favorites / mobile menu dropdowns
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
         setIsSearchFocused(false);
       }
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target as Node) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(e.target as Node)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Keyboard listener for Escape key to close mobile menu
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isMobileMenuOpen]);
+
+  // Auto-close mobile menu on desktop resize
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false);
+      }
+    }
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Focus trap / focus first element in mobile menu when opened
+  useEffect(() => {
+    if (isMobileMenuOpen && mobileMenuRef.current) {
+      const focusables = mobileMenuRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length > 0) {
+        focusables[0].focus();
+      }
+    }
+  }, [isMobileMenuOpen]);
+
+  function handleMobileMenuKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key === "Tab" && mobileMenuRef.current) {
+      const focusables = Array.from(
+        mobileMenuRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-sky-200/60 bg-white/95 backdrop-blur-md transition-all shadow-xs">
@@ -218,8 +325,70 @@ export function SiteHeader({
               )}
             </div>
           )}
+
+          {/* Mobile Hamburger Toggle Button (lg:hidden) */}
+          <button
+            ref={menuButtonRef}
+            type="button"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            className="flex h-8 sm:h-9 w-8 sm:w-9 items-center justify-center rounded-xl bg-sky-50 border border-sky-200 text-sky-800 hover:bg-sky-100 transition-colors lg:hidden shrink-0 cursor-pointer shadow-xs"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu"
+            aria-label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
+          >
+            {isMobileMenuOpen ? (
+              <CloseIcon className="h-4 sm:h-5 w-4 sm:w-5" />
+            ) : (
+              <MenuIcon className="h-4 sm:h-5 w-4 sm:w-5" />
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Dropdown Navigation Panel */}
+      {isMobileMenuOpen && (
+        <div
+          ref={mobileMenuRef}
+          id="mobile-menu"
+          onKeyDown={handleMobileMenuKeyDown}
+          className="lg:hidden border-t border-sky-200/60 bg-white/95 backdrop-blur-md px-3 py-3 shadow-md transition-all"
+        >
+          <div className="mx-auto max-w-7xl space-y-2">
+            <div className="flex items-center justify-between border-b border-sky-100 pb-2 px-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-cloud-400">
+                Навигация
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex h-6 w-6 items-center justify-center rounded-lg text-sky-700 hover:bg-sky-50 transition-colors"
+                aria-label="Закрыть меню"
+              >
+                <CloseIcon className="h-4 w-4" />
+              </button>
+            </div>
+
+            <nav className="flex flex-col space-y-1">
+              <Link
+                href="/articles"
+                className="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-sky-950 hover:bg-sky-50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Статьи</span>
+                <span className="text-xs font-normal text-sky-600">→</span>
+              </Link>
+              <Link
+                href="/gorod"
+                className="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-sky-950 hover:bg-sky-50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Все города</span>
+                <span className="text-xs font-normal text-sky-600">→</span>
+              </Link>
+            </nav>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
@@ -307,4 +476,3 @@ export function PageShell({
     </div>
   );
 }
-
