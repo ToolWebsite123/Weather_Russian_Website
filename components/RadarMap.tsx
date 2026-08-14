@@ -168,7 +168,7 @@ export default function RadarMap({
     const map = mapRef.current;
     if (!map || isOutside) return;
 
-    async function loadOverlay() {
+    async function loadOverlay(targetMap: L.Map) {
       try {
         const LModule = await import("leaflet");
 
@@ -180,7 +180,7 @@ export default function RadarMap({
               zIndex: 1000,
             });
             if (tileLayer) {
-              tileLayer.addTo(map);
+              tileLayer.addTo(targetMap);
               overlayRef.current = tileLayer;
             }
           }
@@ -193,7 +193,7 @@ export default function RadarMap({
             }
           );
           if (tileLayer) {
-            tileLayer.addTo(map);
+            tileLayer.addTo(targetMap);
             overlayRef.current = tileLayer;
           }
         } else if (layer === "wind") {
@@ -205,7 +205,7 @@ export default function RadarMap({
             }
           );
           if (tileLayer) {
-            tileLayer.addTo(map);
+            tileLayer.addTo(targetMap);
             overlayRef.current = tileLayer;
           }
         } else if (layer === "clouds") {
@@ -217,7 +217,7 @@ export default function RadarMap({
             }
           );
           if (tileLayer) {
-            tileLayer.addTo(map);
+            tileLayer.addTo(targetMap);
             overlayRef.current = tileLayer;
           }
         }
@@ -226,7 +226,7 @@ export default function RadarMap({
       }
     }
 
-    loadOverlay();
+    loadOverlay(map);
 
     return () => {
       if (overlayRef.current && map) {
