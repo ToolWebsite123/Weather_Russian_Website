@@ -649,6 +649,40 @@ export function NowWeatherHeroCard({
     }
   }
 
+  const weatherCode = current.weatherCode;
+  const isThunderstorm = [95, 96, 99].includes(weatherCode);
+  const isHeavyRain = [55, 57, 63, 65, 67, 81, 82].includes(weatherCode);
+  const isRain = [51, 53, 56, 61, 66, 80].includes(weatherCode) || isHeavyRain;
+  const isSnow = [71, 73, 75, 77, 85, 86].includes(weatherCode);
+  const isFog = [45, 48].includes(weatherCode);
+  const isCloudy = [2, 3].includes(weatherCode);
+
+  let bgGradient = isDay
+    ? "bg-gradient-to-b from-[#2a80d8] via-[#3fa1f7] to-[#5bb2ff]"
+    : "bg-gradient-to-b from-[#0b132b] via-[#1c2541] to-[#3a506b]";
+
+  if (isThunderstorm) {
+    bgGradient = "bg-gradient-to-b from-[#181136] via-[#291f4d] to-[#3c2d66]";
+  } else if (isHeavyRain) {
+    bgGradient = isDay
+      ? "bg-gradient-to-b from-[#1e304b] via-[#2b4467] to-[#3d5a80]"
+      : "bg-gradient-to-b from-[#0a101d] via-[#151d2d] to-[#212d40]";
+  } else if (isRain) {
+    bgGradient = isDay
+      ? "bg-gradient-to-b from-[#2b4c7e] via-[#3a629b] to-[#4e7da6]"
+      : "bg-gradient-to-b from-[#0f172a] via-[#1e293b] to-[#2b384e]";
+  } else if (isSnow) {
+    bgGradient = isDay
+      ? "bg-gradient-to-b from-[#3a5a80] via-[#5b7ea6] to-[#7f9ec2]"
+      : "bg-gradient-to-b from-[#121c2b] via-[#1f2d42] to-[#2d3e58]";
+  } else if (isFog) {
+    bgGradient = "bg-gradient-to-b from-[#374151] via-[#4b5563] to-[#6b7280]";
+  } else if (isCloudy) {
+    bgGradient = isDay
+      ? "bg-gradient-to-b from-[#2c435e] via-[#3b597a] to-[#4c7097]"
+      : "bg-gradient-to-b from-[#0f172a] via-[#1e293b] to-[#334155]";
+  }
+
   return (
     <div className="space-y-4 max-w-4xl mx-auto">
       {/* Top 3 Quick Summary Cards */}
@@ -716,16 +750,63 @@ export function NowWeatherHeroCard({
 
       {/* Main Sky Hero Card Container */}
       <section
-        className={`relative overflow-hidden rounded-2xl shadow-lg border border-sky-300/30 text-white ${
-          isDay
-            ? "bg-gradient-to-b from-[#2a80d8] via-[#3fa1f7] to-[#5bb2ff]"
-            : "bg-gradient-to-b from-[#0b132b] via-[#1c2541] to-[#3a506b]"
-        }`}
+        className={`relative overflow-hidden rounded-2xl shadow-lg border border-sky-300/30 text-white ${bgGradient}`}
       >
-        {/* Soft Cloud Overlays */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/40 via-transparent to-transparent" />
+        {/* Animated Rain Scene Overlay (falling raindrops) */}
+        {isRain && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+            {Array.from({ length: 25 }).map((_, i) => {
+              const left = (i * 4.1 + (i % 3) * 7) % 96;
+              const delay = ((i * 0.17) % 2.2).toFixed(2);
+              const duration = (0.75 + ((i % 5) * 0.15)).toFixed(2);
+              const height = i % 2 === 0 ? "h-5" : "h-3.5";
+              return (
+                <div
+                  key={`rain-${i}`}
+                  className={`absolute top-0 w-[1.5px] ${height} bg-white/40 rounded-full animate-raindrop`}
+                  style={{
+                    left: `${left}%`,
+                    animationDelay: `${delay}s`,
+                    animationDuration: `${duration}s`,
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
 
-        <div className="relative pt-6 pb-4 px-4 sm:px-8 text-center space-y-4">
+        {/* Animated Snow Scene Overlay */}
+        {isSnow && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+            {Array.from({ length: 20 }).map((_, i) => {
+              const left = (i * 5.1 + (i % 4) * 6) % 96;
+              const delay = ((i * 0.23) % 3.1).toFixed(2);
+              const duration = (2.2 + ((i % 4) * 0.4)).toFixed(2);
+              const size = i % 2 === 0 ? "w-2 h-2" : "w-1.5 h-1.5";
+              return (
+                <div
+                  key={`snow-${i}`}
+                  className={`absolute top-0 ${size} bg-white/80 rounded-full blur-[0.5px] animate-snowflake`}
+                  style={{
+                    left: `${left}%`,
+                    animationDelay: `${delay}s`,
+                    animationDuration: `${duration}s`,
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* Ambient Lightning Flash for Thunderstorms */}
+        {isThunderstorm && (
+          <div className="absolute inset-0 pointer-events-none bg-white/30 animate-lightning z-0" />
+        )}
+
+        {/* Soft Radial Sky Overlay */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/40 via-transparent to-transparent z-0" />
+
+        <div className="relative z-10 pt-6 pb-4 px-4 sm:px-8 text-center space-y-4">
           {/* Header Live Time */}
           <div className="text-sm sm:text-base font-medium text-white/90 drop-shadow-xs">
             <LiveCityDate timezone={timezone} />
@@ -744,7 +825,7 @@ export function NowWeatherHeroCard({
               />
 
               {/* Sun position marker */}
-              <circle cx={sunX} cy={sunY} r="7" fill="#fcf003" filter="drop-shadow(0px 0px 6px #fcf003)" />
+              <circle cx={sunX} cy={sunY} r="7" fill={isRain || isCloudy ? "#cbd5e1" : "#fcf003"} filter="drop-shadow(0px 0px 6px #fcf003)" />
               <circle cx={sunX} cy={sunY} r="3" fill="#ffffff" />
 
               {/* Daylight duration center badge */}
@@ -785,9 +866,15 @@ export function NowWeatherHeroCard({
               </span>
             </div>
 
-            {/* Condition Label */}
-            <div className="text-base sm:text-xl font-normal text-white/95 drop-shadow-xs pt-1">
-              {weatherCodeLabel(current.weatherCode)}
+            {/* Condition Icon + Condition Label */}
+            <div className="flex items-center justify-center gap-2.5 text-base sm:text-xl font-medium text-white drop-shadow-xs pt-1">
+              <WeatherIcon
+                code={current.weatherCode}
+                isDay={current.isDay}
+                size={38}
+                className="shrink-0 drop-shadow-md"
+              />
+              <span>{weatherCodeLabel(current.weatherCode)}</span>
             </div>
           </div>
         </div>
