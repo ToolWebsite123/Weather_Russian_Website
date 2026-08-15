@@ -62,5 +62,9 @@ export function LiveCityDate({ timezone }: { timezone?: string }) {
     return () => clearInterval(interval);
   }, [timezone]);
 
-  return <p className="text-xs sm:text-sm text-slate-600 mt-0.5">{formattedDate}</p>;
+  return (
+    <p className="text-xs sm:text-sm text-slate-600 mt-0.5" suppressHydrationWarning>
+      {formattedDate}
+    </p>
+  );
 }

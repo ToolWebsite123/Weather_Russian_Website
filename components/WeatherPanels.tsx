@@ -120,7 +120,7 @@ export function SunArcTimeline({
   const y = 50 - 90 * progress * (1 - progress);
 
   return (
-    <div className="rounded-xl bg-gradient-to-b from-sky-50/80 to-amber-50/50 p-3 ring-1 ring-sky-100/70 mt-3 text-xs">
+    <div className="rounded-xl bg-gradient-to-b from-sky-50/80 to-amber-50/50 p-3 ring-1 ring-sky-100/70 mt-3 text-xs" suppressHydrationWarning>
       <div className="flex items-center justify-between font-semibold text-slate-700 mb-1">
         <span className="flex items-center gap-1 text-amber-700">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -372,7 +372,7 @@ export function CurrentWeatherCard({
       "10-dney": { label: "Прогноз на 10 дней", bg: "bg-blue-100 text-blue-800 border-blue-200" },
       "14": { label: "Прогноз на 14 дней", bg: "bg-indigo-100 text-indigo-800 border-indigo-200" },
       "14-dney": { label: "Прогноз на 14 дней", bg: "bg-indigo-100 text-indigo-800 border-indigo-200" },
-      mesyats: { label: "Прогноз на месяц (30 дней)", bg: "bg-purple-100 text-purple-800 border-purple-200" },
+      mesyats: { label: "Прогноз на месяц", bg: "bg-purple-100 text-purple-800 border-purple-200" },
       weekend: { label: "Прогноз на выходные", bg: "bg-rose-100 text-rose-800 border-rose-200" },
       vykhodnye: { label: "Прогноз на выходные", bg: "bg-rose-100 text-rose-800 border-rose-200" },
     };
@@ -522,6 +522,7 @@ export function CurrentWeatherCard({
                     const label = new Date(h.time).toLocaleTimeString("ru-RU", {
                       hour: "2-digit",
                       minute: "2-digit",
+                      timeZone: timezone || "Europe/Moscow",
                     });
                     return (
                       <span key={h.time} className="text-xs font-normal text-slate-800 tabular-nums">
@@ -655,7 +656,7 @@ export function NowWeatherHeroCard({
         {/* Card 1: Сейчас */}
         <div className="rounded-xl bg-white p-3.5 border border-slate-200 shadow-xs flex items-center justify-between">
           <div>
-            <div className="text-xs text-slate-500 font-medium mb-1">
+            <div className="text-xs text-slate-500 font-medium mb-1" suppressHydrationWarning>
               Сейчас {now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: timezone || "Europe/Moscow" })}
             </div>
             <div className="flex items-center gap-2">
@@ -1193,7 +1194,13 @@ export function WeatherMap(props: {
   return <DynamicRadarMap {...props} />;
 }
 
-export function YesterdayHourlyTable({ hours }: { hours: HourlyPoint[] }) {
+export function YesterdayHourlyTable({
+  hours,
+  timezone,
+}: {
+  hours: HourlyPoint[];
+  timezone?: string;
+}) {
   const { formatTemp } = useUnit();
 
   // Show 3-hour interval points for structured table display (or all if <= 8 points)
@@ -1237,6 +1244,7 @@ export function YesterdayHourlyTable({ hours }: { hours: HourlyPoint[] }) {
               const timeLabel = new Date(h.time).toLocaleTimeString("ru-RU", {
                 hour: "2-digit",
                 minute: "2-digit",
+                timeZone: timezone || "Europe/Moscow",
               });
 
               const windDirStr =
