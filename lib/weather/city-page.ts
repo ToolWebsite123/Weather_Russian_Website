@@ -60,12 +60,27 @@ export async function resolveCity(slug: string): Promise<City | null> {
   // Fallback: treat slug tokens as search
   try {
     const guess = slug.replace(/-/g, " ");
-    const results = await searchPlaces(guess, "ru");
-    const match = results.find((r: { slug: string }) => r.slug === slug) ?? results[0];
+    let results = await searchPlaces(guess, "ru");
+
+    if (results.length === 0) {
+      results = await searchPlaces(guess, "en");
+    }
+
+    if (results.length === 0 && slug.includes("-")) {
+      const firstToken = slug.split("-")[0];
+      if (firstToken && firstToken.length >= 2) {
+        results = await searchPlaces(firstToken, "ru");
+        if (results.length === 0) {
+          results = await searchPlaces(firstToken, "en");
+        }
+      }
+    }
+
+    const match = results.find((r: { slug: string }) => r.slug === targetSlug) ?? results[0];
     if (!match) return null;
 
     return upsertCityFromGeo({
-      slug: match.slug === slug ? match.slug : slug,
+      slug: targetSlug,
       name: match.name,
       nameEn: match.nameEn ?? match.name,
       country: match.country || "RU",
