@@ -10,9 +10,9 @@ import { config } from "@/lib/config";
 export const revalidate = 3600; // 1 hour ISR
 
 export const metadata: Metadata = {
-  title: "Все города России — Каталог погоды | WeatherHub",
+  title: "Каталог всех городов — Прогноз погоды | WeatherHub",
   description:
-    "Полный каталог городов России. Точный прогноз погоды для всех городов: температура, осадки, ветер и качество воздуха.",
+    "Полный каталог городов России и мира. Точный прогноз погоды для всех городов: температура, осадки, ветер и качество воздуха.",
   alternates: {
     canonical: `${config.siteUrl}/gorod`,
   },
@@ -63,10 +63,10 @@ export default async function CityCatalogPage() {
             <span className="text-sky-950 font-medium">Каталог городов</span>
           </nav>
           <h1 className="font-serif text-h1 font-bold text-sky-950">
-            Погода во всех городах России
+            Погода во всех городах
           </h1>
           <p className="text-sm text-cloud-600 max-w-2xl leading-relaxed">
-            Полный список из {cities.length} городов России. Выберите интересующий город для просмотра подробного прогноза погоды на сегодня, завтра, 3, 7, 10 и 14 дней.
+            Каталог городов России и всего мира. Воспользуйтесь поиском для любого города или страны, либо выберите город из списка ниже для просмотра подробного прогноза погоды.
           </p>
 
           {/* Quick Alphabet Navigation Bar */}

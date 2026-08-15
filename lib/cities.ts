@@ -125,14 +125,57 @@ export function formatTimeAgo(isoString?: string): string | null {
   return `обновлено ${diffHours} ${hStr} назад`;
 }
 
+export function getCountryFlag(countryCode?: string): string {
+  if (!countryCode || countryCode.length !== 2 || countryCode === "XX" || countryCode === "UNKNOWN") return "🌐";
+  const code = countryCode.toUpperCase();
+  const first = code.charCodeAt(0) - 65 + 0x1f1e6;
+  const second = code.charCodeAt(1) - 65 + 0x1f1e6;
+  return String.fromCodePoint(first, second);
+}
+
+const COUNTRY_NAME_OVERRIDES: Record<string, string> = {
+  US: "США",
+  USA: "США",
+  GB: "Великобритания",
+  AE: "ОАЭ",
+  RU: "Россия",
+  TR: "Турция",
+  KZ: "Казахстан",
+  BY: "Беларусь",
+  UA: "Украина",
+  DE: "Германия",
+  FR: "Франция",
+  ES: "Испания",
+  IT: "Италия",
+  EG: "Египет",
+  TH: "Таиланд",
+  CN: "Китай",
+  JP: "Япония",
+  GE: "Грузия",
+  AM: "Армения",
+  AZ: "Азербайджан",
+  UZ: "Узбекистан",
+  KG: "Кыргызстан",
+  TJ: "Таджикистан",
+  VN: "Вьетнам",
+  CY: "Кипр",
+  GR: "Греция",
+  RS: "Сербия",
+  ME: "Черногория",
+  IN: "Индия",
+};
+
 export function getCountryNameRu(countryCode?: string): string {
   if (!countryCode || countryCode === "UNKNOWN") return "";
+  const upper = countryCode.toUpperCase();
+  if (COUNTRY_NAME_OVERRIDES[upper]) return COUNTRY_NAME_OVERRIDES[upper];
   try {
     const regionNames = new Intl.DisplayNames(["ru"], { type: "region" });
-    return regionNames.of(countryCode.toUpperCase()) ?? countryCode;
+    return regionNames.of(upper) ?? upper;
   } catch {
-    return countryCode;
+    return upper;
   }
 }
+
 
 

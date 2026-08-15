@@ -405,7 +405,7 @@ export function SiteFooter({ cityCount = 272 }: { cityCount?: number }) {
           </Link>
           <span>·</span>
           <Link href="/gorod" className="hover:underline">
-            Каталог всех {cityCount} городов
+            Каталог городов России и мира
           </Link>
           <span>·</span>
           <Link href="/articles" className="hover:underline">

@@ -4,9 +4,10 @@ import type {
   HourlyPoint,
   WeatherBundle,
 } from "@/types/weather";
-import { slugifyCity } from "@/lib/cities";
+import { slugifyCity, getCountryFlag, getCountryNameRu } from "@/lib/cities";
 import { reportError } from "@/lib/monitoring";
 import { isRiverCity } from "@/lib/weather/river-cities";
+import { findCitiesByCountryQuery } from "@/lib/weather/countries";
 
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
@@ -82,34 +83,57 @@ export async function searchPlaces(
   const q = query.trim();
   if (q.length < 2) return [];
 
+  // Check if query matches a country name (e.g. Турция, Египет, США, Казахстан)
+  const countryMatches = findCitiesByCountryQuery(q);
+
   const url = new URL(GEOCODE_URL);
   url.searchParams.set("name", q);
   url.searchParams.set("count", "8");
   url.searchParams.set("language", language);
   url.searchParams.set("format", "json");
 
-  const res = await fetch(url.toString(), {
-    next: { revalidate: 86400 },
-  });
-  if (!res.ok) throw new Error("Geocoding failed");
+  try {
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) throw new Error("Geocoding failed");
 
-  const data = (await res.json()) as OpenMeteoGeo;
-  return (data.results ?? []).map((r) => {
-    const useAdmin = Boolean(r.admin1 && (!r.population || r.population <= 100000));
-    return {
-      id: String(r.id),
-      name: r.name,
-      nameEn: r.name,
-      nameRu: r.name,
-      country: (r.country_code ?? "UNKNOWN").toUpperCase(),
-      admin1: r.admin1,
-      latitude: r.latitude,
-      longitude: r.longitude,
-      timezone: r.timezone,
-      population: r.population,
-      slug: slugifyCity(r.name, useAdmin ? r.admin1 : undefined),
-    };
-  });
+    const data = (await res.json()) as OpenMeteoGeo;
+    const geoResults: GeocodingResult[] = (data.results ?? []).map((r) => {
+      const countryCode = (r.country_code ?? "UNKNOWN").toUpperCase();
+      const useAdmin = Boolean(r.admin1 && (!r.population || r.population <= 100000));
+      return {
+        id: String(r.id),
+        name: r.name,
+        nameEn: r.name,
+        nameRu: r.name,
+        country: countryCode,
+        countryNameRu: getCountryNameRu(countryCode),
+        countryFlag: getCountryFlag(countryCode),
+        admin1: r.admin1,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        timezone: r.timezone,
+        population: r.population,
+        slug: slugifyCity(r.name, useAdmin ? r.admin1 : undefined),
+      };
+    });
+
+    if (countryMatches.length > 0) {
+      // Merge country matches at top, filtering duplicates
+      const seenSlugs = new Set(countryMatches.map((c) => c.slug));
+      const combined = [
+        ...countryMatches,
+        ...geoResults.filter((g) => !seenSlugs.has(g.slug)),
+      ];
+      return combined.slice(0, 10);
+    }
+
+    return geoResults;
+  } catch (err) {
+    if (countryMatches.length > 0) return countryMatches;
+    throw err;
+  }
 }
 
 export async function fetchOpenMeteoMarine(

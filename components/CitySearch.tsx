@@ -10,7 +10,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import { getCountryNameRu } from "@/lib/cities";
+import { getCountryNameRu, getCountryFlag } from "@/lib/cities";
 import { ru } from "@/lib/i18n/ru";
 import type { GeocodingResult } from "@/types/weather";
 
@@ -151,10 +151,14 @@ export function CitySearch() {
         <ul
           id="city-search-listbox"
           role="listbox"
-          className="absolute z-20 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-cloud-200 bg-white py-1 shadow-lg"
+          className="absolute z-20 mt-2 max-h-80 w-full overflow-auto rounded-xl border border-sky-200/80 bg-white/95 p-1 shadow-xl backdrop-blur-md"
         >
           {results.map((r, index) => {
             const isActive = activeIndex === index;
+            const flag = r.countryFlag || getCountryFlag(r.country);
+            const countryRu = r.countryNameRu || getCountryNameRu(r.country);
+            const locationText = [r.admin1, countryRu].filter(Boolean).join(", ");
+
             return (
               <li
                 key={`${r.id}-${r.slug}`}
@@ -164,15 +168,32 @@ export function CitySearch() {
               >
                 <button
                   type="button"
-                  className={`flex w-full flex-col px-4 py-2.5 text-left transition-colors ${
-                    isActive ? "bg-sky-100" : "hover:bg-sky-50"
+                  className={`flex w-full items-center justify-between rounded-lg px-3.5 py-2.5 text-left transition-colors ${
+                    isActive ? "bg-sky-100/90 text-sky-950" : "hover:bg-sky-50 text-sky-900"
                   }`}
                   onClick={() => goTo(r.slug)}
                   onMouseEnter={() => setActiveIndex(index)}
                 >
-                  <span className="font-medium text-sky-950">{r.name}</span>
-                  <span className="text-xs text-cloud-500">
-                    📍 {[r.admin1, getCountryNameRu(r.country)].filter(Boolean).join(", ")}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-xl shrink-0" role="img" aria-label={countryRu}>
+                      {flag}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm truncate">{r.name}</span>
+                        {r.isCountryMatch && (
+                          <span className="shrink-0 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
+                            Страна
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-cloud-500 truncate mt-0.5">
+                        📍 {locationText}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-sky-600 shrink-0 ml-2">
+                    Перейти →
                   </span>
                 </button>
               </li>

@@ -37,7 +37,7 @@ export function PopularCitiesGrid({
             href="/gorod"
             className="text-xs font-medium text-sky-800 hover:text-sky-950 transition-colors"
           >
-            Все {totalCount} городов →
+            Каталог городов →
           </Link>
         }
       >
@@ -106,7 +106,7 @@ export function PopularCitiesGrid({
           href="/gorod"
           className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 hover:text-sky-900 transition-colors ml-auto"
         >
-          <span>Полный каталог городов России ({totalCount})</span>
+          <span>Полный каталог городов России и мира</span>
           <span>→</span>
         </Link>
       </div>

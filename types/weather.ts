@@ -6,6 +6,9 @@ export type GeocodingResult = {
   nameEn?: string;
   nameRu?: string;
   country: string;
+  countryNameRu?: string;
+  countryFlag?: string;
+  isCountryMatch?: boolean;
   admin1?: string;
   latitude: number;
   longitude: number;
