@@ -21,6 +21,7 @@ import { RoadConditionCard } from "@/components/RoadConditionCard";
 import { GeomagneticCard } from "@/components/GeomagneticCard";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
 import { AstronomyCard } from "@/components/AstronomyCard";
+import { AutoScrollTarget } from "@/components/AutoScrollTarget";
 
 const RadarMap = dynamic(() => import("@/components/RadarMap"), {
   ssr: false,
@@ -131,12 +132,57 @@ export async function CityWeatherView({
         })
         : weather.hourly;
 
+  const targetIdMap: Record<string, string> = {
+    radar: "weather-map",
+    pyltsa: "environmental-insights",
+    dorogi: "road-conditions",
+    "gm-aktivnost": "geomagnetic",
+  };
+  const targetId = targetIdMap[active];
+
+  const featureIntros: Record<string, { title: string; desc: string; icon: string }> = {
+    radar: {
+      title: `Радар осадков онлайн в городе ${city.name}`,
+      desc: `Интерактивная карта осадков отражает движение дождевых туч, грозовых фронтов и снегопадов в реальном времени. Данные обновляются каждые 10 минут, позволяя точно определить время начала и окончания осадков в городе ${city.name}.`,
+      icon: "📡",
+    },
+    pyltsa: {
+      title: `Аллергопрогноз и концентрация пыльцы в городе ${city.name}`,
+      desc: `Аллергологический мониторинг помогает оценить риск возникновения симптомов поллиноза. Здесь представлена информация о концентрации пыльцы берёзы, ольхи, злаковых и сорных трав (амброзии), а также общий индекс качества воздуха в городе ${city.name}.`,
+      icon: "🌱",
+    },
+    dorogi: {
+      title: `Погода на дорогах и условия для водителей в городе ${city.name}`,
+      desc: `Оценка дорожных условий учитывает температуру дорожного покрытия, риск гололедицы, видимость на трассах и порывы ветра. Используйте эти данные для безопасного управления автомобилем в городе ${city.name} и на пригородных трассах.`,
+      icon: "🚗",
+    },
+    "gm-aktivnost": {
+      title: `Геомагнитная активность и магнитные бури в городе ${city.name}`,
+      desc: `Прогноз геомагнитного фона отражает уровень возмущений магнитного поля Земли (Kp-индекс). Значения Kp ≥ 4 указывают на магнитную бурю, которая может оказывать влияние на самочувствие метеозависимых людей.`,
+      icon: "🧲",
+    },
+  };
+  const featureIntro = featureIntros[active];
+
   return (
     <PageShell favorites={favorites}>
       <RememberLastCity slug={city.slug} />
       <CategoryTabBar slug={city.slug} active={active} />
+      {targetId && <AutoScrollTarget targetId={targetId} />}
       <main className="mx-auto max-w-5xl space-y-4 px-4 py-4 sm:space-y-6 sm:py-6 sm:px-6">
         <AlertBanner alerts={alerts} />
+
+        {featureIntro && (
+          <div className="rounded-2xl bg-sky-50/90 border border-sky-200/80 p-4 sm:p-5 text-sky-950 shadow-xs space-y-1.5 animate-fade-in-up">
+            <h1 className="text-base sm:text-lg font-bold flex items-center gap-2 text-sky-950">
+              <span>{featureIntro.icon}</span>
+              <span>{featureIntro.title}</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-cloud-600 leading-relaxed">
+              {featureIntro.desc}
+            </p>
+          </div>
+        )}
 
         {active === "archive" ? (
           <HistoricalArchivePanel
