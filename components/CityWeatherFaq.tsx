@@ -62,14 +62,18 @@ export function CityWeatherFaq({ city, weather }: Props) {
     })),
   };
 
+  const publishedIso = current.time
+    ? `${current.time.split("T")[0]}T00:00:00.000Z`
+    : "2026-01-01T00:00:00.000Z";
+
   // Schema.org WeatherForecast JSON-LD
   const weatherSchema = {
     "@context": "https://schema.org",
     "@type": "WeatherForecast",
     name: `Прогноз погоды ${locative}`,
     url: `${config.siteUrl}/pogoda/${city.slug}`,
-    datePublished: new Date().toISOString(),
-    validFrom: new Date().toISOString(),
+    datePublished: publishedIso,
+    validFrom: publishedIso,
     location: {
       "@type": "Place",
       name: city.name,
