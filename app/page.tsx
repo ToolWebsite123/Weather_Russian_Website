@@ -3,7 +3,6 @@ import { LAST_CITY_COOKIE, RememberLastCity } from "@/components/RememberLastCit
 import { PageShell } from "@/components/SiteChrome";
 import { CategoryTabBar, CurrentWeatherCard } from "@/components/WeatherPanels";
 import { AlertBanner } from "@/components/AlertBanner";
-import { GeoLocationBanner } from "@/components/GeoLocationBanner";
 import { PopularCitiesSection } from "@/components/PopularCitiesSection";
 import { fetchGeomagneticData } from "@/lib/weather/geomagnetic";
 import {
@@ -13,7 +12,6 @@ import {
 import { getActiveAlerts } from "@/lib/weather/alerts";
 import { resolveCityFromCoords } from "@/lib/weather/geo-resolver";
 import { NewsSection } from "@/components/NewsSection";
-import { WeatherEventsBanner } from "@/components/WeatherEventsBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +20,6 @@ export default async function Home() {
   const savedCitySlug = store.get(LAST_CITY_COOKIE)?.value;
 
   let targetCitySlug: string | null = savedCitySlug || null;
-  let isIpDetected = false;
 
   // 1. Only run auto IP-geolocation if LAST_CITY_COOKIE is NOT set (first-time visitor)
   if (!targetCitySlug) {
@@ -52,7 +49,6 @@ export default async function Home() {
         );
         if (detected) {
           targetCitySlug = detected.slug;
-          isIpDetected = true;
         }
       }
     }
@@ -81,14 +77,7 @@ export default async function Home() {
         <CategoryTabBar slug={primaryData.city.slug} active="today" />
       )}
       <main className="mx-auto max-w-5xl px-4 py-4 sm:py-6 sm:px-6 space-y-4">
-
-        {isIpDetected && primaryData && (
-          <GeoLocationBanner cityName={primaryData.city.name} />
-        )}
-
         {activeAlerts.length > 0 && <AlertBanner alerts={activeAlerts} />}
-
-        <WeatherEventsBanner />
 
         {primaryData && (
           <>
