@@ -414,10 +414,12 @@ export async function CityWeatherView({
         {/* Footer info & nearby cities on all tabs */}
         <NearbyCities cities={nearby} />
 
-        <p className="text-xs text-cloud-400">
+        <p className="text-xs text-cloud-400" suppressHydrationWarning>
           Источник: {weather.provider} · обновлено{" "}
-          {new Date(weather.fetchedAt).toLocaleString("ru-RU")} ·{" "}
-          {ru.attribution}
+          {new Date(weather.fetchedAt).toLocaleString("ru-RU", {
+            timeZone: weather.timezone || city.timezone || "Europe/Moscow",
+          })}{" "}
+          · {ru.attribution}
         </p>
       </main>
     </PageShell>
