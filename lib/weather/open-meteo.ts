@@ -123,7 +123,7 @@ export async function fetchOpenMeteoMarine(
     url.searchParams.set("longitude", String(longitude));
     url.searchParams.set("current", "sea_surface_temperature");
 
-    const fetchOptions = options ?? { cache: "no-store" };
+    const fetchOptions = options ?? { next: { revalidate: 900 } };
     const res = await fetch(url.toString(), fetchOptions);
     if (!res.ok) return undefined;
 
@@ -202,7 +202,7 @@ export async function fetchOpenMeteoForecast(
   );
   url.searchParams.set("wind_speed_unit", "ms");
 
-  const fetchOptions = options ?? { cache: "no-store" };
+  const fetchOptions = options ?? { next: { revalidate: 900 } };
 
   const [res, marineWaterTemp] = await Promise.all([
     fetch(url.toString(), fetchOptions),

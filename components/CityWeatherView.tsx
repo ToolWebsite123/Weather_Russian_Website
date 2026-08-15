@@ -407,12 +407,7 @@ export async function CityWeatherView({
               </div>
             )}
 
-            {/* NOW TAB */}
-            {active === "now" && showHourly && hours.length > 0 && (
-              <div className="space-y-6 sm:space-y-8 animate-fade-in-up stagger-4 motion-reduce:animate-none">
-                <HourlyForecast hours={hours.slice(0, 8)} />
-              </div>
-            )}
+
           </>
         )}
 
