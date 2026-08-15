@@ -43,27 +43,7 @@ export async function upsertCityFromGeo(input: {
   tier?: number;
 }): Promise<City> {
   const countryCode = input.country?.trim().toUpperCase();
-  const isRu = countryCode === "RU";
-
-  // If not RU, return transient non-persisted City object to prevent DB pollution
-  if (!isRu) {
-    return {
-      id: getTransientCityId(input.slug),
-      slug: input.slug,
-      name: input.name,
-      nameEn: input.nameEn ?? input.name,
-      country: input.country || "UNKNOWN",
-      region: input.region ?? null,
-      latitude: input.latitude,
-      longitude: input.longitude,
-      timezone: input.timezone ?? "Europe/Moscow",
-      population: input.population ?? 100000,
-      tier: input.tier ?? 2,
-      isCurated: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  }
+  const finalCountry = countryCode && countryCode.length > 0 ? countryCode : "UNKNOWN";
 
   try {
     const existing = await prisma.city.findUnique({
@@ -77,7 +57,7 @@ export async function upsertCityFromGeo(input: {
       update: {
         name: input.name,
         nameEn: input.nameEn ?? input.name,
-        country: input.country ?? "RU",
+        country: finalCountry,
         region: input.region,
         latitude: input.latitude,
         longitude: input.longitude,
@@ -90,7 +70,7 @@ export async function upsertCityFromGeo(input: {
         slug: input.slug,
         name: input.name,
         nameEn: input.nameEn ?? input.name,
-        country: input.country ?? "RU",
+        country: finalCountry,
         region: input.region,
         latitude: input.latitude,
         longitude: input.longitude,
@@ -106,11 +86,11 @@ export async function upsertCityFromGeo(input: {
       slug: input.slug,
       name: input.name,
       nameEn: input.nameEn ?? input.name,
-      country: input.country || "UNKNOWN",
+      country: finalCountry,
       region: input.region ?? null,
       latitude: input.latitude,
       longitude: input.longitude,
-      timezone: input.timezone ?? "Europe/Moscow",
+      timezone: input.timezone ?? "UTC",
       population: input.population ?? 100000,
       tier: input.tier ?? 2,
       isCurated: false,

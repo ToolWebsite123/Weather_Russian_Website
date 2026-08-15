@@ -183,31 +183,50 @@ describe("upsertCityFromGeo - isCurated preservation", () => {
     expect(result.isCurated).toBe(false);
   });
 
-  it("never persists search results with empty/missing country as RU cities", async () => {
+  it("upserts non-Russian cities with actual country code and isCurated: false", async () => {
     vi.clearAllMocks();
+    vi.mocked(prisma.city.findUnique).mockResolvedValueOnce(null);
 
-    const resultWithEmpty = await upsertCityFromGeo({
-      slug: "foreign-city",
-      name: "Foreign City",
-      country: "",
-      latitude: 48.85,
-      longitude: 2.35,
+    vi.mocked(prisma.city.upsert).mockImplementationOnce((async (args: unknown) => {
+      const a = args as { where: { slug: string }; create: { name: string; country: string; isCurated?: boolean } };
+      return {
+        id: 101,
+        slug: a.where.slug,
+        name: a.create.name,
+        nameEn: a.create.name,
+        country: a.create.country,
+        region: null,
+        latitude: 51.50,
+        longitude: -0.12,
+        timezone: "Europe/London",
+        population: 8900000,
+        tier: 2,
+        isCurated: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    }) as unknown as typeof prisma.city.upsert);
+
+    const result = await upsertCityFromGeo({
+      slug: "london",
+      name: "Лондон",
+      country: "GB",
+      latitude: 51.50,
+      longitude: -0.12,
+      timezone: "Europe/London",
     });
 
-    const resultWithUndefined = await upsertCityFromGeo({
-      slug: "unknown-city",
-      name: "Unknown City",
-      country: undefined,
-      latitude: 48.85,
-      longitude: 2.35,
-    });
-
-    expect(prisma.city.findUnique).not.toHaveBeenCalled();
-    expect(prisma.city.upsert).not.toHaveBeenCalled();
-    expect(resultWithEmpty.id).toBeLessThan(0);
-    expect(resultWithEmpty.isCurated).toBe(false);
-    expect(resultWithUndefined.id).toBeLessThan(0);
-    expect(resultWithUndefined.isCurated).toBe(false);
+    expect(prisma.city.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { slug: "london" },
+        create: expect.objectContaining({
+          country: "GB",
+          isCurated: false,
+        }),
+      })
+    );
+    expect(result.country).toBe("GB");
+    expect(result.isCurated).toBe(false);
   });
 });
 

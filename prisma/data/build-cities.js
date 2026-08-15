@@ -1,8 +1,19 @@
-﻿const { writeFileSync } = require('fs');
+const { writeFileSync } = require('fs');
 const { join } = require('path');
 const RU = {а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya'};
-function slugify(name){
-  return name.toLowerCase().split('').map(c=>RU[c]??(/[a-z0-9]/.test(c)?c:'-')).join('').replace(/-+/g,'-').replace(/^-|-$/g,'');
+function slugify(name, admin1){
+  const includeAdmin = admin1 && admin1.trim().toLowerCase() !== name.trim().toLowerCase();
+  const raw = includeAdmin ? `${name}-${admin1}` : name;
+  const normalized = raw
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ё/g, "е");
+  const transliterated = normalized.split('').map(c => RU[c] ?? (/[a-z0-9]/.test(c) ? c : '-')).join('');
+  const cleaned = transliterated.replace(/-+/g, '-').replace(/^-|-$/g, '');
+  if (cleaned) return cleaned;
+  const hash = Array.from(name).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0);
+  return `city-${Math.abs(hash)}`;
 }
 const raw = require('./ru-cities-raw.json');
 const seen = new Set();

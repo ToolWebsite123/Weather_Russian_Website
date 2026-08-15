@@ -1,15 +1,27 @@
 export function slugifyCity(name: string, admin1?: string): string {
-  const base = `${name}-${admin1 ?? ""}`
+  const includeAdmin = Boolean(
+    admin1 && admin1.trim().toLowerCase() !== name.trim().toLowerCase(),
+  );
+  const raw = includeAdmin ? `${name}-${admin1}` : name;
+  const normalized = raw
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/ё/g, "е")
-    .replace(/[^a-z0-9а-я]+/gi, "-")
+    .replace(/ё/g, "е");
+
+  const transliterated = transliterateRu(normalized);
+  const cleaned = transliterated
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
 
-  // Prefer latin transliteration for URL stability on RU names
-  return transliterateRu(base).replace(/-+/g, "-").replace(/^-|-$/g, "") || "city";
+  if (cleaned) return cleaned;
+
+  const hash = Array.from(name).reduce(
+    (acc, char) => (acc * 31 + char.charCodeAt(0)) | 0,
+    0,
+  );
+  return `city-${Math.abs(hash)}`;
 }
 
 const RU_MAP: Record<string, string> = {

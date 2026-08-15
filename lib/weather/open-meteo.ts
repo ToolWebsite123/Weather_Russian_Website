@@ -94,21 +94,19 @@ export async function searchPlaces(
   if (!res.ok) throw new Error("Geocoding failed");
 
   const data = (await res.json()) as OpenMeteoGeo;
-  return (data.results ?? [])
-    .filter((r) => !r.country_code || r.country_code.toUpperCase() === "RU")
-    .map((r) => ({
-      id: String(r.id),
-      name: r.name,
-      nameEn: r.name,
-      nameRu: r.name,
-      country: (r.country_code ?? "RU").toUpperCase(),
-      admin1: r.admin1,
-      latitude: r.latitude,
-      longitude: r.longitude,
-      timezone: r.timezone,
-      population: r.population,
-      slug: slugifyCity(r.name, r.admin1),
-    }));
+  return (data.results ?? []).map((r) => ({
+    id: String(r.id),
+    name: r.name,
+    nameEn: r.name,
+    nameRu: r.name,
+    country: (r.country_code ?? "UNKNOWN").toUpperCase(),
+    admin1: r.admin1,
+    latitude: r.latitude,
+    longitude: r.longitude,
+    timezone: r.timezone,
+    population: r.population,
+    slug: slugifyCity(r.name, r.admin1),
+  }));
 }
 
 export async function fetchOpenMeteoMarine(
