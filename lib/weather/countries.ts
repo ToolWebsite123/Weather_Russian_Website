@@ -1,5 +1,5 @@
 import type { GeocodingResult } from "@/types/weather";
-import { getCountryFlag, getCountryNameRu, slugifyCity } from "@/lib/cities";
+import { getCountryFlag, slugifyCity } from "@/lib/cities";
 
 export type CountryData = {
   iso: string;

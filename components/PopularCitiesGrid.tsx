@@ -16,7 +16,6 @@ export type PopularCityItem = {
 
 export function PopularCitiesGrid({
   items,
-  totalCount = 272,
 }: {
   items: PopularCityItem[];
   totalCount?: number;

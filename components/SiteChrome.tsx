@@ -393,7 +393,7 @@ export function SiteHeader({
   );
 }
 
-export function SiteFooter({ cityCount = 272 }: { cityCount?: number }) {
+export function SiteFooter({}: { cityCount?: number } = {}) {
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
 
   return (
