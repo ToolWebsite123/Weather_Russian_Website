@@ -10,6 +10,9 @@ import { cookies } from "next/headers";
 import { SESSION_COOKIE } from "@/lib/session";
 import type { City } from "@prisma/client";
 import type { WeatherBundle } from "@/types/weather";
+import { formatTemp } from "@/lib/cities";
+import { weatherCodeLabel } from "@/lib/weather/wmo";
+import { config } from "@/lib/config";
 
 export const revalidate = 900;
 
@@ -109,6 +112,19 @@ export async function getCityCount(): Promise<number> {
     // fallback
   }
   return 272;
+}
+
+export function buildCityOgImageUrl(
+  city: { name: string },
+  weather?: WeatherBundle | null,
+): string {
+  const params = new URLSearchParams();
+  params.set("city", city.name);
+  if (weather?.current) {
+    params.set("temp", formatTemp(weather.current.temperature));
+    params.set("cond", weatherCodeLabel(weather.current.weatherCode));
+  }
+  return `${config.siteUrl}/api/og?${params.toString()}`;
 }
 
 export { listPopularCities };

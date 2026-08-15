@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { getCityLocative } from "@/lib/i18n/declension";
 
 export const runtime = "edge";
 
@@ -7,6 +8,7 @@ export async function GET(request: Request) {
   const city = searchParams.get("city") || "Москва";
   const temp = searchParams.get("temp") || "+18°C";
   const cond = searchParams.get("cond") || "Ясно";
+  const locative = getCityLocative(city);
 
   return new ImageResponse(
     (
@@ -46,7 +48,7 @@ export async function GET(request: Request) {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <span style={{ fontSize: "64px", fontWeight: "bold" }}>
-            Погода в {city}
+            Погода {locative}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
             <span style={{ fontSize: "72px", fontWeight: "extrabold", color: "#edf4a1" }}>

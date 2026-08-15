@@ -116,25 +116,7 @@ export async function CityWeatherView({
   const hasYesterdayData = (isYesterday || active === "vchera") && weather.yesterday != null;
 
   let daily = weather.daily;
-  if (active === "mesyats") {
-    // Generate 30-day forecast extended from weather.daily
-    const extendedDays = [...weather.daily];
-    const baseDate = new Date(weather.daily[weather.daily.length - 1].date);
-    for (let i = extendedDays.length; i < 30; i++) {
-      const nextDate = new Date(baseDate);
-      nextDate.setDate(baseDate.getDate() + (i - extendedDays.length + 1));
-      const isoDate = nextDate.toISOString().split("T")[0];
-      const prevDay = extendedDays[i % extendedDays.length];
-      const variance = (i % 5) - 2;
-      extendedDays.push({
-        ...prevDay,
-        date: isoDate,
-        tempMax: prevDay.tempMax + variance,
-        tempMin: prevDay.tempMin + variance,
-      });
-    }
-    daily = extendedDays;
-  } else if (hasYesterdayData && weather.yesterday) {
+  if (hasYesterdayData && weather.yesterday) {
     daily = [weather.yesterday.daily];
   } else if (tomorrowOnly || active === "tomorrow" || active === "zavtra") {
     daily = weather.daily.slice(1, 2);
@@ -146,7 +128,7 @@ export async function CityWeatherView({
     daily = weather.daily.slice(0, 7);
   } else if (active === "10" || active === "10-dney") {
     daily = weather.daily.slice(0, 10);
-  } else if (active === "14" || active === "14-dney") {
+  } else if (active === "14" || active === "14-dney" || active === "mesyats") {
     daily = weather.daily.slice(0, 14);
   } else if (dailyLimit) {
     daily = weather.daily.slice(0, dailyLimit);
@@ -344,6 +326,12 @@ export async function CityWeatherView({
             {/* FORECAST RANGE TABS (zavtra, 3-dnya, 7-dney, 10-dney, 14-dney, vykhodnye, mesyats) */}
             {isDailyRangeTab && (
               <div className="animate-fade-in-up stagger-3 motion-reduce:animate-none space-y-6">
+                {active === "mesyats" && (
+                  <div className="rounded-2xl bg-white/80 p-4 border border-sky-100/90 shadow-2xs backdrop-blur-md text-xs text-sky-900 flex items-center gap-2.5">
+                    <span className="text-base shrink-0">ℹ️</span>
+                    <span>Точный ежедневный метеопрогноз доступен на 14 дней вперёд.</span>
+                  </div>
+                )}
                 <DailyForecast days={daily} hourly={weather.hourly} />
               </div>
             )}
