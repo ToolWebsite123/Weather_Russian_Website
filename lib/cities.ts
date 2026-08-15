@@ -125,4 +125,14 @@ export function formatTimeAgo(isoString?: string): string | null {
   return `обновлено ${diffHours} ${hStr} назад`;
 }
 
+export function getCountryNameRu(countryCode?: string): string {
+  if (!countryCode || countryCode === "UNKNOWN") return "";
+  try {
+    const regionNames = new Intl.DisplayNames(["ru"], { type: "region" });
+    return regionNames.of(countryCode.toUpperCase()) ?? countryCode;
+  } catch {
+    return countryCode;
+  }
+}
+
 

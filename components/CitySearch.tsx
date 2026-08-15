@@ -10,6 +10,7 @@ import {
   useState,
   useTransition,
 } from "react";
+import { getCountryNameRu } from "@/lib/cities";
 import { ru } from "@/lib/i18n/ru";
 import type { GeocodingResult } from "@/types/weather";
 
@@ -170,8 +171,8 @@ export function CitySearch() {
                   onMouseEnter={() => setActiveIndex(index)}
                 >
                   <span className="font-medium text-sky-950">{r.name}</span>
-                  <span className="text-sm text-cloud-500">
-                    {[r.admin1, r.country].filter(Boolean).join(", ")}
+                  <span className="text-xs text-cloud-500">
+                    📍 {[r.admin1, getCountryNameRu(r.country)].filter(Boolean).join(", ")}
                   </span>
                 </button>
               </li>
