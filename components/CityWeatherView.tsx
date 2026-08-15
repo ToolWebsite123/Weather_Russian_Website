@@ -59,7 +59,7 @@ export async function CityWeatherView({
   isYesterday = false,
 }: {
   slug: string;
-  active: "now" | "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive" | "vchera";
+  active: "now" | "today" | "tomorrow" | "weekend" | "3" | "7" | "10" | "14" | "mesyats" | "archive" | "vchera" | "radar" | "pyltsa" | "dorogi" | "gm-aktivnost";
   dailyLimit?: number;
   showHourly?: boolean;
   tomorrowOnly?: boolean;

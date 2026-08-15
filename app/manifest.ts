@@ -10,10 +10,19 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#f0f7ff",
     theme_color: "#0c87ea",
-    // NOTE: PWA manifest uses public/icon.svg as a scalable vector icon.
-    // For maximum compatibility across legacy Android/iOS home screen shortcuts,
-    // dedicated 192x192 and 512x512 PNG raster icons can be added in the future.
     icons: [
+      {
+        src: "/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
       {
         src: "/icon.svg",
         sizes: "any",

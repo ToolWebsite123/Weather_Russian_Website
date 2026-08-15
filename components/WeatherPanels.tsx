@@ -13,6 +13,7 @@ import { getPressureTrend, type PressureTrendValue } from "@/lib/weather/pressur
 import { getUvCategory } from "@/lib/weather/uv-scale";
 import { computeComfortPenalties } from "@/lib/weather/activity-index";
 import { LiveCityDate } from "@/components/LiveCityDate";
+import { PressureTooltip } from "@/components/PressureTooltip";
 
 export function PressureTrend({ trend }: { trend: PressureTrendValue }) {
   if (trend === "rising") {
@@ -167,7 +168,6 @@ export function SunArcTimeline({
 export function CategoryTabBar({
   slug,
   active = "now",
-  anchorPrefix = "",
 }: {
   slug: string;
   active?: string;
@@ -198,6 +198,88 @@ export function CategoryTabBar({
     { id: "archiv", href: `/pogoda/${slug}/archiv`, label: "Архив" },
   ];
 
+  const featureTabs = [
+    {
+      id: "radar",
+      href: `/pogoda/${slug}/radar`,
+      label: "Радар",
+      icon: (
+        <svg
+          className="w-4 h-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2a7 7 0 1 0 10 10" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      ),
+    },
+    {
+      id: "pyltsa",
+      href: `/pogoda/${slug}/pyltsa`,
+      label: "Пыльца",
+      icon: (
+        <svg
+          className="w-4 h-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.1 2 7a9 9 0 0 1-10 11z" />
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        </svg>
+      ),
+    },
+    {
+      id: "dorogi",
+      href: `/pogoda/${slug}/dorogi`,
+      label: "Дороги",
+      icon: (
+        <svg
+          className="w-4 h-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="3" y="11" width="18" height="8" rx="2" />
+          <circle cx="7" cy="15" r="1.5" />
+          <circle cx="17" cy="15" r="1.5" />
+          <path d="M5 11l2-5h10l2 5" />
+        </svg>
+      ),
+    },
+    {
+      id: "gm-aktivnost",
+      href: `/pogoda/${slug}/gm-aktivnost`,
+      label: "Г/м активность",
+      icon: (
+        <svg
+          className="w-4 h-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M6 15v-2a6 6 0 1 1 12 0v2" />
+          <path d="M6 15h4v5H6zM14 15h4v5h-4z" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <div className="sticky top-[53px] sm:top-[57px] z-20 w-full border-b border-[#0b2e2b] bg-[#0f3d3a] shadow-md">
       <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6">
@@ -212,10 +294,11 @@ export function CategoryTabBar({
                 key={tab.id}
                 href={tab.href}
                 prefetch={true}
-                className={`inline-block px-3.5 py-1.5 rounded-lg text-sm transition-colors ${isActive
+                className={`inline-block px-3.5 py-1.5 rounded-lg text-sm transition-colors ${
+                  isActive
                     ? "bg-white text-[#0f3d3a] font-semibold shadow-xs"
                     : "text-[#bcd8d4] hover:bg-white/10"
-                  }`}
+                }`}
               >
                 {tab.label}
               </Link>
@@ -227,84 +310,24 @@ export function CategoryTabBar({
             aria-hidden="true"
           />
 
-          <a
-            href={`${anchorPrefix}#weather-map`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm text-[#bcd8d4] hover:bg-white/10 transition-colors align-middle shrink-0"
-          >
-            <svg
-              className="w-4 h-4 shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 2a7 7 0 1 0 10 10" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <span>Радар</span>
-          </a>
-
-          <a
-            href={`${anchorPrefix}#environmental-insights`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm text-[#bcd8d4] hover:bg-white/10 transition-colors align-middle shrink-0"
-          >
-            <svg
-              className="w-4 h-4 shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.1 2 7a9 9 0 0 1-10 11z" />
-              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-            </svg>
-            <span>Пыльца</span>
-          </a>
-
-          <a
-            href={`${anchorPrefix}#road-conditions`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm text-[#bcd8d4] hover:bg-white/10 transition-colors align-middle shrink-0"
-          >
-            <svg
-              className="w-4 h-4 shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="11" width="18" height="8" rx="2" />
-              <circle cx="7" cy="15" r="1.5" />
-              <circle cx="17" cy="15" r="1.5" />
-              <path d="M5 11l2-5h10l2 5" />
-            </svg>
-            <span>Дороги</span>
-          </a>
-
-          <a
-            href={`${anchorPrefix}#geomagnetic`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm text-[#bcd8d4] hover:bg-white/10 transition-colors align-middle shrink-0"
-          >
-            <svg
-              className="w-4 h-4 shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 15v-2a6 6 0 1 1 12 0v2" />
-              <path d="M6 15h4v5H6zM14 15h4v5h-4z" />
-            </svg>
-            <span>Г/м активность</span>
-          </a>
+          {featureTabs.map((ft) => {
+            const isActive = ft.id === activeNormalized;
+            return (
+              <Link
+                key={ft.id}
+                href={ft.href}
+                prefetch={true}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm transition-colors align-middle shrink-0 ${
+                  isActive
+                    ? "bg-white text-[#0f3d3a] font-semibold shadow-xs"
+                    : "text-[#bcd8d4] hover:bg-white/10"
+                }`}
+              >
+                {ft.icon}
+                <span>{ft.label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
     </div>
@@ -436,7 +459,10 @@ export function CurrentWeatherCard({
               </div>
 
               <div className="flex items-baseline justify-between">
-                <span className="shrink-0 text-slate-600">Давление</span>
+                <span className="shrink-0 text-slate-600 flex items-center">
+                  Давление
+                  <PressureTooltip />
+                </span>
                 <span className="flex-1 mx-1 border-b border-dotted border-slate-300 relative top-[-3px]" />
                 <span className="shrink-0 font-medium tabular-nums text-slate-900">
                   {pressureMm}
@@ -896,6 +922,7 @@ export function ComfortIndices({
         <span className="inline-flex flex-wrap items-center gap-1.5">
           <span>{formatPressureMmHg(current.pressure)}</span>
           <PressureTrend trend={trend} />
+          <PressureTooltip />
         </span>
       ),
     },
@@ -1195,7 +1222,12 @@ export function YesterdayHourlyTable({ hours }: { hours: HourlyPoint[] }) {
               <th className="px-3 py-2.5 sm:px-4 text-right">Темп.</th>
               <th className="px-3 py-2.5 sm:px-4 text-right">Ощущается</th>
               <th className="px-3 py-2.5 sm:px-4">Ветер</th>
-              <th className="px-3 py-2.5 sm:px-4 text-right">Давление</th>
+              <th className="px-3 py-2.5 sm:px-4 text-right">
+                <span className="inline-flex items-center gap-0.5 justify-end">
+                  Давление
+                  <PressureTooltip />
+                </span>
+              </th>
               <th className="px-3 py-2.5 sm:px-4 text-right">Влажность</th>
               <th className="px-3 py-2.5 sm:px-4 text-right">Осадки</th>
             </tr>

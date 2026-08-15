@@ -41,17 +41,72 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function CityPage({
+export default async function CityPage({
   params,
   searchParams,
 }: Props & { searchParams?: { view?: string } }) {
+  const city = await resolveCity(params.slug);
+  const cityUrl = `${config.siteUrl}/pogoda/${params.slug}`;
+
+  const jsonLd = city
+    ? {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Главная",
+                "item": config.siteUrl,
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Все города",
+                "item": `${config.siteUrl}/gorod`,
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": `Погода в ${city.name}`,
+                "item": cityUrl,
+              },
+            ],
+          },
+          {
+            "@type": "Place",
+            "name": city.name,
+            "address": {
+              "@type": "PostalAddress",
+              "addressCountry": city.country,
+              "addressRegion": city.region || undefined,
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": city.latitude,
+              "longitude": city.longitude,
+            },
+          },
+        ],
+      }
+    : null;
+
   return (
-    <CityWeatherView
-      slug={params.slug}
-      active="today"
-      dailyLimit={7}
-      isYesterday={searchParams?.view === "yesterday"}
-    />
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <CityWeatherView
+        slug={params.slug}
+        active="today"
+        dailyLimit={7}
+        isYesterday={searchParams?.view === "yesterday"}
+      />
+    </>
   );
 }
-
