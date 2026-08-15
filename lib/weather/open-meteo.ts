@@ -99,14 +99,30 @@ export async function searchPlaces(
     if (!res.ok) throw new Error("Geocoding failed");
 
     const data = (await res.json()) as OpenMeteoGeo;
-    const geoResults: GeocodingResult[] = (data.results ?? []).map((r) => {
+    const rawList = data.results ?? [];
+
+    // Sort geocoded results by population descending so major cities take priority over small tehsils/subdivisions
+    const sortedRaw = [...rawList].sort(
+      (a, b) => (b.population ?? 0) - (a.population ?? 0),
+    );
+
+    const geoResults: GeocodingResult[] = sortedRaw.map((r) => {
       const countryCode = (r.country_code ?? "UNKNOWN").toUpperCase();
-      const useAdmin = Boolean(r.admin1 && (!r.population || r.population <= 100000));
+      // Clean administrative suffixes (e.g. " Saddar Tehsil", " Tehsil", " District", " Division")
+      const cleanName = r.name
+        .replace(/\s+(Saddar\s+)?Tehsil$/i, "")
+        .replace(/\s+District$/i, "")
+        .replace(/\s+Division$/i, "")
+        .replace(/\s+Subdivision$/i, "");
+
+      const useAdmin = Boolean(
+        r.admin1 && (!r.population || r.population <= 100000),
+      );
       return {
         id: String(r.id),
-        name: r.name,
-        nameEn: r.name,
-        nameRu: r.name,
+        name: cleanName,
+        nameEn: cleanName,
+        nameRu: cleanName,
         country: countryCode,
         countryNameRu: getCountryNameRu(countryCode),
         countryFlag: getCountryFlag(countryCode),
@@ -115,7 +131,7 @@ export async function searchPlaces(
         longitude: r.longitude,
         timezone: r.timezone,
         population: r.population,
-        slug: slugifyCity(r.name, useAdmin ? r.admin1 : undefined),
+        slug: slugifyCity(cleanName, useAdmin ? r.admin1 : undefined),
       };
     });
 

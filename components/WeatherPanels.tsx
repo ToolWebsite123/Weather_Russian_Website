@@ -619,15 +619,39 @@ export function NowWeatherHeroCard({
       })
     : "20:19";
 
-  // Calculate sun arc progress (0..1)
   const now = new Date();
-  const srDate = today?.sunrise ? new Date(today.sunrise) : null;
-  const ssDate = today?.sunset ? new Date(today.sunset) : null;
+
+  // Calculate sun arc progress (0..1) based on target city local timezone minutes from midnight
   let sunProgress = 0.5;
-  if (srDate && ssDate) {
-    const totalMs = ssDate.getTime() - srDate.getTime();
-    const elapsedMs = now.getTime() - srDate.getTime();
-    sunProgress = Math.max(0, Math.min(1, elapsedMs / totalMs));
+  try {
+    const tz = timezone || "Europe/Moscow";
+    const getMinutesFromMidnight = (dateObj: Date) => {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false,
+        timeZone: tz,
+      }).formatToParts(dateObj);
+      let h = 0;
+      let m = 0;
+      for (const p of parts) {
+        if (p.type === "hour") h = parseInt(p.value, 10);
+        if (p.type === "minute") m = parseInt(p.value, 10);
+      }
+      return h * 60 + m;
+    };
+
+    const nowMins = getMinutesFromMidnight(new Date());
+    const srMins = today?.sunrise ? getMinutesFromMidnight(new Date(today.sunrise)) : 330;
+    const ssMins = today?.sunset ? getMinutesFromMidnight(new Date(today.sunset)) : 1140;
+
+    if (ssMins > srMins) {
+      const totalMins = ssMins - srMins;
+      const elapsedMins = nowMins - srMins;
+      sunProgress = Math.max(0, Math.min(1, elapsedMins / totalMins));
+    }
+  } catch {
+    sunProgress = 0.5;
   }
 
   // Bezier curve calculations for SVG sun trajectory: P0=(30,65), P1=(150,15), P2=(270,65)
@@ -639,6 +663,8 @@ export function NowWeatherHeroCard({
 
   // Calculate daylight duration
   let daylightStr = "";
+  const srDate = today?.sunrise ? new Date(today.sunrise) : null;
+  const ssDate = today?.sunset ? new Date(today.sunset) : null;
   if (srDate && ssDate) {
     const durationMs = ssDate.getTime() - srDate.getTime();
     if (durationMs > 0) {
@@ -662,7 +688,9 @@ export function NowWeatherHeroCard({
     : "bg-gradient-to-b from-[#0b132b] via-[#1c2541] to-[#3a506b]";
 
   if (isThunderstorm) {
-    bgGradient = "bg-gradient-to-b from-[#181136] via-[#291f4d] to-[#3c2d66]";
+    bgGradient = isDay
+      ? "bg-gradient-to-b from-[#253654] via-[#354f7a] to-[#4b6c9b]"
+      : "bg-gradient-to-b from-[#120d29] via-[#1f163d] to-[#302359]";
   } else if (isHeavyRain) {
     bgGradient = isDay
       ? "bg-gradient-to-b from-[#1e304b] via-[#2b4467] to-[#3d5a80]"
