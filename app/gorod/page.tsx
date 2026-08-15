@@ -1,139 +1,122 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { getAllStaticCities } from "@/lib/weather/static-cities";
 import { getFavoritesForSession } from "@/lib/weather/city-page";
+import { getAllCatalogCountries } from "@/lib/weather/countries";
 import { PageShell } from "@/components/SiteChrome";
-import type { City } from "@prisma/client";
 import { config } from "@/lib/config";
 
 export const revalidate = 3600; // 1 hour ISR
 
 export const metadata: Metadata = {
-  title: "Каталог всех городов — Прогноз погоды | WeatherHub",
+  title: "Каталог стран и городов — Прогноз погоды | WeatherHub",
   description:
-    "Полный каталог городов России и мира. Точный прогноз погоды для всех городов: температура, осадки, ветер и качество воздуха.",
+    "Полный каталог стран и известных городов мира (Пакистан, Россия, Турция, ОАЭ, Казахстан, Египет, США и др.). Точный прогноз погоды: температура, осадки, ветер и качество воздуха.",
   alternates: {
     canonical: `${config.siteUrl}/gorod`,
   },
 };
 
-async function getCatalogCities(): Promise<City[]> {
-  try {
-    const cities = await prisma.city.findMany({
-      where: { isCurated: true, country: "RU" },
-      orderBy: [{ name: "asc" }],
-    });
-    if (cities.length > 0) return cities;
-  } catch {
-    // Database query fallback to static dataset
-  }
-  return getAllStaticCities().sort((a, b) => a.name.localeCompare(b.name, "ru"));
-}
-
 export default async function CityCatalogPage() {
-  const [cities, favorites] = await Promise.all([
-    getCatalogCities(),
+  const [countries, favorites] = await Promise.all([
+    getAllCatalogCountries(),
     getFavoritesForSession().catch(() => []),
   ]);
 
-  // Group cities alphabetically by first uppercase Cyrillic letter
-  const grouped = new Map<string, City[]>();
-  for (const c of cities) {
-    const letter = c.name.charAt(0).toUpperCase();
-    const list = grouped.get(letter) ?? [];
-    list.push(c);
-    grouped.set(letter, list);
-  }
-
-  const alphabet = Array.from(grouped.keys()).sort((a, b) =>
-    a.localeCompare(b, "ru"),
-  );
-
   return (
-    <PageShell favorites={favorites} cityCount={cities.length}>
+    <PageShell favorites={favorites}>
       <main className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6">
         {/* Header */}
-        <section className="space-y-3 rounded-2xl bg-white/80 p-6 ring-1 ring-sky-100 shadow-sm backdrop-blur">
+        <section className="space-y-4 rounded-2xl bg-white/85 p-6 ring-1 ring-sky-100 shadow-sm backdrop-blur">
           <nav className="text-xs text-cloud-500 flex items-center gap-1.5">
             <Link href="/" className="hover:text-sky-800 transition-colors">
               Главная
             </Link>
             <span>/</span>
-            <span className="text-sky-950 font-medium">Каталог городов</span>
+            <span className="text-sky-950 font-medium">Каталог стран и городов</span>
           </nav>
+
           <h1 className="font-serif text-h1 font-bold text-sky-950">
-            Погода во всех городах
+            Погода по странам и городам мира
           </h1>
+
           <p className="text-sm text-cloud-600 max-w-2xl leading-relaxed">
-            Каталог городов России и всего мира. Воспользуйтесь поиском для любого города или страны, либо выберите город из списка ниже для просмотра подробного прогноза погоды.
+            Выберите страну или известный город для просмотра точного прогноза погоды. Пакистан, Россия, Турция, ОАЭ, Казахстан, Египет, США и многие другие страны мира.
           </p>
 
-          {/* Quick Alphabet Navigation Bar */}
-          <div className="pt-3 border-t border-sky-100 flex flex-wrap gap-1.5">
-            {alphabet.map((letter) => (
+          {/* Quick Country Navigation Chips Bar */}
+          <div className="pt-3 border-t border-sky-100 flex flex-wrap gap-2">
+            {countries.map((country) => (
               <a
-                key={letter}
-                href={`#letter-${letter}`}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-xs font-semibold text-sky-900 ring-1 ring-sky-200/60 transition-all hover:bg-sky-500 hover:text-white active:scale-95"
+                key={country.iso}
+                href={`#country-${country.iso}`}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-900 ring-1 ring-sky-200/70 transition-all hover:bg-sky-500 hover:text-white active:scale-95 shadow-sm"
               >
-                {letter}
+                <span>{country.flag}</span>
+                <span>{country.nameRu}</span>
               </a>
             ))}
           </div>
         </section>
 
-        {/* Grouped City List */}
+        {/* Country Sections */}
         <div className="space-y-6">
-          {alphabet.map((letter) => {
-            const letterCities = grouped.get(letter) ?? [];
-            return (
-              <section
-                key={letter}
-                id={`letter-${letter}`}
-                className="scroll-mt-6 rounded-2xl bg-white/70 p-5 ring-1 ring-sky-100 backdrop-blur space-y-3"
-              >
-                <div className="flex items-center gap-2 border-b border-sky-100/80 pb-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500 text-sm font-bold text-white shadow-sm">
-                    {letter}
+          {countries.map((country) => (
+            <section
+              key={country.iso}
+              id={`country-${country.iso}`}
+              className="scroll-mt-6 rounded-2xl bg-white/80 p-6 ring-1 ring-sky-100 backdrop-blur space-y-4 shadow-sm"
+            >
+              <div className="flex items-center justify-between border-b border-sky-100 pb-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl" role="img" aria-label={country.nameRu}>
+                    {country.flag}
                   </span>
-                  <span className="text-xs text-cloud-400 font-medium">
-                    ({letterCities.length} {getCityWordForm(letterCities.length)})
-                  </span>
+                  <div>
+                    <h2 className="text-xl font-bold text-sky-950">
+                      {country.nameRu}
+                    </h2>
+                    <p className="text-xs text-cloud-500 mt-0.5">
+                      Популярные города страны ({country.cities.length})
+                    </p>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
-                  {letterCities.map((city) => (
-                    <Link
-                      key={city.slug}
-                      href={`/pogoda/${city.slug}`}
-                      className="group flex flex-col justify-between rounded-xl bg-white/90 p-3 ring-1 ring-sky-100/80 transition-all duration-150 hover:-translate-y-0.5 hover:bg-sky-50 hover:ring-sky-200 hover:shadow-md motion-reduce:transform-none"
-                    >
-                      <span className="font-medium text-sm text-sky-950 group-hover:text-sky-700 transition-colors truncate">
+                <a
+                  href={`#country-${country.iso}`}
+                  className="text-xs font-medium text-sky-700 hover:text-sky-900 transition-colors"
+                >
+                  Наверх ↑
+                </a>
+              </div>
+
+              {/* City Grid */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                {country.cities.map((city) => (
+                  <Link
+                    key={city.slug}
+                    href={`/pogoda/${city.slug}`}
+                    className="group flex flex-col justify-between rounded-xl bg-white/95 p-3.5 ring-1 ring-sky-100 transition-all duration-150 hover:-translate-y-0.5 hover:bg-sky-50 hover:ring-sky-300 hover:shadow-md motion-reduce:transform-none"
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-semibold text-sm text-sky-950 group-hover:text-sky-700 transition-colors truncate">
                         {city.name}
                       </span>
-                      {city.region && (
-                        <span className="text-[11px] text-cloud-400 truncate mt-0.5">
-                          {city.region}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+                      <span className="text-xs text-sky-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                        →
+                      </span>
+                    </div>
+                    {city.admin1 && (
+                      <span className="text-[11px] text-cloud-400 truncate mt-1">
+                        📍 {city.admin1}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       </main>
     </PageShell>
   );
-}
-
-function getCityWordForm(count: number): string {
-  const rem100 = count % 100;
-  const rem10 = count % 10;
-  if (rem100 >= 11 && rem100 <= 19) return "городов";
-  if (rem10 === 1) return "город";
-  if (rem10 >= 2 && rem10 <= 4) return "города";
-  return "городов";
 }

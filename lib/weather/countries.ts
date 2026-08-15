@@ -18,6 +18,37 @@ export type CountryData = {
 
 export const POPULAR_COUNTRIES: CountryData[] = [
   {
+    iso: "PK",
+    nameRu: "Пакистан",
+    aliases: ["пакистан", "pakistan", "pk", "пак"],
+    cities: [
+      { name: "Карачи", nameEn: "Karachi", admin1: "Синд", latitude: 24.8607, longitude: 67.0011, timezone: "Asia/Karachi", population: 14910000 },
+      { name: "Лахор", nameEn: "Lahore", admin1: "Пенджаб", latitude: 31.5204, longitude: 74.3587, timezone: "Asia/Karachi", population: 11130000 },
+      { name: "Исламабад", nameEn: "Islamabad", admin1: "Исламабад", latitude: 33.6844, longitude: 73.0479, timezone: "Asia/Karachi", population: 1010000 },
+      { name: "Равалпинди", nameEn: "Rawalpindi", admin1: "Пенджаб", latitude: 33.5651, longitude: 73.0169, timezone: "Asia/Karachi", population: 2098000 },
+      { name: "Фейсалабад", nameEn: "Faisalabad", admin1: "Пенджаб", latitude: 31.4504, longitude: 73.135, timezone: "Asia/Karachi", population: 3204000 },
+      { name: "Пешавар", nameEn: "Peshawar", admin1: "Хайбер-Пахтунхва", latitude: 34.0151, longitude: 71.5249, timezone: "Asia/Karachi", population: 1970000 },
+      { name: "Мультан", nameEn: "Multan", admin1: "Пенджаб", latitude: 30.1575, longitude: 71.5249, timezone: "Asia/Karachi", population: 1872000 },
+    ],
+  },
+  {
+    iso: "RU",
+    nameRu: "Россия",
+    aliases: ["россия", "russia", "ru", "рф"],
+    cities: [
+      { name: "Москва", nameEn: "Moscow", admin1: "Москва", latitude: 55.7558, longitude: 37.6173, timezone: "Europe/Moscow", population: 12600000 },
+      { name: "Санкт-Петербург", nameEn: "Saint Petersburg", admin1: "Санкт-Петербург", latitude: 59.9343, longitude: 30.3351, timezone: "Europe/Moscow", population: 5600000 },
+      { name: "Новосибирск", nameEn: "Novosibirsk", admin1: "Новосибирская область", latitude: 55.0084, longitude: 82.9357, timezone: "Asia/Novosibirsk", population: 1625000 },
+      { name: "Екатеринбург", nameEn: "Yekaterinburg", admin1: "Свердловская область", latitude: 56.8389, longitude: 60.6057, timezone: "Asia/Yekaterinburg", population: 1540000 },
+      { name: "Казань", nameEn: "Kazan", admin1: "Татарстан", latitude: 55.7963, longitude: 49.1088, timezone: "Europe/Moscow", population: 1309000 },
+      { name: "Нижний Новгород", nameEn: "Nizhny Novgorod", admin1: "Нижегородская область", latitude: 56.2965, longitude: 43.9361, timezone: "Europe/Moscow", population: 1245000 },
+      { name: "Челябинск", nameEn: "Chelyabinsk", admin1: "Челябинская область", latitude: 55.1644, longitude: 61.4368, timezone: "Asia/Yekaterinburg", population: 1190000 },
+      { name: "Сочи", nameEn: "Sochi", admin1: "Краснодарский край", latitude: 43.6028, longitude: 39.7342, timezone: "Europe/Moscow", population: 445000 },
+      { name: "Краснодар", nameEn: "Krasnodar", admin1: "Краснодарский край", latitude: 45.0355, longitude: 38.9753, timezone: "Europe/Moscow", population: 950000 },
+      { name: "Владивосток", nameEn: "Vladivostok", admin1: "Приморский край", latitude: 43.1155, longitude: 131.8855, timezone: "Asia/Vladivostok", population: 600000 },
+    ],
+  },
+  {
     iso: "TR",
     nameRu: "Турция",
     aliases: ["турция", "turkey", "turkiye", "тёрция", "тр"],
@@ -253,3 +284,28 @@ export function findCitiesByCountryQuery(query: string): GeocodingResult[] {
     };
   });
 }
+
+export type CatalogCountryItem = {
+  iso: string;
+  nameRu: string;
+  flag: string;
+  cities: Array<{
+    slug: string;
+    name: string;
+    admin1?: string;
+  }>;
+};
+
+export function getAllCatalogCountries(): CatalogCountryItem[] {
+  return POPULAR_COUNTRIES.map((c) => ({
+    iso: c.iso,
+    nameRu: c.nameRu,
+    flag: getCountryFlag(c.iso),
+    cities: c.cities.map((city) => ({
+      slug: slugifyCity(city.name, city.admin1),
+      name: city.name,
+      admin1: city.admin1,
+    })),
+  }));
+}
+

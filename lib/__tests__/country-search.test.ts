@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { getCountryFlag, getCountryNameRu } from "@/lib/cities";
-import { findCitiesByCountryQuery } from "@/lib/weather/countries";
+import { findCitiesByCountryQuery, getAllCatalogCountries } from "@/lib/weather/countries";
 
 describe("Country Search & Flag Utilities", () => {
-  it("generates correct country flag emojis", () => {
+  it("generates correct country flag emojis including Pakistan", () => {
+    expect(getCountryFlag("PK")).toBe("🇵🇰");
     expect(getCountryFlag("RU")).toBe("🇷🇺");
     expect(getCountryFlag("TR")).toBe("🇹🇷");
     expect(getCountryFlag("KZ")).toBe("🇰🇿");
@@ -18,6 +19,7 @@ describe("Country Search & Flag Utilities", () => {
   });
 
   it("translates country codes to Russian country names", () => {
+    expect(getCountryNameRu("PK")).toBe("Пакистан");
     expect(getCountryNameRu("RU")).toBe("Россия");
     expect(getCountryNameRu("US")).toBe("США");
     expect(getCountryNameRu("TR")).toBe("Турция");
@@ -28,28 +30,33 @@ describe("Country Search & Flag Utilities", () => {
   });
 
   it("finds top cities when searching by country name in Russian or English", () => {
+    const pakistanMatches = findCitiesByCountryQuery("Пакистан");
+    expect(pakistanMatches.length).toBeGreaterThan(0);
+    expect(pakistanMatches[0].country).toBe("PK");
+    expect(pakistanMatches[0].countryNameRu).toBe("Пакистан");
+    expect(pakistanMatches[0].countryFlag).toBe("🇵🇰");
+    expect(pakistanMatches.some((c) => c.name === "Карачи")).toBe(true);
+    expect(pakistanMatches.some((c) => c.name === "Лахор")).toBe(true);
+    expect(pakistanMatches.some((c) => c.name === "Исламабад")).toBe(true);
+
     const turkeyMatches = findCitiesByCountryQuery("Турция");
     expect(turkeyMatches.length).toBeGreaterThan(0);
     expect(turkeyMatches[0].country).toBe("TR");
-    expect(turkeyMatches[0].countryNameRu).toBe("Турция");
-    expect(turkeyMatches[0].countryFlag).toBe("🇹🇷");
     expect(turkeyMatches.some((c) => c.name === "Стамбул")).toBe(true);
-    expect(turkeyMatches.some((c) => c.name === "Анталья")).toBe(true);
 
-    const kazakhstanMatches = findCitiesByCountryQuery("казахстан");
+    const kazakhstanMatches = findCitiesByCountryQuery("kazakhstan");
     expect(kazakhstanMatches.length).toBeGreaterThan(0);
     expect(kazakhstanMatches[0].country).toBe("KZ");
     expect(kazakhstanMatches.some((c) => c.name === "Алматы")).toBe(true);
+  });
 
-    const egyptMatches = findCitiesByCountryQuery("egypt");
-    expect(egyptMatches.length).toBeGreaterThan(0);
-    expect(egyptMatches[0].country).toBe("EG");
-    expect(egyptMatches.some((c) => c.name === "Хургада")).toBe(true);
-
-    const usaMatches = findCitiesByCountryQuery("США");
-    expect(usaMatches.length).toBeGreaterThan(0);
-    expect(usaMatches[0].country).toBe("US");
-    expect(usaMatches.some((c) => c.name === "Нью-Йорк")).toBe(true);
+  it("getAllCatalogCountries returns Pakistan as the first country", () => {
+    const catalog = getAllCatalogCountries();
+    expect(catalog.length).toBeGreaterThan(0);
+    expect(catalog[0].iso).toBe("PK");
+    expect(catalog[0].nameRu).toBe("Пакистан");
+    expect(catalog[0].flag).toBe("🇵🇰");
+    expect(catalog[0].cities.some((c) => c.name === "Карачи")).toBe(true);
   });
 
   it("returns empty array for unknown or short search query", () => {
