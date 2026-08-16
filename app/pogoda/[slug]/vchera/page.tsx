@@ -7,6 +7,7 @@ import {
 } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { shouldIndexCity } from "@/lib/cities";
 import { config } from "@/lib/config";
 
 export const revalidate = 900;
@@ -24,15 +25,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city, weather } = data;
 
   const locative = getCityLocative(city.name);
-  const title = `Погода ${locative} вчера — метеонаблюдения за вчерашний день | WeatherHub`;
-  const description = `Метеонаблюдения ${locative} за вчерашний день: фактическая температура, влажность, атмосферное давление и сравнение погоды.`;
+  const title = `Погода ${locative} вчера — дневник метеонаблюдений | WeatherHub`;
+  const description = `Фактическая погода ${locative} за вчерашний день: минимальная и максимальная температура, сумма осадков.`;
   const url = `${config.siteUrl}/pogoda/${city.slug}/vchera`;
   const ogImage = buildCityOgImageUrl(city, weather);
 
   return {
     title,
     description,
-    robots: city.isCurated ? undefined : { index: false, follow: true },
+    robots: shouldIndexCity(city) ? undefined : { index: false, follow: true },
     alternates: { canonical: url },
     openGraph: {
       title,

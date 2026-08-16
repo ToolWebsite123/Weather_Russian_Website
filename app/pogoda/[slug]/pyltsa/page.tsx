@@ -7,6 +7,7 @@ import {
 } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { shouldIndexCity } from "@/lib/cities";
 import { config } from "@/lib/config";
 
 export const revalidate = 900;
@@ -24,15 +25,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city, weather } = data;
 
   const locative = getCityLocative(city.name);
-  const title = `Прогноз аллергии и концентрация пыльцы ${locative} — аллергопрогноз | WeatherHub`;
-  const description = `Актуальный аллергопрогноз ${locative}: уровни пыльцы берёзы, ольхи, злаков и амброзии, а также качество воздуха и УФ-индекс.`;
+  const title = `Прогноз пыльцы и аллергенов ${locative} | WeatherHub`;
+  const description = `Уровень концентрации пыльцы деревьев и злаков ${locative}: ольха, берёза, амброзия и качество воздуха.`;
   const url = `${config.siteUrl}/pogoda/${city.slug}/pyltsa`;
   const ogImage = buildCityOgImageUrl(city, weather);
 
   return {
     title,
     description,
-    robots: city.isCurated ? undefined : { index: false, follow: true },
+    robots: shouldIndexCity(city) ? undefined : { index: false, follow: true },
     alternates: { canonical: url },
     openGraph: {
       title,

@@ -91,7 +91,7 @@ export async function upsertCityFromGeo(input: {
       latitude: input.latitude,
       longitude: input.longitude,
       timezone: input.timezone ?? "UTC",
-      population: input.population ?? 100000,
+      population: input.population ?? null,
       tier: input.tier ?? 2,
       isCurated: false,
       createdAt: new Date(),

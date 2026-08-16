@@ -177,5 +177,84 @@ export function getCountryNameRu(countryCode?: string): string {
   }
 }
 
+export function getCityTimezone(
+  cityName: string,
+  region?: string,
+  longitude?: number,
+): string {
+  const r = (region || "").toLowerCase();
+  const n = (cityName || "").toLowerCase();
+
+  if (r.includes("калининград")) return "Europe/Kaliningrad";
+  if (
+    r.includes("самар") ||
+    r.includes("саратов") ||
+    r.includes("ульяновск") ||
+    r.includes("удмурт") ||
+    r.includes("астрахан")
+  ) {
+    return "Europe/Samara";
+  }
+  if (
+    r.includes("свердловск") ||
+    r.includes("челябинск") ||
+    r.includes("перм") ||
+    r.includes("тюмен") ||
+    r.includes("башкортостан") ||
+    r.includes("оренбург") ||
+    r.includes("ханты-манси") ||
+    r.includes("курган") ||
+    r.includes("ямало-ненец")
+  ) {
+    return "Asia/Yekaterinburg";
+  }
+  if (r.includes("омск")) return "Asia/Omsk";
+  if (r.includes("новосибирск")) return "Asia/Novosibirsk";
+  if (r.includes("алтай")) return "Asia/Barnaul";
+  if (r.includes("томск")) return "Asia/Tomsk";
+  if (r.includes("кемеров")) return "Asia/Kemerovo";
+  if (r.includes("красноярск") || r.includes("хакаси")) return "Asia/Krasnoyarsk";
+  if (r.includes("иркутск") || r.includes("буряти")) return "Asia/Irkutsk";
+  if (r.includes("забайкал")) return "Asia/Chita";
+  if (r.includes("якути") || n.includes("якутск")) return "Asia/Yakutsk";
+  if (r.includes("примор") || r.includes("хабаровск") || r.includes("амурск")) {
+    return "Asia/Vladivostok";
+  }
+  if (r.includes("сахалин")) return "Asia/Sakhalin";
+  if (r.includes("камчат")) return "Asia/Kamchatka";
+  if (r.includes("магадан")) return "Asia/Magadan";
+
+  // Longitude fallback bounds for Russian regions
+  if (longitude !== undefined) {
+    if (longitude < 24) return "Europe/Kaliningrad";
+    if (longitude < 49.5) return "Europe/Moscow";
+    if (longitude < 54) return "Europe/Samara";
+    if (longitude < 70) return "Asia/Yekaterinburg";
+    if (longitude < 78) return "Asia/Omsk";
+    if (longitude < 88) return "Asia/Novosibirsk";
+    if (longitude < 98) return "Asia/Krasnoyarsk";
+    if (longitude < 110) return "Asia/Irkutsk";
+    if (longitude < 120) return "Asia/Chita";
+    if (longitude < 132) return "Asia/Yakutsk";
+    if (longitude < 145) return "Asia/Vladivostok";
+    if (longitude < 155) return "Asia/Magadan";
+    return "Asia/Kamchatka";
+  }
+
+  return "Europe/Moscow";
+}
+
+export function shouldIndexCity(city: {
+  isCurated?: boolean;
+  population?: number | null;
+}): boolean {
+  if (city.isCurated) return true;
+  if (typeof city.population === "number" && city.population >= 15000) {
+    return true;
+  }
+  return false;
+}
+
+
 
 

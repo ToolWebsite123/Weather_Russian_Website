@@ -58,13 +58,13 @@ export default async function CityCatalogPage() {
           </div>
         </section>
 
-        {/* Country Sections */}
+        {/* Country Sections with Regional Hierarchy */}
         <div className="space-y-6">
           {countries.map((country) => (
             <section
               key={country.iso}
               id={`country-${country.iso}`}
-              className="scroll-mt-6 rounded-2xl bg-white/80 p-6 ring-1 ring-sky-100 backdrop-blur space-y-4 shadow-sm"
+              className="scroll-mt-6 rounded-2xl bg-white/80 p-6 ring-1 ring-sky-100 backdrop-blur space-y-5 shadow-sm"
             >
               <div className="flex items-center justify-between border-b border-sky-100 pb-3">
                 <div className="flex items-center gap-3">
@@ -76,41 +76,47 @@ export default async function CityCatalogPage() {
                       {country.nameRu}
                     </h2>
                     <p className="text-xs text-cloud-500 mt-0.5">
-                      Популярные города страны ({country.cities.length})
+                      Регионы и основные города ({country.cities.length})
                     </p>
                   </div>
                 </div>
 
                 <a
-                  href={`#country-${country.iso}`}
+                  href="#top"
                   className="text-xs font-medium text-sky-700 hover:text-sky-900 transition-colors"
                 >
                   Наверх ↑
                 </a>
               </div>
 
-              {/* City Grid */}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                {country.cities.map((city) => (
-                  <Link
-                    key={city.slug}
-                    href={`/pogoda/${city.slug}`}
-                    className="group flex flex-col justify-between rounded-xl bg-white/95 p-3.5 ring-1 ring-sky-100 transition-all duration-150 hover:-translate-y-0.5 hover:bg-sky-50 hover:ring-sky-300 hover:shadow-md motion-reduce:transform-none"
-                  >
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="font-semibold text-sm text-sky-950 group-hover:text-sky-700 transition-colors truncate">
-                        {city.name}
+              {/* Regional Sub-sections */}
+              <div className="space-y-4">
+                {country.regions.map((region) => (
+                  <div key={region.name} className="space-y-2">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-sky-800 flex items-center gap-1.5">
+                      <span>📍</span>
+                      <span>{region.name}</span>
+                      <span className="text-[10px] text-cloud-400 font-normal">
+                        ({region.cities.length})
                       </span>
-                      <span className="text-xs text-sky-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                        →
-                      </span>
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
+                      {region.cities.map((city) => (
+                        <Link
+                          key={city.slug}
+                          href={`/pogoda/${city.slug}`}
+                          className="group flex items-center justify-between rounded-xl bg-white/95 px-3 py-2.5 ring-1 ring-sky-100 transition-all duration-150 hover:-translate-y-0.5 hover:bg-sky-50 hover:ring-sky-300 hover:shadow-md motion-reduce:transform-none"
+                        >
+                          <span className="font-semibold text-sm text-sky-950 group-hover:text-sky-700 transition-colors truncate">
+                            {city.name}
+                          </span>
+                          <span className="text-xs text-sky-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                            →
+                          </span>
+                        </Link>
+                      ))}
                     </div>
-                    {city.admin1 && (
-                      <span className="text-[11px] text-cloud-400 truncate mt-1">
-                        📍 {city.admin1}
-                      </span>
-                    )}
-                  </Link>
+                  </div>
                 ))}
               </div>
             </section>

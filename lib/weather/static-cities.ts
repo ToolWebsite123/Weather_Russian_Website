@@ -1,4 +1,5 @@
 import { buildCityRecords } from "@/lib/cities-data";
+import { getCityTimezone } from "@/lib/cities";
 import type { City } from "@prisma/client";
 
 let STATIC_CITIES_CACHE: City[] | null = null;
@@ -13,7 +14,7 @@ export function getAllStaticCities(): City[] {
   STATIC_CITIES_CACHE = records.map((record, index) => ({
     id: index + 1,
     ...record,
-    timezone: "Europe/Moscow",
+    timezone: getCityTimezone(record.name, record.region, record.longitude),
     isCurated: true,
     createdAt: now,
     updatedAt: now,

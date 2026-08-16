@@ -285,27 +285,56 @@ export function findCitiesByCountryQuery(query: string): GeocodingResult[] {
   });
 }
 
+export type CatalogCity = {
+  slug: string;
+  name: string;
+  admin1?: string;
+};
+
+export type CatalogRegion = {
+  name: string;
+  cities: CatalogCity[];
+};
+
 export type CatalogCountryItem = {
   iso: string;
   nameRu: string;
   flag: string;
-  cities: Array<{
-    slug: string;
-    name: string;
-    admin1?: string;
-  }>;
+  regions: CatalogRegion[];
+  cities: CatalogCity[];
 };
 
 export function getAllCatalogCountries(): CatalogCountryItem[] {
-  return POPULAR_COUNTRIES.map((c) => ({
-    iso: c.iso,
-    nameRu: c.nameRu,
-    flag: getCountryFlag(c.iso),
-    cities: c.cities.map((city) => ({
+  return POPULAR_COUNTRIES.map((c) => {
+    const cities: CatalogCity[] = c.cities.map((city) => ({
       slug: slugifyCity(city.name, city.admin1),
       name: city.name,
       admin1: city.admin1,
-    })),
-  }));
+    }));
+
+    // Group cities by region/admin1
+    const regionMap = new Map<string, CatalogCity[]>();
+    for (const city of cities) {
+      const regionName = city.admin1 ?? "Общий регион";
+      const existing = regionMap.get(regionName) ?? [];
+      existing.push(city);
+      regionMap.set(regionName, existing);
+    }
+
+    const regions: CatalogRegion[] = Array.from(regionMap.entries()).map(
+      ([name, regionCities]) => ({
+        name,
+        cities: regionCities,
+      }),
+    );
+
+    return {
+      iso: c.iso,
+      nameRu: c.nameRu,
+      flag: getCountryFlag(c.iso),
+      regions,
+      cities,
+    };
+  });
 }
 

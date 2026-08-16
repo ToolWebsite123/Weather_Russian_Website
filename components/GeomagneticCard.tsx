@@ -40,17 +40,19 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
 
   const statusLabel = getStatusText(score);
 
-  // 3-hour intervals for 24-hour storm index breakdown (Gismeteo layout)
-  const intervals = [
-    { time: "00:00", val: Math.max(1, Math.min(9, score - 1)) },
+  // Real 3-hour intervals from NOAA SWPC space weather stations
+  const fallbackIntervals = [
+    { time: "00:00", val: Math.max(1, Math.min(9, score)) },
     { time: "03:00", val: Math.max(1, Math.min(9, score)) },
-    { time: "06:00", val: Math.max(1, Math.min(9, score + 1)) },
+    { time: "06:00", val: Math.max(1, Math.min(9, score)) },
     { time: "09:00", val: Math.max(1, Math.min(9, score)) },
-    { time: "12:00", val: Math.max(1, Math.min(9, score - 1)) },
+    { time: "12:00", val: Math.max(1, Math.min(9, score)) },
     { time: "15:00", val: Math.max(1, Math.min(9, score)) },
-    { time: "18:00", val: Math.max(1, Math.min(9, score + 1)) },
+    { time: "18:00", val: Math.max(1, Math.min(9, score)) },
     { time: "21:00", val: Math.max(1, Math.min(9, score)) },
   ];
+  const isFallbackUsed = Boolean(data.isEstimated || !data.intervals || data.intervals.length === 0);
+  const intervals = data.intervals && data.intervals.length > 0 ? data.intervals : fallbackIntervals;
 
   return (
     <div id="geomagnetic" className="scroll-mt-24 rounded-2xl bg-white/95 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5">
@@ -113,7 +115,20 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
 
       {/* 3-Hour Interval Activity Breakdown */}
       <div className="mt-4 border-t border-sky-100/80 pt-3">
-        <p className="text-xs font-medium text-slate-700 mb-2">Прогноз геомагнитной активности по 3 часа:</p>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <p className="text-xs font-medium text-slate-700">
+            Прогноз геомагнитной активности по 3 часа:
+          </p>
+          <span
+            className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+              isFallbackUsed
+                ? "bg-amber-50 text-amber-800 border-amber-200"
+                : "bg-emerald-50 text-emerald-800 border-emerald-200"
+            }`}
+          >
+            {isFallbackUsed ? "расчётные данные" : "наблюдения NOAA SWPC"}
+          </span>
+        </div>
         <div className="grid grid-cols-8 gap-1 text-center">
           {intervals.map((item) => {
             let barBg = "bg-emerald-100 text-emerald-800";

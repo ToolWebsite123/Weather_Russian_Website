@@ -7,6 +7,7 @@ import {
 } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { shouldIndexCity } from "@/lib/cities";
 import { config } from "@/lib/config";
 
 export const revalidate = 900;
@@ -24,15 +25,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city, weather } = data;
 
   const locative = getCityLocative(city.name);
-  const title = `Магнитные бури ${locative} — геомагнитный прогноз и Kp-индекс | WeatherHub`;
-  const description = `Прогноз геомагнитной активности и магнитных бурь ${locative}: Kp-индекс, уровень возмущений магнитосферы и рекомендации для метеочувствительных людей.`;
+  const title = `Геомагнитная обстановка и магнитные бури ${locative} | WeatherHub`;
+  const description = `Прогноз магнитных бурь и Kp-индекс геомагнитной активности ${locative} по данным станций NOAA SWPC.`;
   const url = `${config.siteUrl}/pogoda/${city.slug}/gm-aktivnost`;
   const ogImage = buildCityOgImageUrl(city, weather);
 
   return {
     title,
     description,
-    robots: city.isCurated ? undefined : { index: false, follow: true },
+    robots: shouldIndexCity(city) ? undefined : { index: false, follow: true },
     alternates: { canonical: url },
     openGraph: {
       title,

@@ -1274,16 +1274,20 @@ export function NearbyCities({
 }) {
   if (cities.length === 0) return null;
   return (
-    <section>
-      <h2 className="mb-3 font-serif text-h2 text-sky-950">Рядом</h2>
+    <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5">
+      <h2 className="mb-3 font-serif text-h2 font-semibold text-sky-950 flex items-center gap-1.5">
+        <span>📍</span>
+        <span>Ближайшие города и пригороды</span>
+      </h2>
       <div className="flex flex-wrap gap-2">
         {cities.map((c) => (
           <Link
             key={c.slug}
             href={`/pogoda/${c.slug}`}
-            className="rounded-full bg-white/80 px-3 py-1.5 text-sm text-sky-900 ring-1 ring-sky-100 hover:bg-sun-50"
+            className="inline-flex items-center gap-1 rounded-xl bg-sky-50/80 px-3 py-1.5 text-xs font-semibold text-sky-900 ring-1 ring-sky-200/70 transition-all hover:bg-sky-500 hover:text-white active:scale-95 shadow-sm"
           >
-            {c.name}
+            <span>{c.name}</span>
+            <span className="text-[10px] opacity-70">→</span>
           </Link>
         ))}
       </div>

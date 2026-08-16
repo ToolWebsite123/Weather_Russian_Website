@@ -2,6 +2,11 @@ import { reportError } from "@/lib/monitoring";
 
 export type GeomagneticSeverity = "calm" | "minor" | "storm" | "severe";
 
+export type GeomagneticInterval = {
+  time: string;
+  val: number;
+};
+
 export type GeomagneticData = {
   kp: number;
   kpDisplay: string;
@@ -9,6 +14,8 @@ export type GeomagneticData = {
   severity: GeomagneticSeverity;
   isElevated: boolean;
   timeTag: string;
+  intervals: GeomagneticInterval[];
+  isEstimated?: boolean;
 };
 
 type NoaaKpEntry = {
@@ -24,17 +31,25 @@ export async function fetchGeomagneticData(): Promise<GeomagneticData | null> {
       next: { revalidate: 3600 },
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      reportError(new Error(`NOAA SWPC HTTP error ${res.status}`), { service: "fetchGeomagneticData" });
+      return null;
+    }
 
     const data = (await res.json()) as NoaaKpEntry[];
-    if (!Array.isArray(data) || data.length === 0) return null;
+    if (!Array.isArray(data) || data.length === 0) {
+      reportError(new Error("NOAA SWPC empty payload"), { service: "fetchGeomagneticData" });
+      return null;
+    }
 
-    const latest = data[data.length - 1];
-    if (!latest || latest.Kp == null) return null;
+    const validEntries = data.filter(
+      (e) => e && e.time_tag && e.Kp != null && !isNaN(typeof e.Kp === "number" ? e.Kp : parseFloat(e.Kp))
+    );
 
+    if (validEntries.length === 0) return null;
+
+    const latest = validEntries[validEntries.length - 1];
     const rawKp = typeof latest.Kp === "number" ? latest.Kp : parseFloat(latest.Kp);
-    if (isNaN(rawKp)) return null;
-
     const kp = Math.round(rawKp * 10) / 10;
     const roundedInt = Math.round(rawKp);
 
@@ -55,6 +70,18 @@ export async function fetchGeomagneticData(): Promise<GeomagneticData | null> {
       severity = "severe";
     }
 
+    // Extract recent 8 3-hourly intervals from NOAA real station readings
+    const last8 = validEntries.slice(-8);
+    const intervals: GeomagneticInterval[] = last8.map((e) => {
+      const timeParts = e.time_tag.split("T");
+      const timeStr = timeParts[1] ? timeParts[1].substring(0, 5) : "00:00";
+      const valRaw = typeof e.Kp === "number" ? e.Kp : parseFloat(e.Kp);
+      const val = Math.max(1, Math.min(9, Math.round(valRaw)));
+      return { time: timeStr, val };
+    });
+
+    const isEstimated = intervals.length < 8;
+
     return {
       kp,
       kpDisplay: kp.toFixed(1),
@@ -62,6 +89,8 @@ export async function fetchGeomagneticData(): Promise<GeomagneticData | null> {
       severity,
       isElevated: roundedInt >= 5,
       timeTag: latest.time_tag ?? "",
+      intervals,
+      isEstimated,
     };
   } catch (err) {
     reportError(err, { service: "fetchGeomagneticData" });

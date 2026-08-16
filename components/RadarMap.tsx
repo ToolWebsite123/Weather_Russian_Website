@@ -287,17 +287,65 @@ export default function RadarMap({
       })
     : "";
 
+  const [zoomLevel, setZoomLevel] = useState<number>(7);
+
+  const handleZoomChange = (newZoom: number) => {
+    setZoomLevel(newZoom);
+    if (mapRef.current) {
+      mapRef.current.setZoom(newZoom);
+    }
+  };
+
   const isPrecipLayer = layer === "precip";
 
   return (
     <section className="rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-6 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-serif text-h2 font-semibold text-sky-950">
-          Карта погоды
-        </h2>
-        <span className="text-xs text-cloud-500">
-          {LAYER_LABELS[layer]} · OpenStreetMap
-        </span>
+        <div>
+          <h2 className="font-serif text-h2 font-semibold text-sky-950">
+            Карта погоды
+          </h2>
+          <p className="text-xs text-cloud-500">
+            {LAYER_LABELS[layer]} · OpenStreetMap
+          </p>
+        </div>
+
+        {/* Regional Zoom Control Presets */}
+        <div className="flex items-center gap-1 rounded-xl bg-sky-50/80 p-1 ring-1 ring-sky-100">
+          <button
+            type="button"
+            onClick={() => handleZoomChange(8)}
+            className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+              zoomLevel >= 7
+                ? "bg-sky-700 text-white shadow-sm"
+                : "text-sky-900 hover:bg-sky-100"
+            }`}
+          >
+            📍 Город
+          </button>
+          <button
+            type="button"
+            onClick={() => handleZoomChange(5)}
+            className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+              zoomLevel >= 5 && zoomLevel < 7
+                ? "bg-sky-700 text-white shadow-sm"
+                : "text-sky-900 hover:bg-sky-100"
+            }`}
+          >
+            🗺️ Регион
+          </button>
+          <button
+            type="button"
+            onClick={() => handleZoomChange(4)}
+            className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+              zoomLevel < 5
+                ? "bg-sky-700 text-white shadow-sm"
+                : "text-sky-900 hover:bg-sky-100"
+            }`}
+          >
+            🌐 Вся страна
+          </button>
+        </div>
       </div>
 
       <div className="relative h-80 w-full overflow-hidden rounded-xl ring-1 ring-sky-100/80 sm:h-96">

@@ -7,6 +7,7 @@ import {
 } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { shouldIndexCity } from "@/lib/cities";
 import { config } from "@/lib/config";
 
 export const revalidate = 900;
@@ -24,15 +25,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city, weather } = data;
 
   const locative = getCityLocative(city.name);
-  const title = `Погода ${locative} на месяц — долгосрочный прогноз погоды | WeatherHub`;
-  const description = `Обзор погоды ${locative} на месяц: подробный ежедневный прогноз температуры воздуха, осадков и ветра.`;
+  const title = `Погода ${locative} на месяц — прогноз на 30 дней | WeatherHub`;
+  const description = `Прогноз погоды ${locative} на месяц: средние температурные нормы, климатические тренды и архив данных.`;
   const url = `${config.siteUrl}/pogoda/${city.slug}/mesyats`;
   const ogImage = buildCityOgImageUrl(city, weather);
 
   return {
     title,
     description,
-    robots: city.isCurated ? undefined : { index: false, follow: true },
+    robots: shouldIndexCity(city) ? undefined : { index: false, follow: true },
     alternates: { canonical: url },
     openGraph: {
       title,

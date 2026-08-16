@@ -7,6 +7,7 @@ import {
 } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { shouldIndexCity } from "@/lib/cities";
 import { config } from "@/lib/config";
 
 export const revalidate = 900; // 15-minute ISR revalidation matching weather cache TTL
@@ -24,15 +25,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city, weather } = data;
 
   const locative = getCityLocative(city.name);
-  const title = `Архив погоды ${locative} — климатические нормы и метеонаблюдения | WeatherHub`;
-  const description = `Архив погоды ${locative} за прошлые года: климатические нормы по месяца, температурные рекорды и статистика осадков.`;
+  const title = `Архив погоды и климатическая норма ${locative} | WeatherHub`;
+  const description = `Архив погодных данных ${locative} за 10 лет: температурные нормы, рекорды климата и сравнения с прошлыми годами.`;
   const url = `${config.siteUrl}/pogoda/${city.slug}/archiv`;
   const ogImage = buildCityOgImageUrl(city, weather);
 
   return {
     title,
     description,
-    robots: city.isCurated ? undefined : { index: false, follow: true },
+    robots: shouldIndexCity(city) ? undefined : { index: false, follow: true },
     alternates: { canonical: url },
     openGraph: {
       title,
