@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { resolveCityFromCoords } from "@/lib/weather/geo-resolver";
 import { geoQuerySchema } from "@/lib/validations/schemas";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { LAST_CITY_COOKIE } from "@/components/RememberLastCity";
+import { lastCityCookieOptions } from "@/lib/session";
 
 export async function GET(req: NextRequest) {
   const rateLimit = await checkRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
@@ -26,13 +26,10 @@ export async function GET(req: NextRequest) {
     }
 
     const response = NextResponse.json({ slug: city.slug, name: city.name });
-    response.cookies.set(LAST_CITY_COOKIE, city.slug, {
-      path: "/",
-      maxAge: 31536000,
-      sameSite: "lax",
-    });
+    response.cookies.set(lastCityCookieOptions(city.slug));
     return response;
   } catch {
     return NextResponse.json({ error: "geo lookup failed" }, { status: 502 });
   }
 }
+

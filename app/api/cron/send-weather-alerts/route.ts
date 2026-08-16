@@ -5,6 +5,8 @@ import { listPopularCities, getCachedWeatherForCity } from "@/lib/weather/cache"
 import { getActiveAlerts } from "@/lib/weather/alerts";
 
 export const dynamic = "force-dynamic";
+// Note: maxDuration extends Vercel Serverless Function execution limit to 60s (requires Vercel Pro plan)
+export const maxDuration = 60;
 
 function initWebPush() {
   const publicKey = process.env.VAPID_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -79,25 +81,36 @@ async function handleSendAlerts(req: NextRequest) {
         tag: "test-alert",
       });
     } else {
-      // 3. Fetch severe weather alerts for popular cities
+      // 3. Fetch severe weather alerts for popular cities in batches of 5
       const cities = await listPopularCities(10);
-      for (const city of cities) {
-        try {
-          const weather = await getCachedWeatherForCity(city);
-          const activeAlerts = getActiveAlerts(weather);
-          const severeAlerts = activeAlerts.filter((a) => a.severity === "severe");
+      const BATCH_SIZE = 5;
 
-          for (const alert of severeAlerts) {
-            payloads.push({
-              title: `🚨 ${alert.title} — ${city.name}`,
-              body: alert.description,
-              url: `/pogoda/${city.slug}`,
-              tag: `alert-${city.slug}-${Date.now()}`,
-            });
+      for (let i = 0; i < cities.length; i += BATCH_SIZE) {
+        const batch = cities.slice(i, i + BATCH_SIZE);
+        const results = await Promise.allSettled(
+          batch.map(async (city) => {
+            const weather = await getCachedWeatherForCity(city);
+            const activeAlerts = getActiveAlerts(weather);
+            const severeAlerts = activeAlerts.filter((a) => a.severity === "severe");
+            return { city, severeAlerts };
+          })
+        );
+
+        results.forEach((res) => {
+          if (res.status === "fulfilled") {
+            const { city, severeAlerts } = res.value;
+            for (const alert of severeAlerts) {
+              payloads.push({
+                title: `🚨 ${alert.title} — ${city.name}`,
+                body: alert.description,
+                url: `/pogoda/${city.slug}`,
+                tag: `alert-${city.slug}-${Date.now()}`,
+              });
+            }
+          } else {
+            console.error("Error checking weather for city batch item:", res.reason);
           }
-        } catch (cityErr) {
-          console.error(`Error checking weather for city ${city.name}:`, cityErr);
-        }
+        });
       }
 
       if (payloads.length === 0) {
@@ -112,40 +125,55 @@ async function handleSendAlerts(req: NextRequest) {
 
     let sentCount = 0;
     let failedCount = 0;
-    let cleanedCount = 0;
+    const expiredSubIds: string[] = [];
+    const SUB_BATCH_SIZE = 5;
 
-    // 4. Dispatch push notifications
-    for (const sub of subscriptions) {
-      const pushSubscription = {
-        endpoint: sub.endpoint,
-        keys: {
-          p256dh: sub.p256dh,
-          auth: sub.auth,
-        },
-      };
+    // 4. Dispatch push notifications batched by subscription
+    for (let i = 0; i < subscriptions.length; i += SUB_BATCH_SIZE) {
+      const subBatch = subscriptions.slice(i, i + SUB_BATCH_SIZE);
 
-      for (const payload of payloads) {
-        try {
-          await webpush.sendNotification(
-            pushSubscription,
-            JSON.stringify(payload)
-          );
-          sentCount++;
-        } catch (err: unknown) {
-          failedCount++;
-          const statusCode = (err as { statusCode?: number }).statusCode;
-          // If subscription is expired or unsubscribed (404 Not Found, 410 Gone)
-          if (statusCode === 404 || statusCode === 410) {
+      await Promise.allSettled(
+        subBatch.map(async (sub) => {
+          const pushSubscription = {
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth,
+            },
+          };
+
+          for (const payload of payloads) {
             try {
-              await prisma.pushSubscription.delete({ where: { id: sub.id } });
-              cleanedCount++;
-            } catch (delErr) {
-              console.error("Error deleting stale subscription:", delErr);
+              await webpush.sendNotification(
+                pushSubscription,
+                JSON.stringify(payload)
+              );
+              sentCount++;
+            } catch (err: unknown) {
+              failedCount++;
+              const statusCode = (err as { statusCode?: number }).statusCode;
+              // If subscription is expired or unsubscribed (404 Not Found, 410 Gone)
+              if (statusCode === 404 || statusCode === 410) {
+                expiredSubIds.push(sub.id);
+              } else {
+                console.error(`Failed to send push notification to ${sub.id}:`, err);
+              }
             }
-          } else {
-            console.error(`Failed to send push notification to ${sub.id}:`, err);
           }
-        }
+        })
+      );
+    }
+
+    // 5. Batch cleanup expired subscriptions in a single database query
+    let cleanedCount = 0;
+    if (expiredSubIds.length > 0) {
+      try {
+        const deleteRes = await prisma.pushSubscription.deleteMany({
+          where: { id: { in: expiredSubIds } },
+        });
+        cleanedCount = deleteRes.count;
+      } catch (delErr) {
+        console.error("Error deleting stale subscriptions batch:", delErr);
       }
     }
 

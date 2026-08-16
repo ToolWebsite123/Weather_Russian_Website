@@ -13,7 +13,16 @@ const FORECAST_TABS = [
   "/10-dney",
   "/14-dney",
   "/archiv",
+  "/mesyats",
+  "/dorogi",
+  "/gm-aktivnost",
+  "/pyltsa",
+  "/radar",
 ] as const;
+
+// Deliberately EXCLUDED from sitemap:
+// - /now: duplicates content of primary city forecast page /pogoda/[slug]
+// - /vchera: non-evergreen past historical weather with low long-tail SEO value and duplicate content risk.
 
 async function getSitemapCities(): Promise<Array<{ slug: string }>> {
   try {

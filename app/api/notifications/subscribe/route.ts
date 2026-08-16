@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { isValidPushEndpoint } from "@/lib/notifications/validator";
 
 function ensureSession(): { sessionId: string; setCookie: boolean } {
   const store = cookies();
@@ -11,13 +13,16 @@ function ensureSession(): { sessionId: string; setCookie: boolean } {
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimit = await checkRateLimit(req, { maxRequests: 10, windowMs: 60 * 1000 });
+  if (!rateLimit.success) return rateLimitResponse();
+
   try {
     const body = await req.json();
     const { endpoint, keys } = body ?? {};
 
-    if (!endpoint || typeof endpoint !== "string" || !endpoint.startsWith("http")) {
+    if (!isValidPushEndpoint(endpoint)) {
       return NextResponse.json(
-        { error: "Valid HTTP(S) subscription endpoint required" },
+        { error: "Invalid subscription request" },
         { status: 400 }
       );
     }
@@ -27,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     if (!p256dh || !auth) {
       return NextResponse.json(
-        { error: "Subscription keys (p256dh and auth) are required" },
+        { error: "Invalid subscription request" },
         { status: 400 }
       );
     }
@@ -60,3 +65,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

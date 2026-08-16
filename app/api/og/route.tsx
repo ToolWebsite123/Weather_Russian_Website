@@ -1,9 +1,14 @@
+import { NextRequest } from "next/server";
 import { ImageResponse } from "next/og";
 import { getCityLocative } from "@/lib/i18n/declension";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const runtime = "edge";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const rateLimit = await checkRateLimit(request, { maxRequests: 20, windowMs: 60 * 1000 });
+  if (!rateLimit.success) return rateLimitResponse();
+
   const { searchParams } = new URL(request.url);
   const city = searchParams.get("city") || "Москва";
   const temp = searchParams.get("temp") || "+18°C";

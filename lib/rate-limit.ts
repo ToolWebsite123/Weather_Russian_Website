@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
+import { reportError } from "@/lib/monitoring";
 
 export type RateLimitOptions = {
   maxRequests: number;
   windowMs: number;
+  /**
+   * Behavior when Redis is unavailable or throws an error.
+   * - 'fail-closed': Enforces local memory limits and rejects requests when exceeded.
+   * - 'fail-open': Allows request up to memory limit before enforcing.
+   * @default 'fail-closed'
+   */
+  fallbackPolicy?: "fail-closed" | "fail-open";
 };
 
 export type RateLimitResult = {
@@ -15,6 +23,52 @@ export type RateLimitResult = {
 };
 
 const limitersMap = new Map<string, Ratelimit>();
+
+/**
+ * Local in-memory sliding window rate limiter used as a fallback when Upstash Redis
+ * is unconfigured or unavailable.
+ *
+ * NOTE: This is NOT distributed rate limiting across serverless instances and is intended
+ * solely as a single-instance degraded-mode safety net.
+ */
+const inMemoryStore = new Map<string, { count: number; resetAt: number }>();
+
+export function checkInMemoryFallback(
+  key: string,
+  maxRequests: number,
+  windowMs: number,
+  fallbackPolicy: "fail-closed" | "fail-open" = "fail-closed"
+): RateLimitResult {
+  const now = Date.now();
+  const record = inMemoryStore.get(key);
+
+  if (!record || record.resetAt < now) {
+    inMemoryStore.set(key, { count: 1, resetAt: now + windowMs });
+    return {
+      success: true,
+      limit: maxRequests,
+      remaining: maxRequests - 1,
+      resetMs: windowMs,
+    };
+  }
+
+  if (record.count >= maxRequests) {
+    return {
+      success: fallbackPolicy === "fail-open",
+      limit: maxRequests,
+      remaining: 0,
+      resetMs: Math.max(0, record.resetAt - now),
+    };
+  }
+
+  record.count += 1;
+  return {
+    success: true,
+    limit: maxRequests,
+    remaining: Math.max(0, maxRequests - record.count),
+    resetMs: Math.max(0, record.resetAt - now),
+  };
+}
 
 function getRedisInstance(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -49,7 +103,7 @@ export async function checkRateLimit(
   req: NextRequest,
   options: RateLimitOptions,
 ): Promise<RateLimitResult> {
-  const { maxRequests, windowMs } = options;
+  const { maxRequests, windowMs, fallbackPolicy = "fail-closed" } = options;
   const ip =
     req.ip ??
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
@@ -60,15 +114,13 @@ export async function checkRateLimit(
 
   const redis = getRedisInstance();
   if (!redis) {
-    console.warn(
-      "Upstash Redis credentials missing (UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN). Allowing request without distributed rate limiting."
+    reportError(
+      new Error(
+        "Upstash Redis credentials missing (UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN). Operating in degraded in-memory rate limiting mode."
+      ),
+      { key, pathname: req.nextUrl.pathname, ip }
     );
-    return {
-      success: true,
-      limit: maxRequests,
-      remaining: maxRequests - 1,
-      resetMs: windowMs,
-    };
+    return checkInMemoryFallback(key, maxRequests, windowMs, fallbackPolicy);
   }
 
   try {
@@ -82,13 +134,13 @@ export async function checkRateLimit(
       resetMs: Math.max(0, res.reset - Date.now()),
     };
   } catch (error) {
-    console.warn("Upstash Redis rate limit check failed, falling back to allow request:", error);
-    return {
-      success: true,
-      limit: maxRequests,
-      remaining: maxRequests - 1,
-      resetMs: windowMs,
-    };
+    reportError(error, {
+      message: "Upstash Redis rate limit check failed, falling back to local memory rate limiting",
+      key,
+      pathname: req.nextUrl.pathname,
+      ip,
+    });
+    return checkInMemoryFallback(key, maxRequests, windowMs, fallbackPolicy);
   }
 }
 
@@ -98,3 +150,4 @@ export function rateLimitResponse(): NextResponse {
     { status: 429 },
   );
 }
+

@@ -63,48 +63,75 @@ export default async function CityPage({
   const city = await resolveCity(params.slug);
   const cityUrl = `${config.siteUrl}/pogoda/${params.slug}`;
 
+  const locative = city ? getCityLocative(city.name) : "";
+
+  const faqSchemaBlock = city
+    ? {
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: `Какая погода ${locative} сегодня?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: `Актуальный прогноз погоды ${locative} на сегодня включает температуру, ощущаемую температуру, влажность, давление и скорость ветра.`,
+            },
+          },
+          {
+            "@type": "Question",
+            name: `Где посмотреть точный прогноз погоды ${locative} на 10 и 14 дней?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: `На сервисе WeatherHub доступен подробный и регулярно обновляемый прогноз погоды ${locative} на сегодня, завтра, 3, 7, 10 и 14 дней.`,
+            },
+          },
+        ],
+      }
+    : null;
+
   const jsonLd = city
     ? {
         "@context": "https://schema.org",
         "@graph": [
           {
             "@type": "BreadcrumbList",
-            "itemListElement": [
+            itemListElement: [
               {
                 "@type": "ListItem",
-                "position": 1,
-                "name": "Главная",
-                "item": config.siteUrl,
+                position: 1,
+                name: "Главная",
+                item: config.siteUrl,
               },
               {
                 "@type": "ListItem",
-                "position": 2,
-                "name": "Все города",
-                "item": `${config.siteUrl}/gorod`,
+                position: 2,
+                name: "Все города",
+                item: `${config.siteUrl}/gorod`,
               },
               {
                 "@type": "ListItem",
-                "position": 3,
-                "name": `Погода в ${city.name}`,
-                "item": cityUrl,
+                position: 3,
+                name: `Погода в ${city.name}`,
+                item: cityUrl,
               },
             ],
           },
           {
             "@type": "Place",
-            "name": city.name,
-            "address": {
+            name: city.name,
+            address: {
               "@type": "PostalAddress",
-              "addressCountry": city.country,
-              "addressRegion": city.region || undefined,
+              addressCountry: city.country,
+              addressRegion: city.region || undefined,
             },
-            "geo": {
+            geo: {
               "@type": "GeoCoordinates",
-              "latitude": city.latitude,
-              "longitude": city.longitude,
+              latitude: city.latitude,
+              longitude: city.longitude,
             },
           },
-        ],
+          faqSchemaBlock,
+        ].filter(Boolean),
       }
     : null;
 

@@ -66,17 +66,17 @@ describe("Distributed Rate Limiting with Upstash Redis", () => {
     expect(res3.remaining).toBe(0);
   });
 
-  it("falls back gracefully (allows request) when Redis environment variables are missing", async () => {
+  it("falls back to in-memory rate limiting when Redis environment variables are missing", async () => {
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.UPSTASH_REDIS_REST_TOKEN;
 
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const req = new NextRequest("http://localhost:3000/api/test");
+    const req1 = new NextRequest("http://localhost:3000/api/fallback-test");
+    const req2 = new NextRequest("http://localhost:3000/api/fallback-test");
 
-    const result = await checkRateLimit(req, { maxRequests: 10, windowMs: 60000 });
-    expect(result.success).toBe(true);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Upstash Redis credentials missing")
-    );
+    const res1 = await checkRateLimit(req1, { maxRequests: 1, windowMs: 60000, fallbackPolicy: "fail-closed" });
+    expect(res1.success).toBe(true);
+
+    const res2 = await checkRateLimit(req2, { maxRequests: 1, windowMs: 60000, fallbackPolicy: "fail-closed" });
+    expect(res2.success).toBe(false);
   });
 });

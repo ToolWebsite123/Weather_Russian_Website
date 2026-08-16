@@ -20,8 +20,8 @@ export function PressureTooltip() {
       </button>
 
       {isOpen && (
-        <span className="absolute bottom-full left-1/2 mb-1.5 -translate-x-1/2 w-48 rounded-lg bg-sky-950 p-2 text-[11px] font-normal text-white shadow-xl z-50 pointer-events-none text-center leading-tight">
-          Давление приведено к уровню моря (MSL).
+        <span className="absolute bottom-full left-1/2 mb-1.5 -translate-x-1/2 w-56 rounded-lg bg-sky-950 p-2.5 text-[11px] font-normal text-white shadow-xl z-50 pointer-events-none text-center leading-tight">
+          Давление приведено к уровню моря (MSL). Для возвышенных городов может отличаться от станционного (QFE).
           <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-sky-950" />
         </span>
       )}

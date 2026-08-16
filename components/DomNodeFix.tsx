@@ -3,8 +3,21 @@
 import { useEffect } from "react";
 
 /**
- * Fixes React runtime crashes caused by Google Translate or browser extensions modifying DOM nodes
- * (NotFoundError: Failed to execute 'removeChild' on 'Node').
+ * DEFENSIVE DOM MONKEY-PATCH (DOM Node Removal & Insertion Safety)
+ *
+ * Why this exists:
+ * Third-party browser extensions (especially Google Translate, Grammarly, and ad blockers)
+ * inject text nodes or mutate raw DOM elements without informing React's virtual DOM tree.
+ * When React attempts to re-render, unmount, or reconcile elements (e.g., during page navigation
+ * or dynamic weather view tabs), calls to `Node.prototype.removeChild` or `Node.prototype.insertBefore`
+ * fail with a fatal unhandled error:
+ * "NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node."
+ *
+ * What breaks without it:
+ * Users running Google Translate on foreign/Russian weather descriptions experience complete React client-side UI crashes.
+ *
+ * TODO: Revisit if a future React 19+ concurrent reconciliation mechanism natively handles extension-mutated DOM nodes
+ * without requiring prototype patching.
  */
 export function DomNodeFix() {
   useEffect(() => {
