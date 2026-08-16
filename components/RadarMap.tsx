@@ -67,6 +67,7 @@ export default function RadarMap({
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [precipError, setPrecipError] = useState<boolean>(false);
   const [mapError, setMapError] = useState<boolean>(false);
+  const [zoomLevel, setZoomLevel] = useState<number>(7);
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.Layer | null>(null);
 
@@ -286,8 +287,6 @@ export default function RadarMap({
         minute: "2-digit",
       })
     : "";
-
-  const [zoomLevel, setZoomLevel] = useState<number>(7);
 
   const handleZoomChange = (newZoom: number) => {
     setZoomLevel(newZoom);
