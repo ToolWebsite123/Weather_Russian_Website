@@ -52,7 +52,7 @@ function formatGismeteoDate(timezone?: string) {
 }
 
 export function LiveCityDate({ timezone }: { timezone?: string }) {
-  const [formattedDate, setFormattedDate] = useState(() => formatGismeteoDate(timezone));
+  const [formattedDate, setFormattedDate] = useState<string>("");
 
   useEffect(() => {
     setFormattedDate(formatGismeteoDate(timezone));
@@ -63,7 +63,7 @@ export function LiveCityDate({ timezone }: { timezone?: string }) {
   }, [timezone]);
 
   return (
-    <p className="text-xs sm:text-sm text-slate-600 mt-0.5" suppressHydrationWarning>
+    <p className="text-xs sm:text-sm text-slate-600 mt-0.5 min-h-[1.25rem]" suppressHydrationWarning>
       {formattedDate}
     </p>
   );

@@ -152,20 +152,31 @@ export async function getCachedWeatherForCity(
   }
 
   const now = new Date();
+  let cachedPayload: WeatherBundle | null = null;
 
   try {
     const cached = await prisma.weatherCache.findUnique({
       where: { cityId: city.id },
     });
 
-    if (cached && cached.expiresAt > now) {
-      return cached.payload as unknown as WeatherBundle;
+    if (cached) {
+      cachedPayload = cached.payload as unknown as WeatherBundle;
+      if (cached.expiresAt > now) {
+        return cachedPayload;
+      }
     }
   } catch {
     // If DB cache check fails, proceed directly to fetch live weather
   }
 
-  return refreshCityWeatherCache(city);
+  try {
+    return await refreshCityWeatherCache(city);
+  } catch (err) {
+    if (cachedPayload) {
+      return cachedPayload;
+    }
+    throw err;
+  }
 }
 
 export async function listPopularCities(limit = 12): Promise<City[]> {
