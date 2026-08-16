@@ -266,7 +266,7 @@ export default function RadarMap({
             Локация «{cityName}» находится вне зоны покрытия метеорадара.
           </p>
         </div>
-        {nearestHub && nearestHub.name !== cityName && (
+        {nearestHub && dist <= 15 && nearestHub.name !== cityName && (
           <div>
             <Link
               href={`/pogoda/${nearestHub.slug}`}

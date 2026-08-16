@@ -67,12 +67,13 @@ export async function resolveCity(slug: string): Promise<City | null> {
     }
 
     if (results.length === 0 && slug.includes("-")) {
-      const firstToken = slug.split("-")[0];
-      if (firstToken && firstToken.length >= 2) {
-        results = await searchPlaces(firstToken, "ru");
+      const tokens = slug.split("-").filter((t) => t.length >= 2);
+      for (const token of tokens) {
+        results = await searchPlaces(token, "ru");
         if (results.length === 0) {
-          results = await searchPlaces(firstToken, "en");
+          results = await searchPlaces(token, "en");
         }
+        if (results.length > 0) break;
       }
     }
 
