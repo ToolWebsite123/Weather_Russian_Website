@@ -24,7 +24,7 @@ export default async function CityCatalogPage() {
 
   return (
     <PageShell favorites={favorites}>
-      <main className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6">
+      <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6">
         {/* Header */}
         <section className="space-y-4 rounded-2xl bg-white/85 p-6 ring-1 ring-sky-100 shadow-sm backdrop-blur">
           <nav className="text-xs text-cloud-500 flex items-center gap-1.5">
@@ -100,7 +100,7 @@ export default async function CityCatalogPage() {
                         ({region.cities.length})
                       </span>
                     </h3>
-                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                       {region.cities.map((city) => (
                         <Link
                           key={city.slug}
