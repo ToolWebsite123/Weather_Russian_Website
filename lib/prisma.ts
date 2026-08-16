@@ -27,6 +27,9 @@ function createPrismaClient(): PrismaClient {
       connectionString ||
       "postgresql://placeholder:placeholder@localhost:5432/placeholder",
   });
+  pool.on("error", (err: Error) => {
+    console.warn("[Prisma Neon Pool Error]:", err?.message || err);
+  });
   const adapter = new PrismaNeon(pool);
   return new PrismaClient({ adapter });
 }
