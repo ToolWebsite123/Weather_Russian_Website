@@ -255,6 +255,72 @@ export function shouldIndexCity(city: {
   return false;
 }
 
+export function latinToCyrillicRu(input: string): string {
+  if (!input) return "";
+  let str = input.toLowerCase().trim();
+
+  const phraseMap: Record<string, string> = {
+    "nha trang": "нячанг",
+    "phu quoc": "фукуок",
+    "sharm el sheikh": "шарм-эшь-шейх",
+    "st petersburg": "санкт-петербург",
+    pattaya: "паттайя",
+  };
+
+  if (phraseMap[str]) return phraseMap[str];
+
+  const multiMap: [RegExp, string][] = [
+    [/shch|sch/g, "щ"],
+    [/sh/g, "ш"],
+    [/ch/g, "ч"],
+    [/zh/g, "ж"],
+    [/ts/g, "ц"],
+    [/yu/g, "ю"],
+    [/ya/g, "я"],
+    [/kh/g, "х"],
+    [/ye|yo/g, "е"],
+    [/iy|yy/g, "ий"],
+    [/ph/g, "ф"],
+  ];
+
+  for (const [pattern, repl] of multiMap) {
+    str = str.replace(pattern, repl);
+  }
+
+  const singleMap: Record<string, string> = {
+    a: "а", b: "б", v: "в", g: "г", d: "д", e: "е", z: "з", i: "и",
+    j: "й", k: "к", l: "л", m: "м", n: "н", o: "о", p: "п", r: "р",
+    s: "с", t: "т", u: "у", f: "ф", h: "х", y: "ы", c: "к", q: "к",
+    x: "кс", w: "в",
+  };
+
+  return str
+    .split("")
+    .map((ch) => singleMap[ch] ?? ch)
+    .join("");
+}
+
+export function formatDateTimeRu(isoString?: string, timeZone?: string): string {
+  if (!isoString) return "";
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return "";
+
+  try {
+    const formatter = new Intl.DateTimeFormat("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: timeZone || "Europe/Moscow",
+    });
+    return formatter.format(d).replace(/\u202f/g, " ").replace(/\u00a0/g, " ");
+  } catch {
+    return d.toISOString().slice(0, 16).replace("T", " ");
+  }
+}
+
+
 
 
 

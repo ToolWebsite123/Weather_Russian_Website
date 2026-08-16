@@ -49,6 +49,7 @@ import { fetchAirQuality } from "@/lib/weather/air-quality";
 import { getActiveAlerts } from "@/lib/weather/alerts";
 import { getUpcomingWeekendDays } from "@/lib/weather/weekend";
 import { ru } from "@/lib/i18n/ru";
+import { formatDateTimeRu } from "@/lib/cities";
 import { notFound } from "next/navigation";
 
 export async function CityWeatherView({
@@ -416,9 +417,9 @@ export async function CityWeatherView({
 
         <p className="text-xs text-cloud-400" suppressHydrationWarning>
           Источник: {weather.provider} · обновлено{" "}
-          {new Date(weather.fetchedAt).toLocaleString("ru-RU", {
-            timeZone: weather.timezone || city.timezone || "Europe/Moscow",
-          })}{" "}
+          <span suppressHydrationWarning>
+            {formatDateTimeRu(weather.fetchedAt, weather.timezone || city.timezone || undefined)}
+          </span>{" "}
           · {ru.attribution}
         </p>
       </main>

@@ -4,7 +4,7 @@ import type {
   HourlyPoint,
   WeatherBundle,
 } from "@/types/weather";
-import { slugifyCity, getCountryFlag, getCountryNameRu } from "@/lib/cities";
+import { slugifyCity, getCountryFlag, getCountryNameRu, latinToCyrillicRu } from "@/lib/cities";
 import { reportError } from "@/lib/monitoring";
 import { isRiverCity } from "@/lib/weather/river-cities";
 import { findCitiesByCountryQuery } from "@/lib/weather/countries";
@@ -86,71 +86,87 @@ export async function searchPlaces(
   // Check if query matches a country name (e.g. Турция, Египет, США, Казахстан)
   const countryMatches = findCitiesByCountryQuery(q);
 
-  const url = new URL(GEOCODE_URL);
-  url.searchParams.set("name", q);
-  url.searchParams.set("count", "8");
-  url.searchParams.set("language", language);
-  url.searchParams.set("format", "json");
+  const isLatin = /^[a-zA-Z0-9\s-]+$/.test(q);
+  const cyrQuery = isLatin ? latinToCyrillicRu(q) : null;
+
+  const queriesToTry = [q];
+  if (cyrQuery && cyrQuery.toLowerCase() !== q.toLowerCase()) {
+    queriesToTry.push(cyrQuery);
+  }
+
+  const allResults: GeocodingResult[] = [];
+  const seenIds = new Set<string>();
 
   try {
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 86400 },
-    });
-    if (!res.ok) throw new Error("Geocoding failed");
+    for (const searchQuery of queriesToTry) {
+      const url = new URL(GEOCODE_URL);
+      url.searchParams.set("name", searchQuery);
+      url.searchParams.set("count", "8");
+      url.searchParams.set("language", language);
+      url.searchParams.set("format", "json");
 
-    const data = (await res.json()) as OpenMeteoGeo;
-    const rawList = data.results ?? [];
+      const res = await fetch(url.toString(), {
+        next: { revalidate: 86400 },
+      });
+      if (!res.ok) continue;
 
-    // Sort geocoded results by population descending so major cities take priority over small tehsils/subdivisions
-    const sortedRaw = [...rawList].sort(
-      (a, b) => (b.population ?? 0) - (a.population ?? 0),
-    );
+      const data = (await res.json()) as OpenMeteoGeo;
+      const rawList = data.results ?? [];
 
-    const geoResults: GeocodingResult[] = sortedRaw.map((r) => {
-      const countryCode = (r.country_code ?? "UNKNOWN").toUpperCase();
-      // Clean administrative suffixes (e.g. " Saddar Tehsil", " Tehsil", " District", " Division")
-      const cleanName = r.name
-        .replace(/\s+(Saddar\s+)?Tehsil$/i, "")
-        .replace(/\s+District$/i, "")
-        .replace(/\s+Division$/i, "")
-        .replace(/\s+Subdivision$/i, "");
-
-      const useAdmin = Boolean(
-        r.admin1 && (!r.population || r.population <= 100000),
+      const sortedRaw = [...rawList].sort(
+        (a, b) => (b.population ?? 0) - (a.population ?? 0),
       );
-      return {
-        id: String(r.id),
-        name: cleanName,
-        nameEn: cleanName,
-        nameRu: cleanName,
-        country: countryCode,
-        countryNameRu: getCountryNameRu(countryCode),
-        countryFlag: getCountryFlag(countryCode),
-        admin1: r.admin1,
-        latitude: r.latitude,
-        longitude: r.longitude,
-        timezone: r.timezone,
-        population: r.population,
-        slug: slugifyCity(cleanName, useAdmin ? r.admin1 : undefined),
-      };
-    });
+
+      for (const r of sortedRaw) {
+        const idStr = String(r.id);
+        if (seenIds.has(idStr)) continue;
+        seenIds.add(idStr);
+
+        const countryCode = (r.country_code ?? "UNKNOWN").toUpperCase();
+        const cleanName = r.name
+          .replace(/\s+(Saddar\s+)?Tehsil$/i, "")
+          .replace(/\s+District$/i, "")
+          .replace(/\s+Division$/i, "")
+          .replace(/\s+Subdivision$/i, "");
+
+        const useAdmin = Boolean(
+          r.admin1 && (!r.population || r.population <= 100000),
+        );
+
+        allResults.push({
+          id: idStr,
+          name: cleanName,
+          nameEn: cleanName,
+          nameRu: cleanName,
+          country: countryCode,
+          countryNameRu: getCountryNameRu(countryCode),
+          countryFlag: getCountryFlag(countryCode),
+          admin1: r.admin1,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          timezone: r.timezone,
+          population: r.population,
+          slug: slugifyCity(cleanName, useAdmin ? r.admin1 : undefined),
+        });
+      }
+    }
 
     if (countryMatches.length > 0) {
-      // Merge country matches at top, filtering duplicates
       const seenSlugs = new Set(countryMatches.map((c) => c.slug));
       const combined = [
         ...countryMatches,
-        ...geoResults.filter((g) => !seenSlugs.has(g.slug)),
+        ...allResults.filter((g) => !seenSlugs.has(g.slug)),
       ];
       return combined.slice(0, 10);
     }
 
-    return geoResults;
+    return allResults;
   } catch (err) {
     if (countryMatches.length > 0) return countryMatches;
     throw err;
   }
 }
+
 
 export async function fetchOpenMeteoMarine(
   latitude: number,
