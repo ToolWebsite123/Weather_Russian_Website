@@ -1,10 +1,10 @@
 export function buildCityUrl(city: { slug: string; id?: number | string }, tab?: string): string {
-  const cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "");
+  const cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
   let path = `/weather-${cleanSlug}`;
   if (city.id != null) {
-    const idStr = String(city.id);
-    if (!cleanSlug.endsWith(`-${idStr}`)) {
-      path += `-${idStr}`;
+    const rawId = String(city.id).replace(/^-/, "");
+    if (rawId && !cleanSlug.endsWith(`-${rawId}`)) {
+      path += `-${rawId}`;
     }
   }
   if (tab) {

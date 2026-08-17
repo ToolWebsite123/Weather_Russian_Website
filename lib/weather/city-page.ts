@@ -73,25 +73,30 @@ const ALIASES: Record<string, string> = {
 export const resolveCity = cache(async (inputSlug: string): Promise<City | null> => {
   if (!inputSlug) return null;
 
-  // 1. Strip weather- prefix if present (e.g. weather-moscow-4368 -> moscow-4368)
-  const cleanSlug = inputSlug.toLowerCase().replace(/^weather-/, "");
+  // 1. Strip weather- prefix if present and normalize double hyphens
+  const rawClean = inputSlug.toLowerCase().replace(/^weather-/, "");
+  const cleanSlug = rawClean.replace(/--/g, "-");
 
-  // 2. Extract numeric ID if present (e.g. moscow-4368 -> moscow, 4368)
-  const idMatch = cleanSlug.match(/^(.+)-(\d+)$/);
+  // 2. Extract numeric ID if present (e.g. moscow-4368 -> moscow, 4368 or sialkot-pendzhab--27912744 -> sialkot-pendzhab, 27912744)
+  const idMatch = cleanSlug.match(/^(.+?)-(\d+)$/);
   let idNumber: number | undefined;
-  let baseSlug = cleanSlug;
+  let baseSlug = cleanSlug.replace(/-+$/, "");
   if (idMatch) {
-    baseSlug = idMatch[1];
+    baseSlug = idMatch[1].replace(/-+$/, "");
     idNumber = parseInt(idMatch[2], 10);
   }
 
-  // 3. Try finding by numeric ID first (both static cities and database)
+  // 3. Try finding by numeric ID first (both positive & negative IDs, in static cities & database)
   if (typeof idNumber === "number" && !isNaN(idNumber)) {
-    const staticById = findStaticCityBySlug(String(idNumber));
+    const staticById =
+      findStaticCityBySlug(String(idNumber)) ||
+      findStaticCityBySlug(String(-idNumber));
     if (staticById) return staticById;
 
     try {
-      const cityById = await prisma.city.findUnique({ where: { id: idNumber } });
+      const cityById =
+        (await prisma.city.findUnique({ where: { id: idNumber } })) ||
+        (await prisma.city.findUnique({ where: { id: -idNumber } }));
       if (cityById) return cityById;
     } catch {
       // database offline or error
@@ -101,6 +106,7 @@ export const resolveCity = cache(async (inputSlug: string): Promise<City | null>
   // 4. Try finding by exact slug or alias
   const targetSlug = ALIASES[baseSlug] ?? baseSlug;
   const existing =
+    (await getCityBySlug(rawClean)) ||
     (await getCityBySlug(cleanSlug)) ||
     (await getCityBySlug(targetSlug)) ||
     (await getCityBySlug(baseSlug));
