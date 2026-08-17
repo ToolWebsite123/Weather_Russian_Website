@@ -22,11 +22,21 @@ const BADGE_STYLES: Record<
   },
 };
 
+function getBallWord(num: number): string {
+  const n = Math.abs(num) % 100;
+  const n1 = n % 10;
+  if (n > 10 && n < 20) return "баллов";
+  if (n1 > 1 && n1 < 5) return "балла";
+  if (n1 === 1) return "балл";
+  return "баллов";
+}
+
 export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
   if (!data) return null;
 
   const style = BADGE_STYLES[data.severity] ?? BADGE_STYLES.calm;
   const score = Math.min(9, Math.max(1, Math.round(data.kp)));
+  const ballWord = getBallWord(score);
 
   // Gismeteo-aligned status labels
   const getStatusText = (kp: number) => {
@@ -77,7 +87,7 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
             <h3 className="text-h3 font-semibold text-cloud-900">
               Геомагнитная обстановка
             </h3>
-            <p className="text-xs text-cloud-500">Г/м: {score} балла из 9 ({statusLabel})</p>
+            <p className="text-xs text-cloud-500">Г/м: {score} {ballWord} из 9 ({statusLabel})</p>
           </div>
         </div>
 
@@ -85,7 +95,7 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
           <span
             className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${style.badge}`}
           >
-            {score} балла из 9 · {statusLabel}
+            {score} {ballWord} из 9 · {statusLabel}
           </span>
         </div>
       </div>
@@ -149,7 +159,7 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
 
       {data.isElevated && (
         <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-950 ring-1 ring-amber-200">
-          <p className="font-medium">⚠️ Повышенный уровень активности ({score} балла)</p>
+          <p className="font-medium">⚠️ Повышенный уровень активности ({score} {ballWord})</p>
           <p className="mt-0.5 text-amber-900">
             Возможны недомогания у метеозависимых людей.
           </p>
