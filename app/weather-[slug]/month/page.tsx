@@ -11,12 +11,13 @@ import { shouldIndexCity, buildCityUrl } from "@/lib/cities";
 import { config } from "@/lib/config";
 
 export const revalidate = 900;
+export const dynamicParams = true;
 
 type Props = { params: { slug: string } };
 
 export async function generateStaticParams() {
   const cities = await listPopularCities(20).catch(() => []);
-  return cities.map((c) => ({ slug: `weather-${c.slug}-${c.id}` }));
+  return cities.map((c) => ({ slug: `${c.slug}-${c.id}` }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
