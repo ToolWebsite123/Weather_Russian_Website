@@ -172,7 +172,10 @@ export function CitySearch() {
                     isActive ? "bg-sky-100/90 text-sky-950" : "hover:bg-sky-50 text-sky-900"
                   }`}
                   onClick={() => goTo(r.slug)}
-                  onMouseEnter={() => setActiveIndex(index)}
+                  onMouseEnter={() => {
+                    setActiveIndex(index);
+                    router.prefetch(`/pogoda/${r.slug}`);
+                  }}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-xl shrink-0" role="img" aria-label={countryRu}>
@@ -221,6 +224,7 @@ export function PopularCityLinks({
         <Link
           key={c.slug}
           href={`/pogoda/${c.slug}`}
+          prefetch={true}
           className="rounded-full border border-sky-200/70 bg-white/70 px-3 py-1.5 text-sm text-sky-900 transition hover:border-sun-400 hover:bg-sun-50"
         >
           {c.name}

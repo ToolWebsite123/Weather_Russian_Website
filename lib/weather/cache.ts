@@ -10,6 +10,9 @@ import type { City } from "@prisma/client";
 
 const CACHE_TTL_MS = config.cache.ttlMs;
 
+// L1 Server In-Memory Weather Cache (0ms latency for repeated city loads)
+const L1_WEATHER_CACHE = new Map<string, { payload: WeatherBundle; expiresAt: number }>();
+
 function getTransientCityId(slug: string): number {
   let hash = 0;
   for (let i = 0; i < slug.length; i++) {
@@ -21,13 +24,18 @@ function getTransientCityId(slug: string): number {
 }
 
 export async function getCityBySlug(slug: string): Promise<City | null> {
+  // 1. Instant 0ms static memory lookup for all curated cities
+  const staticCity = findStaticCityBySlug(slug);
+  if (staticCity) return staticCity;
+
+  // 2. Query database for user-searched / dynamically added cities
   try {
     const fromDb = await prisma.city.findUnique({ where: { slug } });
     if (fromDb) return fromDb;
   } catch {
     // Fall back to static dataset if database is unreachable or offline
   }
-  return findStaticCityBySlug(slug);
+  return null;
 }
 
 export async function upsertCityFromGeo(input: {
@@ -113,6 +121,12 @@ export async function refreshCityWeatherCache(
   const now = new Date();
   const expiresAt = new Date(now.getTime() + CACHE_TTL_MS);
 
+  // Store in L1 memory cache (0ms instant retrieval)
+  L1_WEATHER_CACHE.set(city.slug.toLowerCase(), {
+    payload: bundle,
+    expiresAt: expiresAt.getTime(),
+  });
+
   if (city.id > 0) {
     try {
       await prisma.weatherCache.upsert({
@@ -140,15 +154,26 @@ export async function refreshCityWeatherCache(
 export async function getCachedWeatherForCity(
   city: City,
 ): Promise<WeatherBundle> {
+  const nowMs = Date.now();
+  const slugKey = city.slug.toLowerCase();
+
+  // 1. Check L1 Memory Cache (Instant 0ms lookup)
+  const l1Entry = L1_WEATHER_CACHE.get(slugKey);
+  if (l1Entry && l1Entry.expiresAt > nowMs) {
+    return l1Entry.payload;
+  }
+
   // Skip DB caching for transient (negative/non-persisted) cities
   if (city.id < 0) {
-    return getWeatherBundle(
+    const fresh = await getWeatherBundle(
       city.latitude,
       city.longitude,
       14,
       { cache: "no-store" },
       city.slug,
     );
+    L1_WEATHER_CACHE.set(slugKey, { payload: fresh, expiresAt: nowMs + CACHE_TTL_MS });
+    return fresh;
   }
 
   const now = new Date();
@@ -162,6 +187,11 @@ export async function getCachedWeatherForCity(
     if (cached) {
       cachedPayload = cached.payload as unknown as WeatherBundle;
       if (cached.expiresAt > now) {
+        // Populate L1 cache for subsequent fast reads
+        L1_WEATHER_CACHE.set(slugKey, {
+          payload: cachedPayload,
+          expiresAt: cached.expiresAt.getTime(),
+        });
         return cachedPayload;
       }
     }

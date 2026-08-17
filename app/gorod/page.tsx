@@ -105,6 +105,7 @@ export default async function CityCatalogPage() {
                         <Link
                           key={city.slug}
                           href={`/pogoda/${city.slug}`}
+                          prefetch={true}
                           className="group flex items-center justify-between rounded-xl bg-white/95 px-3 py-2.5 ring-1 ring-sky-100 transition-all duration-150 hover:-translate-y-0.5 hover:bg-sky-50 hover:ring-sky-300 hover:shadow-md motion-reduce:transform-none"
                         >
                           <span className="font-semibold text-sm text-sky-950 group-hover:text-sky-700 transition-colors truncate">

@@ -64,6 +64,7 @@ export function PopularCitiesSection() {
               <Link
                 key={city.slug}
                 href={`/pogoda/${city.slug}`}
+                prefetch={true}
                 className="block text-[#0077ff] hover:underline transition-colors font-normal truncate"
               >
                 {city.name}

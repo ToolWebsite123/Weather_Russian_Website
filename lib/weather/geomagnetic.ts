@@ -1,4 +1,7 @@
+import { cache as reactCache } from "react";
 import { reportError } from "@/lib/monitoring";
+
+const cache = typeof reactCache === "function" ? reactCache : <T extends (...args: any[]) => any>(fn: T): T => fn;
 
 export type GeomagneticSeverity = "calm" | "minor" | "storm" | "severe";
 
@@ -25,7 +28,7 @@ type NoaaKpEntry = {
 
 const NOAA_KP_URL = "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json";
 
-export async function fetchGeomagneticData(): Promise<GeomagneticData | null> {
+export const fetchGeomagneticData = cache(async (): Promise<GeomagneticData | null> => {
   try {
     const res = await fetch(NOAA_KP_URL, {
       next: { revalidate: 3600 },
@@ -96,4 +99,4 @@ export async function fetchGeomagneticData(): Promise<GeomagneticData | null> {
     reportError(err, { service: "fetchGeomagneticData" });
     return null;
   }
-}
+});

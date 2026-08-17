@@ -11,12 +11,13 @@ import { SESSION_COOKIE } from "@/lib/session";
 import type { City } from "@prisma/client";
 import type { WeatherBundle } from "@/types/weather";
 import { formatTemp, latinToCyrillicRu } from "@/lib/cities";
-import { weatherCodeLabel } from "@/lib/weather/wmo";
-import { config } from "@/lib/config";
+import { cache as reactCache } from "react";
+
+const cache = typeof reactCache === "function" ? reactCache : <T extends (...args: any[]) => any>(fn: T): T => fn;
 
 export const revalidate = 900;
 
-export async function getFavoritesForSession() {
+export const getFavoritesForSession = cache(async () => {
   try {
     const sessionId = cookies().get(SESSION_COOKIE)?.value;
     if (!sessionId) return [] as { slug: string; name: string }[];
@@ -30,7 +31,7 @@ export async function getFavoritesForSession() {
   } catch {
     return [] as { slug: string; name: string }[];
   }
-}
+});
 
 export async function isCityFavorited(cityId: number): Promise<boolean> {
   try {
@@ -65,7 +66,7 @@ const ALIASES: Record<string, string> = {
   "rostov-na-donu": "rostov-on-don",
 };
 
-export async function resolveCity(slug: string): Promise<City | null> {
+export const resolveCity = cache(async (slug: string): Promise<City | null> => {
   const targetSlug = ALIASES[slug.toLowerCase()] ?? slug;
   const existing = await getCityBySlug(targetSlug);
   if (existing) return existing;
@@ -127,12 +128,12 @@ export async function resolveCity(slug: string): Promise<City | null> {
   } catch {
     return null;
   }
-}
+});
 
-export async function loadCityWeather(slug: string): Promise<{
+export const loadCityWeather = cache(async (slug: string): Promise<{
   city: City;
   weather: WeatherBundle;
-} | null> {
+} | null> => {
   try {
     const city = await resolveCity(slug);
     if (!city) return null;
@@ -150,7 +151,7 @@ export async function loadCityWeather(slug: string): Promise<{
       return null;
     }
   }
-}
+});
 
 export async function getCityCount(): Promise<number> {
   try {
