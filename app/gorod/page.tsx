@@ -100,20 +100,15 @@ export default async function CityCatalogPage() {
                         ({region.cities.length})
                       </span>
                     </h3>
-                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-1.5 text-xs sm:text-sm">
                       {region.cities.map((city) => (
                         <Link
                           key={city.slug}
                           href={`/pogoda/${city.slug}`}
                           prefetch={true}
-                          className="group flex items-center justify-between rounded-xl bg-white/95 px-3 py-2.5 ring-1 ring-sky-100 transition-all duration-150 hover:-translate-y-0.5 hover:bg-sky-50 hover:ring-sky-300 hover:shadow-md motion-reduce:transform-none"
+                          className="block text-[#0077ff] hover:underline transition-colors font-normal truncate"
                         >
-                          <span className="font-semibold text-sm text-sky-950 group-hover:text-sky-700 transition-colors truncate">
-                            {city.name}
-                          </span>
-                          <span className="text-xs text-sky-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                            →
-                          </span>
+                          {city.name}
                         </Link>
                       ))}
                     </div>
