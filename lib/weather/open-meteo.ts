@@ -90,22 +90,8 @@ export async function searchPlaces(
   const isLatin = /^[a-zA-Z0-9\s-]+$/.test(q);
   const cyrQuery = isLatin ? latinToCyrillicRu(q) : null;
 
-  const sanitizedQ = q
-    .replace(/\b(saddar|tehsil|district|division|subdistrict|subdivision|county|raion|oblast|krai|okrug|republic|city|town)\b/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
   const queriesToTry = [q];
-  if (sanitizedQ && sanitizedQ.toLowerCase() !== q.toLowerCase() && sanitizedQ.length >= 2) {
-    queriesToTry.push(sanitizedQ);
-    if (isLatin) {
-      const cyrSanitized = latinToCyrillicRu(sanitizedQ);
-      if (cyrSanitized && cyrSanitized.toLowerCase() !== sanitizedQ.toLowerCase()) {
-        queriesToTry.push(cyrSanitized);
-      }
-    }
-  }
-  if (cyrQuery && cyrQuery.toLowerCase() !== q.toLowerCase() && !queriesToTry.includes(cyrQuery)) {
+  if (cyrQuery && cyrQuery.toLowerCase() !== q.toLowerCase()) {
     queriesToTry.push(cyrQuery);
   }
 

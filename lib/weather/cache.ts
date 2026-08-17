@@ -23,29 +23,18 @@ function getTransientCityId(slug: string): number {
   return -pos;
 }
 
-async function withDbTimeout<T>(fn: () => Promise<T>, timeoutMs = 1000): Promise<T | null> {
-  let timer: NodeJS.Timeout | undefined;
-  try {
-    const timeoutPromise = new Promise<null>((resolve) => {
-      timer = setTimeout(() => resolve(null), timeoutMs);
-    });
-    const result = await Promise.race([fn(), timeoutPromise]);
-    return result;
-  } catch {
-    return null;
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
-}
-
 export async function getCityBySlug(slug: string): Promise<City | null> {
   // 1. Instant 0ms static memory lookup for all curated cities
   const staticCity = findStaticCityBySlug(slug);
   if (staticCity) return staticCity;
 
-  // 2. Query database for user-searched / dynamically added cities with fast timeout guard
-  const fromDb = await withDbTimeout(() => prisma.city.findUnique({ where: { slug } }));
-  if (fromDb) return fromDb;
+  // 2. Query database for user-searched / dynamically added cities
+  try {
+    const fromDb = await prisma.city.findUnique({ where: { slug } });
+    if (fromDb) return fromDb;
+  } catch {
+    // Fall back to static dataset if database is unreachable or offline
+  }
   return null;
 }
 
@@ -64,7 +53,7 @@ export async function upsertCityFromGeo(input: {
   const countryCode = input.country?.trim().toUpperCase();
   const finalCountry = countryCode && countryCode.length > 0 ? countryCode : "UNKNOWN";
 
-  const dbResult = await withDbTimeout(async () => {
+  try {
     const existing = await prisma.city.findUnique({
       where: { slug: input.slug },
       select: { isCurated: true },
@@ -99,26 +88,24 @@ export async function upsertCityFromGeo(input: {
         isCurated: false,
       },
     });
-  });
-
-  if (dbResult) return dbResult;
-
-  return {
-    id: getTransientCityId(input.slug),
-    slug: input.slug,
-    name: input.name,
-    nameEn: input.nameEn ?? input.name,
-    country: finalCountry,
-    region: input.region ?? null,
-    latitude: input.latitude,
-    longitude: input.longitude,
-    timezone: input.timezone ?? "UTC",
-    population: input.population ?? null,
-    tier: input.tier ?? 2,
-    isCurated: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  } catch {
+    return {
+      id: getTransientCityId(input.slug),
+      slug: input.slug,
+      name: input.name,
+      nameEn: input.nameEn ?? input.name,
+      country: finalCountry,
+      region: input.region ?? null,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      timezone: input.timezone ?? "UTC",
+      population: input.population ?? null,
+      tier: input.tier ?? 2,
+      isCurated: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
 }
 
 export async function refreshCityWeatherCache(
@@ -141,8 +128,8 @@ export async function refreshCityWeatherCache(
   });
 
   if (city.id > 0) {
-    await withDbTimeout(() =>
-      prisma.weatherCache.upsert({
+    try {
+      await prisma.weatherCache.upsert({
         where: { cityId: city.id },
         update: {
           payload: bundle as object,
@@ -155,8 +142,10 @@ export async function refreshCityWeatherCache(
           fetchedAt: now,
           expiresAt,
         },
-      }),
-    );
+      });
+    } catch {
+      // Ignore cache persistence failures on read-only/serverless edge environments
+    }
   }
 
   return bundle;
@@ -190,22 +179,24 @@ export async function getCachedWeatherForCity(
   const now = new Date();
   let cachedPayload: WeatherBundle | null = null;
 
-  const cached = await withDbTimeout(() =>
-    prisma.weatherCache.findUnique({
+  try {
+    const cached = await prisma.weatherCache.findUnique({
       where: { cityId: city.id },
-    }),
-  );
+    });
 
-  if (cached) {
-    cachedPayload = cached.payload as unknown as WeatherBundle;
-    if (cached.expiresAt > now) {
-      // Populate L1 cache for subsequent fast reads
-      L1_WEATHER_CACHE.set(slugKey, {
-        payload: cachedPayload,
-        expiresAt: cached.expiresAt.getTime(),
-      });
-      return cachedPayload;
+    if (cached) {
+      cachedPayload = cached.payload as unknown as WeatherBundle;
+      if (cached.expiresAt > now) {
+        // Populate L1 cache for subsequent fast reads
+        L1_WEATHER_CACHE.set(slugKey, {
+          payload: cachedPayload,
+          expiresAt: cached.expiresAt.getTime(),
+        });
+        return cachedPayload;
+      }
     }
+  } catch {
+    // If DB cache check fails, proceed directly to fetch live weather
   }
 
   try {
