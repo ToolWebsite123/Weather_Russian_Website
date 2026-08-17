@@ -31,7 +31,9 @@ export async function getCityBySlug(slug: string): Promise<City | null> {
 
   // 2. Query database for user-searched / dynamically added cities
   try {
-    const fromDb = await prisma.city.findUnique({ where: { slug } });
+    const dbPromise = prisma.city.findUnique({ where: { slug } });
+    const timeoutPromise = new Promise<null>((res) => setTimeout(() => res(null), 1000));
+    const fromDb = await Promise.race([dbPromise, timeoutPromise]);
     if (fromDb) return fromDb;
   } catch {
     // Fall back to static dataset if database is unreachable or offline
@@ -181,9 +183,11 @@ export async function getCachedWeatherForCity(
   let cachedPayload: WeatherBundle | null = null;
 
   try {
-    const cached = await prisma.weatherCache.findUnique({
+    const dbPromise = prisma.weatherCache.findUnique({
       where: { cityId: city.id },
     });
+    const timeoutPromise = new Promise<null>((res) => setTimeout(() => res(null), 1000));
+    const cached = await Promise.race([dbPromise, timeoutPromise]);
 
     if (cached) {
       cachedPayload = cached.payload as unknown as WeatherBundle;

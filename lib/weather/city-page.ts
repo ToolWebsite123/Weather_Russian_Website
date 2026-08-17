@@ -217,13 +217,18 @@ export const loadCityWeather = cache(async (slug: string): Promise<{
     if (!city) return null;
     const weather = await getCachedWeatherForCity(city);
     return { city, weather };
-  } catch {
-    // Retry once after brief delay if connection pooler timed out
+  } catch (err) {
+    console.error(`loadCityWeather error for "${slug}":`, err);
     try {
-      await new Promise((res) => setTimeout(res, 300));
       const city = await resolveCity(slug);
       if (!city) return null;
-      const weather = await getCachedWeatherForCity(city);
+      const weather = await getWeatherBundle(
+        city.latitude,
+        city.longitude,
+        14,
+        { cache: "no-store" },
+        city.slug,
+      );
       return { city, weather };
     } catch {
       return null;
