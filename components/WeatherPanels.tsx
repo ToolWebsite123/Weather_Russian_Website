@@ -107,14 +107,36 @@ export function SunArcTimeline({
     timeZone: timezone || "Europe/Moscow",
   });
 
-  const now = new Date();
-  const srDate = new Date(sunrise);
-  const ssDate = new Date(sunset);
+  const getMinutesInTz = (d: Date) => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: false,
+      timeZone: timezone || "Europe/Moscow",
+    }).formatToParts(d);
+    let h = 0;
+    let m = 0;
+    for (const p of parts) {
+      if (p.type === "hour") h = parseInt(p.value, 10);
+      if (p.type === "minute") m = parseInt(p.value, 10);
+    }
+    return h * 60 + m;
+  };
 
-  const totalMs = ssDate.getTime() - srDate.getTime();
-  const elapsedMs = now.getTime() - srDate.getTime();
-  const progress = Math.max(0, Math.min(1, elapsedMs / totalMs));
-  const isDay = now >= srDate && now <= ssDate;
+  const nowMins = getMinutesInTz(new Date());
+  const srMins = sunrise ? getMinutesInTz(new Date(sunrise)) : 330;
+  const ssMins = sunset ? getMinutesInTz(new Date(sunset)) : 1140;
+
+  const isDay = nowMins >= srMins && nowMins <= ssMins;
+
+  let progress = 0.5;
+  if (isDay && ssMins > srMins) {
+    progress = Math.max(0, Math.min(1, (nowMins - srMins) / (ssMins - srMins)));
+  } else if (!isDay) {
+    const nightDuration = (1440 - ssMins) + srMins;
+    const elapsedNight = nowMins > ssMins ? nowMins - ssMins : (1440 - ssMins) + nowMins;
+    progress = Math.max(0, Math.min(1, elapsedNight / (nightDuration || 1)));
+  }
 
   const x = 15 + 170 * progress;
   const y = 50 - 90 * progress * (1 - progress);
@@ -155,8 +177,13 @@ export function SunArcTimeline({
               <circle r="10" fill="#fef08a" opacity="0.4" />
             </g>
           ) : (
-            <g transform="translate(100, 50)">
-              <circle r="5" fill="#94a3b8" />
+            <g transform={`translate(${x}, ${y})`}>
+              <path
+                d="M -3 -6 A 6 6 0 1 0 6 3 A 4.5 4.5 0 1 1 -3 -6 Z"
+                fill="#0284c7"
+                stroke="#0369a1"
+                strokeWidth="1.5"
+              />
             </g>
           )}
         </svg>
@@ -623,6 +650,7 @@ export function NowWeatherHeroCard({
 
   // Calculate sun arc progress (0..1) based on target city local timezone minutes from midnight
   let sunProgress = 0.5;
+  let isDayCalculated = true;
   try {
     const tz = timezone || "Europe/Moscow";
     const getMinutesFromMidnight = (dateObj: Date) => {
@@ -645,21 +673,27 @@ export function NowWeatherHeroCard({
     const srMins = today?.sunrise ? getMinutesFromMidnight(new Date(today.sunrise)) : 330;
     const ssMins = today?.sunset ? getMinutesFromMidnight(new Date(today.sunset)) : 1140;
 
-    if (ssMins > srMins) {
+    isDayCalculated = nowMins >= srMins && nowMins <= ssMins;
+
+    if (isDayCalculated && ssMins > srMins) {
       const totalMins = ssMins - srMins;
       const elapsedMins = nowMins - srMins;
       sunProgress = Math.max(0, Math.min(1, elapsedMins / totalMins));
+    } else if (!isDayCalculated) {
+      const nightDuration = (1440 - ssMins) + srMins;
+      const elapsedNight = nowMins > ssMins ? nowMins - ssMins : (1440 - ssMins) + nowMins;
+      sunProgress = Math.max(0, Math.min(1, elapsedNight / (nightDuration || 1)));
     }
   } catch {
     sunProgress = 0.5;
   }
 
-  // Bezier curve calculations for SVG sun trajectory: P0=(30,65), P1=(150,15), P2=(270,65)
+  // Bezier curve calculations for SVG trajectory: P0=(30,65), P1=(150,15), P2=(270,65)
   const t = sunProgress;
   const sunX = (1 - t) * (1 - t) * 30 + 2 * (1 - t) * t * 150 + t * t * 270;
   const sunY = (1 - t) * (1 - t) * 65 + 2 * (1 - t) * t * 15 + t * t * 65;
 
-  const isDay = current.isDay ?? true;
+  const isDay = typeof current.isDay === "boolean" ? current.isDay : isDayCalculated;
 
   // Calculate daylight duration
   let daylightStr = "";
@@ -852,9 +886,21 @@ export function NowWeatherHeroCard({
                 strokeDasharray="4 4"
               />
 
-              {/* Sun position marker */}
-              <circle cx={sunX} cy={sunY} r="7" fill={isRain || isCloudy ? "#cbd5e1" : "#fcf003"} filter="drop-shadow(0px 0px 6px #fcf003)" />
-              <circle cx={sunX} cy={sunY} r="3" fill="#ffffff" />
+              {/* Sun / Moon position marker */}
+              {isDay ? (
+                <g>
+                  <circle cx={sunX} cy={sunY} r="7" fill={isRain || isCloudy ? "#cbd5e1" : "#fcf003"} filter="drop-shadow(0px 0px 6px #fcf003)" />
+                  <circle cx={sunX} cy={sunY} r="3" fill="#ffffff" />
+                </g>
+              ) : (
+                <g transform={`translate(${sunX}, ${sunY})`}>
+                  <path
+                    d="M -4 -7 A 7 7 0 1 0 7 4 A 5.5 5.5 0 1 1 -4 -7 Z"
+                    fill="#f8fafc"
+                    filter="drop-shadow(0px 0px 8px #38bdf8)"
+                  />
+                </g>
+              )}
 
               {/* Daylight duration center badge */}
               {daylightStr && (

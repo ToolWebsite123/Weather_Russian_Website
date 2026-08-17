@@ -9,7 +9,7 @@ type IconProps = {
 
 function iconKind(code: number, isDay: boolean): string {
   if (code === 0) return isDay ? "clear" : "clear-night";
-  if (code <= 2) return isDay ? "partly" : "cloudy";
+  if (code <= 2) return isDay ? "partly" : "partly-night";
   if (code === 3) return "cloudy";
   if (code === 45 || code === 48) return "fog";
   if (code >= 51 && code <= 67) return "rain";
@@ -61,9 +61,12 @@ export function WeatherIcon({
       return (
         <svg {...common}>
           <path
-            d="M40 12a18 18 0 1 0 10 32 22 22 0 1 1-10-32z"
-            fill="#0155a2"
+            d="M38 14a16 16 0 1 0 9 28 20 20 0 1 1-9-28z"
+            fill="#38bdf8"
           />
+          <circle cx="16" cy="18" r="1.5" fill="#fef08a" />
+          <circle cx="48" cy="14" r="1" fill="#ffffff" />
+          <circle cx="52" cy="32" r="1.5" fill="#fef08a" />
         </svg>
       );
     case "partly":
@@ -72,6 +75,17 @@ export function WeatherIcon({
           <circle cx="24" cy="24" r="10" fill="#F98507" />
           <ellipse cx="38" cy="40" rx="16" ry="10" fill="#919eae" />
           <ellipse cx="28" cy="38" rx="12" ry="9" fill="#b8c0cb" />
+        </svg>
+      );
+    case "partly-night":
+      return (
+        <svg {...common}>
+          <path
+            d="M32 14a12 12 0 1 0 7 21 15 15 0 1 1-7-21z"
+            fill="#38bdf8"
+          />
+          <ellipse cx="38" cy="42" rx="15" ry="9" fill="#94a3b8" />
+          <ellipse cx="28" cy="40" rx="11" ry="8" fill="#cbd5e1" />
         </svg>
       );
     case "cloudy":
