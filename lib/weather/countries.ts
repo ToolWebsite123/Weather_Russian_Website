@@ -474,3 +474,42 @@ export function getAllCatalogCountries(): CatalogCountryItem[] {
   });
 }
 
+export function getRelatedCountryCities(currentCity: {
+  slug: string;
+  name: string;
+  country?: string;
+}): {
+  countryIso: string;
+  countryNameRu: string;
+  flag: string;
+  cities: CatalogCity[];
+} | null {
+  const catalog = getAllCatalogCountries();
+  const currentSlugNorm = currentCity.slug.toLowerCase();
+
+  // 1. Try matching by slug inside catalog
+  let matchedCountry = catalog.find((c) =>
+    c.cities.some((ci) => ci.slug.toLowerCase() === currentSlugNorm)
+  );
+
+  // 2. Try matching by country ISO code if provided
+  if (!matchedCountry && currentCity.country) {
+    const isoNorm = currentCity.country.toUpperCase();
+    matchedCountry = catalog.find((c) => c.iso === isoNorm);
+  }
+
+  // 3. Fallback to Pakistan or Russia if no match found
+  if (!matchedCountry) {
+    matchedCountry = catalog.find((c) => c.iso === "PK") ?? catalog[0];
+  }
+
+  if (!matchedCountry) return null;
+
+  return {
+    countryIso: matchedCountry.iso,
+    countryNameRu: matchedCountry.nameRu,
+    flag: matchedCountry.flag,
+    cities: matchedCountry.cities,
+  };
+}
+

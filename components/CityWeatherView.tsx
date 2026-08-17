@@ -22,6 +22,7 @@ import { GeomagneticCard } from "@/components/GeomagneticCard";
 import { AirQualityBlock } from "@/components/AirQualityBlock";
 import { AstronomyCard } from "@/components/AstronomyCard";
 import { AutoScrollTarget } from "@/components/AutoScrollTarget";
+import { CountryRelatedCities } from "@/components/CountryRelatedCities";
 
 const RadarMap = dynamic(() => import("@/components/RadarMap"), {
   ssr: false,
@@ -411,6 +412,9 @@ export async function CityWeatherView({
 
           </>
         )}
+
+        {/* Country Related Cities (Internal SEO linking for all cities in target country) */}
+        <CountryRelatedCities city={city} />
 
         {/* Footer info & nearby cities on all tabs */}
         <NearbyCities cities={nearby} />
