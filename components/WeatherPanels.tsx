@@ -201,15 +201,28 @@ export function CategoryTabBar({
   anchorPrefix?: string;
 }) {
   const activeNormalized =
-    {
-      tomorrow: "zavtra",
-      weekend: "vykhodnye",
-      "3": "3-dnya",
-      "7": "7-dney",
-      "10": "10-dney",
-      "14": "14-dney",
-      archive: "archiv",
-    }[active] || active;
+    (
+      {
+        tomorrow: "zavtra",
+        yesterday: "vchera",
+        weekend: "vykhodnye",
+        "3": "3-dnya",
+        "3-days": "3-dnya",
+        "7": "7-dney",
+        "7-days": "7-dney",
+        weekly: "7-dney",
+        "10": "10-dney",
+        "10-days": "10-dney",
+        "14": "14-dney",
+        "14-days": "14-dney",
+        "2-weeks": "14-dney",
+        month: "mesyats",
+        archive: "archiv",
+        pollen: "pyltsa",
+        road: "dorogi",
+        gm: "gm-aktivnost",
+      } as Record<string, string>
+    )[active] || active;
 
   const tabs = [
     { id: "vchera", href: `/pogoda/${slug}/vchera`, label: "Вчера" },
