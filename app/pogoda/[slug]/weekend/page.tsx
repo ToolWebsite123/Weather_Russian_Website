@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const locative = getCityLocative(city.name);
   const title = `Погода ${locative} на выходные — суббота и воскресенье | WeatherHub`;
-  const description = `Прогноз погоды ${locative} на предстоящие выходные (суббота и воскресенье).Планируйте отдых с точной температурой и осадками.`;
+  const description = `Прогноз погоды ${locative} на предстоящие выходные (суббота и воскресенье). Планируйте отдых с точной температурой и осадками.`;
   const url = `${config.siteUrl}/pogoda/${city.slug}/weekend`;
   const ogImage = buildCityOgImageUrl(city, weather);
 
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     robots: shouldIndexCity(city) ? undefined : { index: false, follow: true },
-    alternates: { canonical: `${config.siteUrl}/pogoda/${city.slug}/vykhodnye` },
+    alternates: { canonical: url },
     openGraph: {
       title,
       description,

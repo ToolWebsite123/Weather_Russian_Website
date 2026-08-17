@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locative = getCityLocative(city.name);
   const title = `Геомагнитная обстановка и магнитные бури ${locative} | WeatherHub`;
   const description = `Прогноз магнитных бурь и Kp-индекс геомагнитной активности ${locative} по данным станций NOAA SWPC.`;
-  const url = `${config.siteUrl}/pogoda/${city.slug}/gm-aktivnost`;
+  const url = `${config.siteUrl}/pogoda/${city.slug}/gm`;
   const ogImage = buildCityOgImageUrl(city, weather);
 
   return {

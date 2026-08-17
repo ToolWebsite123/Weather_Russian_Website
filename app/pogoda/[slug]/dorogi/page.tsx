@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locative = getCityLocative(city.name);
   const title = `Состояние дорог ${locative} — риск гололёда и снежный накат | WeatherHub`;
   const description = `Оценка безопасности дорожного движения ${locative}: риск гололедицы, снежный накат и ухудшение видимости.`;
-  const url = `${config.siteUrl}/pogoda/${city.slug}/dorogi`;
+  const url = `${config.siteUrl}/pogoda/${city.slug}/road`;
   const ogImage = buildCityOgImageUrl(city, weather);
 
   return {

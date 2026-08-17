@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locative = getCityLocative(city.name);
   const title = `Погода ${locative} на 14 дней — долгосрочный прогноз | WeatherHub`;
   const description = `Долгосрочный прогноз погоды ${locative} на 14 дней (2 недели): тренд температур, осадки и геомагнитный фон.`;
-  const url = `${config.siteUrl}/pogoda/${city.slug}/14-dney`;
+  const url = `${config.siteUrl}/pogoda/${city.slug}/14-days`;
   const ogImage = buildCityOgImageUrl(city, weather);
 
   return {

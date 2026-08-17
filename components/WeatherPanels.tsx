@@ -201,41 +201,28 @@ export function CategoryTabBar({
   anchorPrefix?: string;
 }) {
   const activeNormalized =
-    (
-      {
-        tomorrow: "zavtra",
-        yesterday: "vchera",
-        weekend: "vykhodnye",
-        "3": "3-dnya",
-        "3-days": "3-dnya",
-        "7": "7-dney",
-        "7-days": "7-dney",
-        weekly: "7-dney",
-        "10": "10-dney",
-        "10-days": "10-dney",
-        "14": "14-dney",
-        "14-days": "14-dney",
-        "2-weeks": "14-dney",
-        month: "mesyats",
-        archive: "archiv",
-        pollen: "pyltsa",
-        road: "dorogi",
-        gm: "gm-aktivnost",
-      } as Record<string, string>
-    )[active] || active;
+    {
+      tomorrow: "zavtra",
+      weekend: "vykhodnye",
+      "3": "3-dnya",
+      "7": "7-dney",
+      "10": "10-dney",
+      "14": "14-dney",
+      archive: "archiv",
+    }[active] || active;
 
   const tabs = [
-    { id: "vchera", href: `/pogoda/${slug}/vchera`, label: "Вчера" },
+    { id: "vchera", href: `/pogoda/${slug}/yesterday`, label: "Вчера" },
     { id: "now", href: `/pogoda/${slug}/now`, label: "Сейчас" },
     { id: "today", href: `/pogoda/${slug}`, label: ru.today },
-    { id: "zavtra", href: `/pogoda/${slug}/zavtra`, label: ru.tomorrow },
-    { id: "3-dnya", href: `/pogoda/${slug}/3-dnya`, label: ru.days3 },
-    { id: "vykhodnye", href: `/pogoda/${slug}/vykhodnye`, label: "Выходные" },
-    { id: "7-dney", href: `/pogoda/${slug}/7-dney`, label: ru.days7 },
-    { id: "10-dney", href: `/pogoda/${slug}/10-dney`, label: ru.days10 },
-    { id: "14-dney", href: `/pogoda/${slug}/14-dney`, label: ru.days14 },
-    { id: "mesyats", href: `/pogoda/${slug}/mesyats`, label: "Месяц" },
-    { id: "archiv", href: `/pogoda/${slug}/archiv`, label: "Архив" },
+    { id: "zavtra", href: `/pogoda/${slug}/tomorrow`, label: ru.tomorrow },
+    { id: "3-dnya", href: `/pogoda/${slug}/3-days`, label: ru.days3 },
+    { id: "vykhodnye", href: `/pogoda/${slug}/weekend`, label: "Выходные" },
+    { id: "7-dney", href: `/pogoda/${slug}/7-days`, label: ru.days7 },
+    { id: "10-dney", href: `/pogoda/${slug}/10-days`, label: ru.days10 },
+    { id: "14-dney", href: `/pogoda/${slug}/14-days`, label: ru.days14 },
+    { id: "mesyats", href: `/pogoda/${slug}/month`, label: "Месяц" },
+    { id: "archiv", href: `/pogoda/${slug}/archive`, label: "Архив" },
   ];
 
   const featureTabs = [
@@ -261,7 +248,7 @@ export function CategoryTabBar({
     },
     {
       id: "pyltsa",
-      href: `/pogoda/${slug}/pyltsa`,
+      href: `/pogoda/${slug}/pollen`,
       label: "Пыльца",
       icon: (
         <svg
@@ -280,7 +267,7 @@ export function CategoryTabBar({
     },
     {
       id: "dorogi",
-      href: `/pogoda/${slug}/dorogi`,
+      href: `/pogoda/${slug}/road`,
       label: "Дороги",
       icon: (
         <svg
@@ -301,7 +288,7 @@ export function CategoryTabBar({
     },
     {
       id: "gm-aktivnost",
-      href: `/pogoda/${slug}/gm-aktivnost`,
+      href: `/pogoda/${slug}/gm`,
       label: "Г/м активность",
       icon: (
         <svg
@@ -334,11 +321,10 @@ export function CategoryTabBar({
                 key={tab.id}
                 href={tab.href}
                 prefetch={true}
-                className={`inline-block px-3.5 py-1.5 rounded-lg text-sm transition-colors ${
-                  isActive
+                className={`inline-block px-3.5 py-1.5 rounded-lg text-sm transition-colors ${isActive
                     ? "bg-white text-[#0f3d3a] font-semibold shadow-xs"
                     : "text-[#bcd8d4] hover:bg-white/10"
-                }`}
+                  }`}
               >
                 {tab.label}
               </Link>
@@ -357,11 +343,10 @@ export function CategoryTabBar({
                 key={ft.id}
                 href={ft.href}
                 prefetch={true}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm transition-colors align-middle shrink-0 ${
-                  isActive
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm transition-colors align-middle shrink-0 ${isActive
                     ? "bg-white text-[#0f3d3a] font-semibold shadow-xs"
                     : "text-[#bcd8d4] hover:bg-white/10"
-                }`}
+                  }`}
               >
                 {ft.icon}
                 <span>{ft.label}</span>
@@ -650,18 +635,18 @@ export function NowWeatherHeroCard({
 
   const sunriseStr = today?.sunrise
     ? new Date(today.sunrise).toLocaleTimeString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: timezone || "Europe/Moscow",
-      })
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: timezone || "Europe/Moscow",
+    })
     : "04:49";
 
   const sunsetStr = today?.sunset
     ? new Date(today.sunset).toLocaleTimeString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: timezone || "Europe/Moscow",
-      })
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: timezone || "Europe/Moscow",
+    })
     : "20:19";
 
   const now = new Date();
@@ -1251,9 +1236,8 @@ export function DailyForecast({
           return (
             <li key={d.date} className="px-3 py-3 sm:px-5 hover:bg-sky-50/40 transition-colors">
               <div className="flex items-center gap-2 text-sm sm:gap-4 sm:text-base">
-                <span className={`w-24 capitalize font-semibold sm:w-32 shrink-0 truncate ${
-                  isWeekend ? "text-rose-600" : "text-sky-950"
-                }`}>
+                <span className={`w-24 capitalize font-semibold sm:w-32 shrink-0 truncate ${isWeekend ? "text-rose-600" : "text-sky-950"
+                  }`}>
                   {dateLabel}
                 </span>
                 <WeatherIcon code={d.weatherCode} size={30} className="shrink-0" />
@@ -1288,15 +1272,14 @@ export function DailyForecast({
                 {/* Wind Max */}
                 {typeof d.windSpeedMax === "number" && (
                   <span className="hidden md:flex items-center gap-1 w-20 justify-end text-xs text-slate-600 shrink-0 font-medium tabular-nums" title="Максимальная скорость ветра">
-                    <svg className="w-3 h-3 text-sky-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>
+                    <svg className="w-3 h-3 text-sky-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" /><path d="M9.6 4.6A2 2 0 1 1 11 8H2" /><path d="M12.6 19.4A2 2 0 1 0 14 16H2" /></svg>
                     {Math.round(d.windSpeedMax)} м/с
                   </span>
                 )}
 
                 {/* Precipitation Sum */}
-                <span className={`w-14 text-right tabular-nums text-xs sm:text-sm font-medium shrink-0 ${
-                  d.precipitationSum > 0 ? "text-sky-700 font-bold" : "text-cloud-400"
-                }`}>
+                <span className={`w-14 text-right tabular-nums text-xs sm:text-sm font-medium shrink-0 ${d.precipitationSum > 0 ? "text-sky-700 font-bold" : "text-cloud-400"
+                  }`}>
                   {d.precipitationSum > 0 ? `${d.precipitationSum.toFixed(1)} мм` : "0 мм"}
                 </span>
               </div>
@@ -1440,9 +1423,8 @@ export function YesterdayHourlyTable({
                 typeof h.windDirection === "number"
                   ? formatWindDir(h.windDirection)
                   : "";
-              const windSpeedStr = `${Math.round(h.windSpeed)} м/с${
-                windDirStr ? ` ${windDirStr}` : ""
-              }`;
+              const windSpeedStr = `${Math.round(h.windSpeed)} м/с${windDirStr ? ` ${windDirStr}` : ""
+                }`;
               const windGustsStr =
                 h.windGusts && h.windGusts > h.windSpeed + 1
                   ? ` (порывы ${Math.round(h.windGusts)})`
@@ -1495,9 +1477,8 @@ export function YesterdayHourlyTable({
                     {humidityStr}
                   </td>
                   <td
-                    className={`px-3 py-3 sm:px-4 text-right tabular-nums whitespace-nowrap font-medium ${
-                      h.precipitation > 0 ? "text-sky-700 font-bold" : "text-cloud-400"
-                    }`}
+                    className={`px-3 py-3 sm:px-4 text-right tabular-nums whitespace-nowrap font-medium ${h.precipitation > 0 ? "text-sky-700 font-bold" : "text-cloud-400"
+                      }`}
                   >
                     {h.precipitation > 0 ? `${h.precipitation.toFixed(1)} мм` : "0 мм"}
                   </td>

@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     robots: shouldIndexCity(city) ? undefined : { index: false, follow: true },
-    alternates: { canonical: `${config.siteUrl}/pogoda/${city.slug}/zavtra` },
+    alternates: { canonical: url },
     openGraph: {
       title,
       description,

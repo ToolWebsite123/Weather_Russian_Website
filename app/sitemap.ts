@@ -6,17 +6,17 @@ import { getAllStaticCities } from "@/lib/weather/static-cities";
 
 const FORECAST_TABS = [
   "",
-  "/zavtra",
-  "/vykhodnye",
-  "/3-dnya",
-  "/7-dney",
-  "/10-dney",
-  "/14-dney",
-  "/archiv",
-  "/mesyats",
-  "/dorogi",
-  "/gm-aktivnost",
-  "/pyltsa",
+  "/tomorrow",
+  "/weekend",
+  "/3-days",
+  "/7-days",
+  "/10-days",
+  "/14-days",
+  "/archive",
+  "/month",
+  "/road",
+  "/gm",
+  "/pollen",
   "/radar",
 ] as const;
 
