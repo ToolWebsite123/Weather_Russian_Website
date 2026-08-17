@@ -2,9 +2,12 @@ export function buildCityUrl(city: { slug: string; id?: number | string }, tab?:
   const cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
   let path = `/weather-${cleanSlug}`;
   if (city.id != null) {
-    const rawId = String(city.id).replace(/^-/, "");
-    if (rawId && !cleanSlug.endsWith(`-${rawId}`)) {
-      path += `-${rawId}`;
+    const numId = typeof city.id === "number" ? city.id : parseInt(String(city.id), 10);
+    if (typeof numId === "number" && !isNaN(numId) && numId > 0) {
+      const idStr = String(numId);
+      if (!cleanSlug.endsWith(`-${idStr}`)) {
+        path += `-${idStr}`;
+      }
     }
   }
   if (tab) {

@@ -148,10 +148,15 @@ export const resolveCity = cache(async (inputSlug: string): Promise<City | null>
       results.find((r: { slug: string }) => r.slug === targetSlug || r.slug === slug) ??
       results[0];
 
-    if (!match) return null;
+    if (!match) {
+      console.warn(`Geocoding search produced no results for slug "${inputSlug}" (guess: "${guess}")`);
+      return null;
+    }
+
+    const finalSlug = match.slug || targetSlug;
 
     return upsertCityFromGeo({
-      slug: targetSlug,
+      slug: finalSlug,
       name: match.name,
       nameEn: match.nameEn ?? match.name,
       country: match.country || "RU",
@@ -162,7 +167,8 @@ export const resolveCity = cache(async (inputSlug: string): Promise<City | null>
       population: match.population,
       tier: 2,
     });
-  } catch {
+  } catch (err) {
+    console.error(`Geocoding resolution error for slug "${inputSlug}":`, err);
     return null;
   }
 });

@@ -29,8 +29,14 @@ export function findStaticCityBySlug(slug: string): City | null {
 
   if (!STATIC_CITIES_MAP) {
     STATIC_CITIES_MAP = new Map();
-    for (const city of getAllStaticCities()) {
-      STATIC_CITIES_MAP.set(city.slug.toLowerCase(), city);
+    const all = getAllStaticCities();
+    for (const city of all) {
+      const fullSlug = city.slug.toLowerCase();
+      STATIC_CITIES_MAP.set(fullSlug, city);
+      const namePortion = fullSlug.split("-")[0];
+      if (namePortion && !STATIC_CITIES_MAP.has(namePortion)) {
+        STATIC_CITIES_MAP.set(namePortion, city);
+      }
     }
   }
 
@@ -46,16 +52,17 @@ export function findStaticCityBySlug(slug: string): City | null {
     if (matchById) return matchById;
   }
 
-  // 3. Prefix match (e.g. "faisalabad-saddar-tehsil" -> matches "faisalabad")
+  // 3. Prefix match (check full slug and city-name-only portion)
   const all = getAllStaticCities();
   for (const city of all) {
     const cSlug = city.slug.toLowerCase();
-    if (clean.startsWith(`${cSlug}-`)) {
+    const namePortion = cSlug.split("-")[0];
+    if (clean.startsWith(`${cSlug}-`) || (namePortion && clean.startsWith(`${namePortion}-`))) {
       return city;
     }
   }
 
-  // 4. Token match (e.g. "faisalabad-district")
+  // 4. Token match (looks up tokens in STATIC_CITIES_MAP which includes full slugs & name portions)
   const tokens = clean.split("-").filter((t) => t.length >= 3);
   for (const token of tokens) {
     const tokenMatch = STATIC_CITIES_MAP.get(token);
