@@ -2,7 +2,7 @@ import { getCityGenitive, getCityLocative } from "@/lib/i18n/declension";
 import { getCityClimateProfile } from "@/lib/content/city-climate";
 import type { City } from "@prisma/client";
 import type { WeatherBundle } from "@/types/weather";
-import { formatPressureMmHg, formatTemp } from "@/lib/cities";
+import { formatPressureMmHg, formatTemp, buildCityUrl } from "@/lib/cities";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
 import { config } from "@/lib/config";
 
