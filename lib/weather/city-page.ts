@@ -4,6 +4,7 @@ import {
   listPopularCities,
   upsertCityFromGeo,
 } from "@/lib/weather/cache";
+import { getWeatherBundle } from "@/lib/weather";
 import { searchPlaces } from "@/lib/weather/open-meteo";
 import { findStaticCityBySlug } from "@/lib/weather/static-cities";
 import { prisma } from "@/lib/prisma";

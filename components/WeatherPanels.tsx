@@ -225,7 +225,7 @@ export function CategoryTabBar({
     )[active] || active;
 
   const rawSlug = slug.replace(/^(weather-|pogoda\/|pogoda-)/, "");
-  const basePath = `/pogoda/${rawSlug}`;
+  const basePath = `/weather-${rawSlug}`;
 
   const tabs = [
     { id: "vchera", href: `${basePath}/yesterday`, label: "Вчера" },

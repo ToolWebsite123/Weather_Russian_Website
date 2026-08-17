@@ -1,6 +1,6 @@
 export function buildCityUrl(city: { slug: string; id?: number | string }, tab?: string): string {
   const cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
-  let path = `/pogoda/${cleanSlug}`;
+  let path = `/weather-${cleanSlug}`;
   if (city.id != null) {
     const numId = typeof city.id === "number" ? city.id : parseInt(String(city.id), 10);
     if (typeof numId === "number" && !isNaN(numId) && numId > 0) {

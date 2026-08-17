@@ -4,7 +4,6 @@ import { getUpcomingWeekendDays } from "@/lib/weather/weekend";
 
 describe("Tab Weather Data Range Calculations", () => {
   const createMockBundle = (): WeatherBundle => {
-    const todayDate = "2026-08-17";
     const yesterdayDate = "2026-08-16";
 
     const daily: DailyPoint[] = Array.from({ length: 14 }, (_, i) => {
