@@ -76,7 +76,7 @@ export default async function CityCatalogPage() {
                       {country.nameRu}
                     </h2>
                     <p className="text-xs text-cloud-500 mt-0.5">
-                      Регионы и основные города ({country.cities.length})
+                      Основные города ({country.cities.length})
                     </p>
                   </div>
                 </div>
@@ -89,30 +89,17 @@ export default async function CityCatalogPage() {
                 </a>
               </div>
 
-              {/* Regional Sub-sections */}
-              <div className="space-y-4">
-                {country.regions.map((region) => (
-                  <div key={region.name} className="space-y-2">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-sky-800 flex items-center gap-1.5">
-                      <span>📍</span>
-                      <span>{region.name}</span>
-                      <span className="text-[10px] text-cloud-400 font-normal">
-                        ({region.cities.length})
-                      </span>
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-1.5 text-xs sm:text-sm">
-                      {region.cities.map((city) => (
-                        <Link
-                          key={city.slug}
-                          href={`/pogoda/${city.slug}`}
-                          prefetch={true}
-                          className="block text-[#0077ff] hover:underline transition-colors font-normal truncate"
-                        >
-                          {city.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
+              {/* Unified 6-Column Cities Grid matching Image 2 */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 text-xs sm:text-sm pt-1">
+                {country.cities.map((city) => (
+                  <Link
+                    key={city.slug}
+                    href={`/pogoda/${city.slug}`}
+                    prefetch={true}
+                    className="block text-[#0077ff] hover:underline transition-colors font-normal truncate"
+                  >
+                    {city.name}
+                  </Link>
                 ))}
               </div>
             </section>
