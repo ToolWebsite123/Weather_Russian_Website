@@ -5,6 +5,7 @@ import {
   findStaticCityBySlug,
   getStaticPopularCities,
 } from "@/lib/weather/static-cities";
+import { findCatalogCityBySlug } from "@/lib/weather/countries";
 import type { WeatherBundle } from "@/types/weather";
 import type { City } from "@prisma/client";
 
@@ -25,7 +26,7 @@ function getTransientCityId(slug: string): number {
 
 export async function getCityBySlug(slug: string): Promise<City | null> {
   // 1. Instant 0ms static memory lookup for all curated cities
-  const staticCity = findStaticCityBySlug(slug);
+  const staticCity = findStaticCityBySlug(slug) || findCatalogCityBySlug(slug);
   if (staticCity) return staticCity;
 
   // 2. Query database for user-searched / dynamically added cities

@@ -1,4 +1,5 @@
 import type { GeocodingResult } from "@/types/weather";
+import type { City } from "@prisma/client";
 import { getCountryFlag, slugifyCity } from "@/lib/cities";
 
 export type CountryData = {
@@ -512,4 +513,58 @@ export function getRelatedCountryCities(currentCity: {
     cities: matchedCountry.cities,
   };
 }
+
+function getTransientCityId(slug: string): number {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    hash = (hash << 5) - hash + slug.charCodeAt(i);
+    hash |= 0;
+  }
+  const pos = Math.abs(hash) || 1;
+  return -pos;
+}
+
+export function findCatalogCityBySlug(slug: string): City | null {
+  if (!slug) return null;
+  const clean = slug.toLowerCase().trim().replace(/^weather-/, "").replace(/--/g, "-");
+  const base = clean.replace(/-\d+$/, "").replace(/-+$/, "");
+
+  for (const country of POPULAR_COUNTRIES) {
+    for (const city of country.cities) {
+      const fullSlug = slugifyCity(city.name, city.admin1).toLowerCase();
+      const shortSlug = slugifyCity(city.name).toLowerCase();
+      const enSlug = slugifyCity(city.nameEn).toLowerCase();
+
+      if (
+        clean === fullSlug ||
+        base === fullSlug ||
+        clean === shortSlug ||
+        base === shortSlug ||
+        clean === enSlug ||
+        base === enSlug ||
+        (clean.startsWith("feisalabad") && fullSlug.startsWith("faisalabad")) ||
+        (base.startsWith("feisalabad") && fullSlug.startsWith("faisalabad"))
+      ) {
+        return {
+          id: getTransientCityId(fullSlug),
+          slug: fullSlug,
+          name: city.name,
+          nameEn: city.nameEn,
+          country: country.iso,
+          region: city.admin1 ?? city.name,
+          latitude: city.latitude,
+          longitude: city.longitude,
+          timezone: city.timezone,
+          population: city.population ?? null,
+          tier: 1,
+          isCurated: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+    }
+  }
+  return null;
+}
+
 
