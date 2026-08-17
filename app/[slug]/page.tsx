@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import { CityWeatherView } from "@/components/CityWeatherView";
 import {
   resolveCity,
-  listPopularCities,
-  loadCityWeather,
+    loadCityWeather,
   buildCityOgImageUrl,
 } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";

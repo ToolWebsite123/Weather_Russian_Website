@@ -2,8 +2,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { CityWeatherView } from "@/components/CityWeatherView";
 import {
-  listPopularCities,
-  loadCityWeather,
+    loadCityWeather,
   buildCityOgImageUrl,
 } from "@/lib/weather/city-page";
 import { ru } from "@/lib/i18n/ru";
