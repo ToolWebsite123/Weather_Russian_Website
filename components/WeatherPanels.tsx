@@ -561,14 +561,19 @@ export function CurrentWeatherCard({
 
                 {/* Hourly Weather Icons */}
                 <div className="grid grid-cols-5 gap-1 text-center items-center justify-items-center mb-3">
-                  {next5Hours.map((h) => (
-                    <WeatherIcon
-                      key={h.time}
-                      code={h.weatherCode}
-                      size={36}
-                      className="shrink-0"
-                    />
-                  ))}
+                  {next5Hours.map((h) => {
+                    const hourNum = new Date(h.time).getHours();
+                    const isDay = typeof h.isDay === "boolean" ? h.isDay : (hourNum >= 6 && hourNum < 21);
+                    return (
+                      <WeatherIcon
+                        key={h.time}
+                        code={h.weatherCode}
+                        isDay={isDay}
+                        size={36}
+                        className="shrink-0"
+                      />
+                    );
+                  })}
                 </div>
 
                 {/* Section Header: Air Temperature */}
@@ -1019,31 +1024,34 @@ export function DayPartsGrid({
     <section>
       <h2 className="mb-2 font-serif text-h2 text-sky-950">По частям суток</h2>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5">
-        {parts.map((p) => (
-          <div
-            key={p.key}
-            className="flex flex-col items-center rounded-xl bg-white/80 px-2.5 py-3 ring-1 ring-sky-100"
-          >
-            <p className="text-xs uppercase tracking-wide text-cloud-500">
-              {p.label}
-            </p>
-            <WeatherIcon code={p.weatherCode} size={40} className="my-1.5" />
-            <p className="text-xl font-semibold tabular-nums text-sky-950">
-              {formatTemp(p.temperature)}
-            </p>
-            <p className="mt-0.5 text-center text-xs text-cloud-500">
-              {weatherCodeLabel(p.weatherCode)}
-            </p>
-            <p className="mt-0.5 text-[11px] tabular-nums text-cloud-500 text-center">
-              {p.precipitation.toFixed(1)} мм
-              {typeof p.precipitationProbability === "number" &&
-                p.precipitationProbability > 0
-                ? ` (${Math.round(p.precipitationProbability)}%)`
-                : ""}{" "}
-              · {p.windSpeed.toFixed(0)} м/с
-            </p>
-          </div>
-        ))}
+        {parts.map((p) => {
+          const isDay = p.key === "morning" || p.key === "day";
+          return (
+            <div
+              key={p.key}
+              className="flex flex-col items-center rounded-xl bg-white/80 px-2.5 py-3 ring-1 ring-sky-100"
+            >
+              <p className="text-xs uppercase tracking-wide text-cloud-500">
+                {p.label}
+              </p>
+              <WeatherIcon code={p.weatherCode} isDay={isDay} size={40} className="my-1.5" />
+              <p className="text-xl font-semibold tabular-nums text-sky-950">
+                {formatTemp(p.temperature)}
+              </p>
+              <p className="mt-0.5 text-center text-xs text-cloud-500">
+                {weatherCodeLabel(p.weatherCode)}
+              </p>
+              <p className="mt-0.5 text-[11px] tabular-nums text-cloud-500 text-center">
+                {p.precipitation.toFixed(1)} мм
+                {typeof p.precipitationProbability === "number" &&
+                  p.precipitationProbability > 0
+                  ? ` (${Math.round(p.precipitationProbability)}%)`
+                  : ""}{" "}
+                · {p.windSpeed.toFixed(0)} м/с
+              </p>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -1167,7 +1175,10 @@ export function HourlyForecast({ hours }: { hours: HourlyPoint[] }) {
       <h2 className="mb-2 font-serif text-h2 text-sky-950">{ru.hourly}</h2>
       <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-2 sm:px-0">
         {next.map((h) => {
-          const label = new Date(h.time).toLocaleTimeString("ru-RU", {
+          const dateObj = new Date(h.time);
+          const hourNum = dateObj.getHours();
+          const isDay = typeof h.isDay === "boolean" ? h.isDay : (hourNum >= 6 && hourNum < 21);
+          const label = dateObj.toLocaleTimeString("ru-RU", {
             hour: "2-digit",
             minute: "2-digit",
           });
@@ -1177,7 +1188,7 @@ export function HourlyForecast({ hours }: { hours: HourlyPoint[] }) {
               className="flex min-w-[4rem] shrink-0 flex-col items-center rounded-xl bg-white/80 px-2 py-2.5 ring-1 ring-sky-100"
             >
               <p className="text-[10px] text-cloud-500 sm:text-xs tabular-nums">{label}</p>
-              <WeatherIcon code={h.weatherCode} size={32} className="my-1" />
+              <WeatherIcon code={h.weatherCode} isDay={isDay} size={32} className="my-1" />
               <p className="text-sm font-medium tabular-nums text-sky-950">
                 {formatTemp(h.temperature)}
               </p>
@@ -1433,6 +1444,8 @@ export function YesterdayHourlyTable({
                   ? `${Math.round(h.humidity)}%`
                   : "—";
 
+              const hourNum = new Date(h.time).getHours();
+              const isDay = typeof h.isDay === "boolean" ? h.isDay : (hourNum >= 6 && hourNum < 21);
               return (
                 <tr key={h.time} className="hover:bg-sky-50/40 transition-colors">
                   <td className="px-3 py-3 sm:px-4 font-semibold text-sky-950 tabular-nums whitespace-nowrap">
@@ -1440,7 +1453,7 @@ export function YesterdayHourlyTable({
                   </td>
                   <td className="px-3 py-3 sm:px-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <WeatherIcon code={h.weatherCode} size={28} className="shrink-0" />
+                      <WeatherIcon code={h.weatherCode} isDay={isDay} size={28} className="shrink-0" />
                       <span className="text-xs text-slate-700 hidden md:inline">
                         {weatherCodeLabel(h.weatherCode)}
                       </span>

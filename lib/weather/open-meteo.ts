@@ -42,6 +42,7 @@ type OpenMeteoForecast = {
     weather_code: number[];
     wind_speed_10m: number[];
     apparent_temperature: number[];
+    is_day?: number[];
     relative_humidity_2m?: number[];
     wind_direction_10m?: number[];
     precipitation_probability?: number[];
@@ -234,6 +235,7 @@ export async function fetchOpenMeteoForecast(
       "weather_code",
       "wind_speed_10m",
       "apparent_temperature",
+      "is_day",
       "relative_humidity_2m",
       "wind_direction_10m",
       "precipitation_probability",
@@ -280,6 +282,7 @@ export async function fetchOpenMeteoForecast(
     precipitation: data.hourly.precipitation[i],
     weatherCode: data.hourly.weather_code[i],
     windSpeed: data.hourly.wind_speed_10m[i],
+    isDay: data.hourly.is_day?.[i] === 1,
     feelsLike: data.hourly.apparent_temperature[i],
     precipitationProbability: data.hourly.precipitation_probability?.[i],
     dewPoint: data.hourly.dew_point_2m?.[i],

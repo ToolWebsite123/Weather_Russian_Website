@@ -43,6 +43,7 @@ export type HourlyPoint = {
   precipitation: number;
   weatherCode: number;
   windSpeed: number;
+  isDay?: boolean;
   feelsLike?: number;
   precipitationProbability?: number;
   dewPoint?: number;
