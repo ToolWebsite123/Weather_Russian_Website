@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { ru } from "@/lib/i18n/ru";
 
 import type L from "leaflet";
@@ -21,32 +20,12 @@ type RainViewerResponse = {
 
 type MapLayer = "precip" | "temp" | "wind" | "clouds";
 
-const RADAR_HUBS = [
-  { name: "Москва и Центр", slug: "moscow", lat: 55.7558, lon: 37.6173 },
-  { name: "Санкт-Петербург", slug: "saint-petersburg", lat: 59.9343, lon: 30.3351 },
-  { name: "Сочи и Юг", slug: "sochi", lat: 43.6028, lon: 39.7342 },
-  { name: "Екатеринбург и Урал", slug: "yekaterinburg", lat: 56.8389, lon: 60.6057 },
-];
-
 const LAYER_LABELS: Record<MapLayer, string> = {
   precip: "Радар осадков",
   temp: "Температура",
   wind: "Ветер",
   clouds: "Облачность",
 };
-
-function findNearestHub(lat: number, lon: number) {
-  let nearest = RADAR_HUBS[0];
-  let minDist = Infinity;
-  for (const hub of RADAR_HUBS) {
-    const dist = Math.hypot(lat - hub.lat, lon - hub.lon);
-    if (dist < minDist) {
-      minDist = dist;
-      nearest = hub;
-    }
-  }
-  return { hub: nearest, dist: minDist };
-}
 
 export default function RadarMap({
   latitude,
