@@ -73,7 +73,7 @@ export const resolveCity = cache(async (inputSlug: string): Promise<City | null>
   if (!inputSlug) return null;
 
   // 1. Strip weather- prefix if present (e.g. weather-moscow-4368 -> moscow-4368)
-  let cleanSlug = inputSlug.toLowerCase().replace(/^weather-/, "");
+  const cleanSlug = inputSlug.toLowerCase().replace(/^weather-/, "");
 
   // 2. Extract numeric ID if present (e.g. moscow-4368 -> moscow, 4368)
   const idMatch = cleanSlug.match(/^(.+)-(\d+)$/);
