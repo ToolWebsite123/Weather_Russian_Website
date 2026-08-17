@@ -1,6 +1,7 @@
 import { cache as reactCache } from "react";
 import { reportError } from "@/lib/monitoring";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cache = typeof reactCache === "function" ? reactCache : <T extends (...args: any[]) => any>(fn: T): T => fn;
 
 export type GeomagneticSeverity = "calm" | "minor" | "storm" | "severe";
