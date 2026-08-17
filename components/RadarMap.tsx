@@ -71,12 +71,8 @@ export default function RadarMap({
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.Layer | null>(null);
 
-  const { hub: nearestHub, dist } = findNearestHub(latitude, longitude);
-  const isOutside =
-    dist > 25 && (latitude < 30 || latitude > 75 || longitude < 15 || longitude > 180);
-
   useEffect(() => {
-    if (isOutside || !containerRef.current) return;
+    if (!containerRef.current) return;
 
     let mapInstance: L.Map | null = null;
 
@@ -125,10 +121,10 @@ export default function RadarMap({
         mapRef.current = null;
       }
     };
-  }, [latitude, longitude, cityName, isOutside]);
+  }, [latitude, longitude, cityName]);
 
   useEffect(() => {
-    if (!mapRef.current || !showPrecip || isOutside || layer !== "precip") return;
+    if (!mapRef.current || !showPrecip || layer !== "precip") return;
 
     let isMounted = true;
     const controller = new AbortController();
@@ -163,23 +159,38 @@ export default function RadarMap({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [showPrecip, isOutside, layer]);
+  }, [showPrecip, layer]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || isOutside) return;
+    if (!map) return;
 
     async function loadOverlay(targetMap: L.Map) {
       try {
         const LModule = await import("leaflet");
 
-        if (layer === "precip" && frames.length > 0 && !precipError) {
-          const currentFrame = frames[currentFrameIdx];
-          if (currentFrame) {
-            const tileLayer = LModule.tileLayer(currentFrame.path, {
-              opacity: 0.65,
-              zIndex: 1000,
-            });
+        if (layer === "precip") {
+          if (frames.length > 0 && !precipError) {
+            const currentFrame = frames[currentFrameIdx];
+            if (currentFrame) {
+              const tileLayer = LModule.tileLayer(currentFrame.path, {
+                opacity: 0.65,
+                zIndex: 1000,
+              });
+              if (tileLayer) {
+                tileLayer.addTo(targetMap);
+                overlayRef.current = tileLayer;
+              }
+            }
+          } else {
+            // Fallback global precipitation layer
+            const tileLayer = LModule.tileLayer(
+              "https://tile.open-meteo.com/static/out/precip.png",
+              {
+                opacity: 0.7,
+                zIndex: 1000,
+              }
+            );
             if (tileLayer) {
               tileLayer.addTo(targetMap);
               overlayRef.current = tileLayer;
@@ -235,7 +246,7 @@ export default function RadarMap({
         overlayRef.current = null;
       }
     };
-  }, [layer, frames, currentFrameIdx, precipError, isOutside]);
+  }, [layer, frames, currentFrameIdx, precipError]);
 
   useEffect(() => {
     if (!isPlaying || frames.length <= 1) return;
@@ -247,7 +258,7 @@ export default function RadarMap({
     return () => clearInterval(interval);
   }, [isPlaying, frames.length]);
 
-  if (isOutside || mapError) {
+  if (mapError) {
     return (
       <section className="rounded-2xl bg-white/80 p-6 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-8 space-y-4 text-center">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sky-100/80 text-sky-700">
@@ -263,19 +274,9 @@ export default function RadarMap({
         <div className="space-y-1">
           <h3 className="text-base font-semibold text-sky-950">{ru.radarUnavailable}</h3>
           <p className="text-xs text-cloud-500">
-            Локация «{cityName}» находится вне зоны покрытия метеорадара.
+            Не удалось загрузить интерактивную карту для «{cityName}».
           </p>
         </div>
-        {nearestHub && dist <= 15 && nearestHub.name !== cityName && (
-          <div>
-            <Link
-              href={`/pogoda/${nearestHub.slug}`}
-              className="inline-flex items-center gap-1 rounded-xl bg-sky-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-800"
-            >
-              {ru.viewNearestRadar(nearestHub.name)} &rarr;
-            </Link>
-          </div>
-        )}
       </section>
     );
   }
