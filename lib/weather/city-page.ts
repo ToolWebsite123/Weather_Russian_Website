@@ -5,6 +5,7 @@ import {
   upsertCityFromGeo,
 } from "@/lib/weather/cache";
 import { searchPlaces } from "@/lib/weather/open-meteo";
+import { findStaticCityBySlug } from "@/lib/weather/static-cities";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE } from "@/lib/session";
@@ -84,8 +85,11 @@ export const resolveCity = cache(async (inputSlug: string): Promise<City | null>
     idNumber = parseInt(idMatch[2], 10);
   }
 
-  // 3. Try finding by numeric ID first
+  // 3. Try finding by numeric ID first (both static cities and database)
   if (typeof idNumber === "number" && !isNaN(idNumber)) {
+    const staticById = findStaticCityBySlug(String(idNumber));
+    if (staticById) return staticById;
+
     try {
       const cityById = await prisma.city.findUnique({ where: { id: idNumber } });
       if (cityById) return cityById;
@@ -96,17 +100,11 @@ export const resolveCity = cache(async (inputSlug: string): Promise<City | null>
 
   // 4. Try finding by exact slug or alias
   const targetSlug = ALIASES[baseSlug] ?? baseSlug;
-  const existing = await getCityBySlug(targetSlug);
+  const existing =
+    (await getCityBySlug(cleanSlug)) ||
+    (await getCityBySlug(targetSlug)) ||
+    (await getCityBySlug(baseSlug));
   if (existing) return existing;
-
-  if (targetSlug !== baseSlug) {
-    const existingRaw = await getCityBySlug(baseSlug);
-    if (existingRaw) return existingRaw;
-  }
-  if (cleanSlug !== baseSlug) {
-    const existingFull = await getCityBySlug(cleanSlug);
-    if (existingFull) return existingFull;
-  }
 
   const slug = baseSlug;
 
