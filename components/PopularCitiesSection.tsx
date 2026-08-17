@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { buildCityUrl } from "@/lib/cities";
 
 const COUNTRY_DATA = [
   {
@@ -135,7 +136,7 @@ export function PopularCitiesSection() {
         {currentCountry.cities.map((city) => (
           <Link
             key={city.slug}
-            href={`/pogoda/${city.slug}`}
+            href={buildCityUrl(city)}
             prefetch={true}
             className="block text-[#0077ff] hover:underline transition-colors font-normal truncate"
           >

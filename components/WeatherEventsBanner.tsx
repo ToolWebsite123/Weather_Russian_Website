@@ -56,7 +56,7 @@ function getSeasonalEvent() {
       title: "Белые ночи",
       description: "Погода в Санкт-Петербурге во время Белых ночей",
       icon: "🌅",
-      href: "/pogoda/saint-petersburg",
+      href: "/weather-saint-petersburg",
     };
   }
 
@@ -73,7 +73,7 @@ function getSeasonalEvent() {
     title: "Погода на дороге",
     description: "Проверьте прогноз перед поездкой — состояние дорог и видимость",
     icon: "🚗",
-    href: "/pogoda/moscow",
+    href: "/weather-moscow",
   };
 }
 

@@ -10,7 +10,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import { getCountryNameRu, getCountryFlag } from "@/lib/cities";
+import { getCountryNameRu, getCountryFlag, buildCityUrl } from "@/lib/cities";
 import { ru } from "@/lib/i18n/ru";
 import type { GeocodingResult } from "@/types/weather";
 
@@ -63,9 +63,9 @@ export function CitySearch() {
     };
   }, [query]);
 
-  function goTo(slug: string) {
+  function goTo(slug: string, id?: number | string) {
     startTransition(() => {
-      router.push(`/pogoda/${slug}`);
+      router.push(buildCityUrl({ slug, id }));
       setOpen(false);
       setActiveIndex(-1);
     });
@@ -95,7 +95,7 @@ export function CitySearch() {
     } else if (e.key === "Enter") {
       if (open && activeIndex >= 0 && results[activeIndex]) {
         e.preventDefault();
-        goTo(results[activeIndex].slug);
+        goTo(results[activeIndex].slug, results[activeIndex].id);
       }
     }
   }
@@ -103,17 +103,17 @@ export function CitySearch() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (open && activeIndex >= 0 && results[activeIndex]) {
-      goTo(results[activeIndex].slug);
+      goTo(results[activeIndex].slug, results[activeIndex].id);
       return;
     }
     if (results[0]) {
-      goTo(results[0].slug);
+      goTo(results[0].slug, results[0].id);
       return;
     }
     const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
     if (!res.ok) return;
     const data = (await res.json()) as { results: GeocodingResult[] };
-    if (data.results[0]) goTo(data.results[0].slug);
+    if (data.results[0]) goTo(data.results[0].slug, data.results[0].id);
   }
 
   return (
@@ -158,6 +158,7 @@ export function CitySearch() {
             const flag = r.countryFlag || getCountryFlag(r.country);
             const countryRu = r.countryNameRu || getCountryNameRu(r.country);
             const locationText = [r.admin1, countryRu].filter(Boolean).join(", ");
+            const targetUrl = buildCityUrl({ slug: r.slug, id: r.id });
 
             return (
               <li
@@ -171,10 +172,10 @@ export function CitySearch() {
                   className={`flex w-full items-center justify-between rounded-lg px-3.5 py-2.5 text-left transition-colors ${
                     isActive ? "bg-sky-100/90 text-sky-950" : "hover:bg-sky-50 text-sky-900"
                   }`}
-                  onClick={() => goTo(r.slug)}
+                  onClick={() => goTo(r.slug, r.id)}
                   onMouseEnter={() => {
                     setActiveIndex(index);
-                    router.prefetch(`/pogoda/${r.slug}`);
+                    router.prefetch(targetUrl);
                   }}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -216,14 +217,14 @@ export function CitySearch() {
 export function PopularCityLinks({
   cities,
 }: {
-  cities: { slug: string; name: string }[];
+  cities: { slug: string; name: string; id?: number | string }[];
 }) {
   return (
     <div className="flex flex-wrap gap-2">
       {cities.map((c) => (
         <Link
           key={c.slug}
-          href={`/pogoda/${c.slug}`}
+          href={buildCityUrl(c)}
           prefetch={true}
           className="rounded-full border border-sky-200/70 bg-white/70 px-3 py-1.5 text-sm text-sky-900 transition hover:border-sun-400 hover:bg-sun-50"
         >

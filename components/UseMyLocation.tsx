@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ru } from "@/lib/i18n/ru";
+import { buildCityUrl } from "@/lib/cities";
 
 export function UseMyLocation() {
   const router = useRouter();
@@ -25,8 +26,8 @@ export function UseMyLocation() {
             setError(ru.errorGeneric);
             return;
           }
-          const data = (await res.json()) as { slug: string };
-          router.push(`/pogoda/${data.slug}`);
+          const data = (await res.json()) as { slug: string; id?: number | string };
+          router.push(buildCityUrl(data));
         });
       },
       () => setError("Не удалось определить местоположение"),

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { formatPressureMmHg, formatTimeAgo, formatWindDir } from "@/lib/cities";
+import { formatPressureMmHg, formatTimeAgo, formatWindDir, buildCityUrl } from "@/lib/cities";
 import { useUnit } from "@/components/UnitContext";
 import { ru } from "@/lib/i18n/ru";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
@@ -451,7 +451,7 @@ export function CurrentWeatherCard({
           <div className="md:col-span-5 space-y-4">
             <div>
               <Link
-                href={`/pogoda/${slug}`}
+                href={buildCityUrl({ slug: citySlug || slug })}
                 className="text-xl sm:text-2xl font-normal text-[#0077ff] hover:underline transition-colors"
               >
                 {cityName}
@@ -1352,7 +1352,7 @@ export function NearbyCities({
         {cities.map((c) => (
           <Link
             key={c.slug}
-            href={`/pogoda/${c.slug}`}
+            href={buildCityUrl(c)}
             className="inline-flex items-center gap-1 rounded-xl bg-sky-50/80 px-3 py-1.5 text-xs font-semibold text-sky-900 ring-1 ring-sky-200/70 transition-all hover:bg-sky-500 hover:text-white active:scale-95 shadow-sm"
           >
             <span>{c.name}</span>

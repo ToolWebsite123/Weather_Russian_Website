@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buildCityUrl } from "@/lib/cities";
 import type { CurrentWeather } from "@/types/weather";
 import type { GeomagneticData } from "@/lib/weather/geomagnetic";
 import { ru } from "@/lib/i18n/ru";
@@ -91,7 +92,7 @@ export function RegionalShortcutsBar() {
         {REGIONAL_SHORTCUTS.map((item) => (
           <Link
             key={item.slug}
-            href={`/pogoda/${item.slug}`}
+            href={buildCityUrl(item)}
             className="rounded-xl bg-sky-50/80 px-3.5 py-2 text-xs font-bold text-sky-900 border border-sky-200/70 hover:bg-sky-600 hover:text-white hover:border-sky-600 transition-all duration-150 shadow-2xs active:scale-95 text-center flex-1 min-w-[7.5rem]"
           >
             {item.name}

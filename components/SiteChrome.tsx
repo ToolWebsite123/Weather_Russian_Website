@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ru } from "@/lib/i18n/ru";
+import { buildCityUrl } from "@/lib/cities";
 import { useUnit } from "@/components/UnitContext";
 import { AppInstallModal } from "@/components/AppInstallModal";
 
@@ -252,7 +253,7 @@ export function SiteHeader({
                 {searchResults.map((r) => (
                   <Link
                     key={`${r.id}-${r.slug}`}
-                    href={`/pogoda/${r.slug}`}
+                    href={buildCityUrl(r)}
                     className="block px-3 py-2 text-left hover:bg-sky-50 transition-colors"
                     onClick={() => {
                       setIsSearchFocused(false);
@@ -313,7 +314,7 @@ export function SiteHeader({
                     {favorites.map((f) => (
                       <Link
                         key={f.slug}
-                        href={`/pogoda/${f.slug}`}
+                        href={buildCityUrl(f)}
                         className="block rounded-lg px-2.5 py-1.5 text-xs font-medium text-sky-950 hover:bg-sky-50 transition-colors truncate"
                         onClick={() => setIsFavOpen(false)}
                       >

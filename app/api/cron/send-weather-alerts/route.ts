@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 import { prisma } from "@/lib/prisma";
+import { buildCityUrl } from "@/lib/cities";
 import { listPopularCities, getCachedWeatherForCity } from "@/lib/weather/cache";
 import { getActiveAlerts } from "@/lib/weather/alerts";
 
@@ -103,7 +104,7 @@ async function handleSendAlerts(req: NextRequest) {
               payloads.push({
                 title: `🚨 ${alert.title} — ${city.name}`,
                 body: alert.description,
-                url: `/pogoda/${city.slug}`,
+                url: buildCityUrl(city),
                 tag: `alert-${city.slug}-${Date.now()}`,
               });
             }

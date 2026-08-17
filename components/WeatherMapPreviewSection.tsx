@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ru } from "@/lib/i18n/ru";
+import { buildCityUrl } from "@/lib/cities";
 import { SectionHeading } from "@/components/SectionHeading";
 
 const DynamicRadarMap = dynamic(() => import("@/components/RadarMap"), {
@@ -40,7 +41,7 @@ export function WeatherMapPreviewSection() {
         <SectionHeading
           action={
             <Link
-              href={`/pogoda/${selectedHub.slug}`}
+              href={buildCityUrl(selectedHub)}
               className="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline transition-colors"
             >
               Карта погоды {selectedHub.name} &rarr;

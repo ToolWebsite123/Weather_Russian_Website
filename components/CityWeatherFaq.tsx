@@ -71,7 +71,7 @@ export function CityWeatherFaq({ city, weather }: Props) {
     "@context": "https://schema.org",
     "@type": "WeatherForecast",
     name: `Прогноз погоды ${locative}`,
-    url: `${config.siteUrl}/pogoda/${city.slug}`,
+    url: `${config.siteUrl}${buildCityUrl(city)}`,
     datePublished: publishedIso,
     validFrom: publishedIso,
     location: {

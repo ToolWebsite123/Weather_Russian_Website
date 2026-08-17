@@ -4,12 +4,17 @@ const nextConfig = {
     return [
       {
         source: "/pogoda/ekaterinburg",
-        destination: "/pogoda/yekaterinburg",
+        destination: "/weather-yekaterinburg",
         permanent: true,
       },
       {
         source: "/pogoda/ekaterinburg/:path*",
-        destination: "/pogoda/yekaterinburg/:path*",
+        destination: "/weather-yekaterinburg/:path*",
+        permanent: true,
+      },
+      {
+        source: "/pogoda/:slug*",
+        destination: "/weather-:slug*",
         permanent: true,
       },
     ];
