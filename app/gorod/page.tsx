@@ -4,6 +4,7 @@ import { getFavoritesForSession } from "@/lib/weather/city-page";
 import { getAllCatalogCountries } from "@/lib/weather/countries";
 import { PageShell } from "@/components/SiteChrome";
 import { config } from "@/lib/config";
+import { buildCityUrl } from "@/lib/cities";
 
 export const revalidate = 3600; // 1 hour ISR
 
@@ -94,7 +95,7 @@ export default async function CityCatalogPage() {
                 {country.cities.map((city) => (
                   <Link
                     key={city.slug}
-                    href={`/pogoda/${city.slug}`}
+                    href={buildCityUrl(city)}
                     prefetch={true}
                     className="block text-[#0077ff] hover:underline transition-colors font-normal truncate"
                   >

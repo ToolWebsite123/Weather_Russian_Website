@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getRelatedCountryCities } from "@/lib/weather/countries";
+import { buildCityUrl } from "@/lib/cities";
 
 export function CountryRelatedCities({
   city,
@@ -30,7 +31,7 @@ export function CountryRelatedCities({
           return (
             <Link
               key={c.slug}
-              href={`/pogoda/${c.slug}`}
+              href={buildCityUrl(c)}
               prefetch={true}
               className={`block truncate transition-colors ${
                 isCurrent

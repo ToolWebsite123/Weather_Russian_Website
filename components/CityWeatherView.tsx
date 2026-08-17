@@ -201,7 +201,7 @@ export async function CityWeatherView({
   return (
     <PageShell favorites={favorites}>
       <RememberLastCity slug={city.slug} />
-      <CategoryTabBar slug={city.slug} active={active} />
+      <CategoryTabBar slug={`weather-${city.slug.replace(/^weather-/, "")}-${city.id}`} active={active} />
       {targetId && <AutoScrollTarget targetId={targetId} />}
 
       <main className="mx-auto max-w-5xl space-y-4 px-4 py-4 sm:space-y-6 sm:py-6 sm:px-6">

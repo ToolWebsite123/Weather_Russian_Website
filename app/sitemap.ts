@@ -3,6 +3,7 @@ import { config } from "@/lib/config";
 import { getAllArticles } from "@/lib/content/articles";
 import { prisma } from "@/lib/prisma";
 import { getAllStaticCities } from "@/lib/weather/static-cities";
+import { buildCityUrl } from "@/lib/cities";
 
 const FORECAST_TABS = [
   "",
@@ -104,7 +105,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const city of cities) {
     for (const tab of FORECAST_TABS) {
       cityRoutes.push({
-        url: `${baseUrl}/pogoda/${city.slug}${tab}`,
+        url: `${baseUrl}${buildCityUrl(city, tab)}`,
         lastModified: now,
         changeFrequency: "hourly",
         priority: tab === "" ? 0.9 : 0.8,

@@ -11,13 +11,13 @@ import { getCityLocative } from "@/lib/i18n/declension";
 import { shouldIndexCity, buildCityUrl } from "@/lib/cities";
 import { config } from "@/lib/config";
 
-export const revalidate = 900; // 15-minute ISR revalidation matching weather cache TTL
+export const revalidate = 900;
 
 type Props = { params: { slug: string } };
 
 export async function generateStaticParams() {
   const cities = await listPopularCities(50).catch(() => []);
-  return cities.map((c) => ({ slug: c.slug }));
+  return cities.map((c) => ({ slug: `weather-${c.slug}-${c.id}` }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -56,13 +56,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CityPage({
+export default async function WeatherCityPage({
   params,
   searchParams,
 }: Props & { searchParams?: { view?: string } }) {
   const city = await resolveCity(params.slug);
-  const cityUrl = `${config.siteUrl}/pogoda/${params.slug}`;
-
+  const cityUrl = city ? `${config.siteUrl}${buildCityUrl(city)}` : "";
   const locative = city ? getCityLocative(city.name) : "";
 
   const faqSchemaBlock = city

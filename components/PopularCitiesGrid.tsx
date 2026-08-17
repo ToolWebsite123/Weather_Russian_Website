@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { formatTemp } from "@/lib/cities";
+import { formatTemp, buildCityUrl } from "@/lib/cities";
 import { weatherCodeLabel } from "@/lib/weather/wmo";
 import { WeatherIcon } from "@/components/WeatherIcon";
 import { SectionHeading } from "@/components/SectionHeading";
@@ -52,7 +52,7 @@ export function PopularCitiesGrid({
           return (
             <Link
               key={city.slug}
-              href={`/pogoda/${city.slug}`}
+              href={buildCityUrl(city)}
               className="group flex flex-col justify-between rounded-2xl bg-white/95 p-4 border border-sky-200/90 shadow-md shadow-sky-900/5 transition-all duration-200 hover:-translate-y-0.5 hover:bg-sky-50/70 hover:shadow-lg hover:border-sky-300 backdrop-blur-md motion-reduce:transform-none"
             >
               <div>

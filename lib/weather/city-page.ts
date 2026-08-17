@@ -69,16 +69,46 @@ const ALIASES: Record<string, string> = {
   "rostov-na-donu": "rostov-on-don",
 };
 
-export const resolveCity = cache(async (slug: string): Promise<City | null> => {
-  const targetSlug = ALIASES[slug.toLowerCase()] ?? slug;
+export const resolveCity = cache(async (inputSlug: string): Promise<City | null> => {
+  if (!inputSlug) return null;
+
+  // 1. Strip weather- prefix if present (e.g. weather-moscow-4368 -> moscow-4368)
+  let cleanSlug = inputSlug.toLowerCase().replace(/^weather-/, "");
+
+  // 2. Extract numeric ID if present (e.g. moscow-4368 -> moscow, 4368)
+  const idMatch = cleanSlug.match(/^(.+)-(\d+)$/);
+  let idNumber: number | undefined;
+  let baseSlug = cleanSlug;
+  if (idMatch) {
+    baseSlug = idMatch[1];
+    idNumber = parseInt(idMatch[2], 10);
+  }
+
+  // 3. Try finding by numeric ID first
+  if (typeof idNumber === "number" && !isNaN(idNumber)) {
+    try {
+      const cityById = await prisma.city.findUnique({ where: { id: idNumber } });
+      if (cityById) return cityById;
+    } catch {
+      // database offline or error
+    }
+  }
+
+  // 4. Try finding by exact slug or alias
+  const targetSlug = ALIASES[baseSlug] ?? baseSlug;
   const existing = await getCityBySlug(targetSlug);
   if (existing) return existing;
 
-  // Also check if original slug exists without alias
-  if (targetSlug !== slug) {
-    const existingRaw = await getCityBySlug(slug);
+  if (targetSlug !== baseSlug) {
+    const existingRaw = await getCityBySlug(baseSlug);
     if (existingRaw) return existingRaw;
   }
+  if (cleanSlug !== baseSlug) {
+    const existingFull = await getCityBySlug(cleanSlug);
+    if (existingFull) return existingFull;
+  }
+
+  const slug = baseSlug;
 
   // Fallback: treat slug tokens as search
   try {

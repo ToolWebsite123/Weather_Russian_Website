@@ -1,3 +1,19 @@
+export function buildCityUrl(city: { slug: string; id?: number | string }, tab?: string): string {
+  const cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "");
+  let path = `/weather-${cleanSlug}`;
+  if (city.id != null) {
+    const idStr = String(city.id);
+    if (!cleanSlug.endsWith(`-${idStr}`)) {
+      path += `-${idStr}`;
+    }
+  }
+  if (tab) {
+    const cleanTab = tab.replace(/^\//, "");
+    path += `/${cleanTab}`;
+  }
+  return path;
+}
+
 export function slugifyCity(name: string, admin1?: string): string {
   const includeAdmin = Boolean(
     admin1 && admin1.trim().toLowerCase() !== name.trim().toLowerCase(),
