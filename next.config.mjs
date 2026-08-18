@@ -22,6 +22,71 @@ const nextConfig = {
         destination: "/weather-:slug/:path*",
         permanent: true,
       },
+      {
+        source: "/:slug/10-dney",
+        destination: "/:slug/10-days",
+        permanent: true,
+      },
+      {
+        source: "/:slug/14-dney",
+        destination: "/:slug/14-days",
+        permanent: true,
+      },
+      {
+        source: "/:slug/2-weeks",
+        destination: "/:slug/14-days",
+        permanent: true,
+      },
+      {
+        source: "/:slug/3-dnya",
+        destination: "/:slug/3-days",
+        permanent: true,
+      },
+      {
+        source: "/:slug/7-dney",
+        destination: "/:slug/7-days",
+        permanent: true,
+      },
+      {
+        source: "/:slug/archiv",
+        destination: "/:slug/archive",
+        permanent: true,
+      },
+      {
+        source: "/:slug/dorogi",
+        destination: "/:slug/road",
+        permanent: true,
+      },
+      {
+        source: "/:slug/gm-aktivnost",
+        destination: "/:slug/gm",
+        permanent: true,
+      },
+      {
+        source: "/:slug/mesyats",
+        destination: "/:slug/month",
+        permanent: true,
+      },
+      {
+        source: "/:slug/pyltsa",
+        destination: "/:slug/pollen",
+        permanent: true,
+      },
+      {
+        source: "/:slug/zavtra",
+        destination: "/:slug/tomorrow",
+        permanent: true,
+      },
+      {
+        source: "/:slug/vchera",
+        destination: "/:slug/yesterday",
+        permanent: true,
+      },
+      {
+        source: "/:slug/vykhodnye",
+        destination: "/:slug/weekend",
+        permanent: true,
+      },
     ];
   },
 };

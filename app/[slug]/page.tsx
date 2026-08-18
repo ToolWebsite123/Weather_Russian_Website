@@ -83,6 +83,29 @@ export default async function WeatherCityPage({
       }
     : null;
 
+  const weatherData = city ? await loadCityWeather(params.slug) : null;
+  const currentWeather = weatherData?.weather?.current;
+  const todayDaily = weatherData?.weather?.daily?.[0];
+
+  const weatherForecastSchemaBlock = city && currentWeather && todayDaily
+    ? {
+        "@type": "WeatherForecast",
+        name: `Прогноз погоды ${locative}`,
+        url: cityUrl,
+        datePublished: new Date().toISOString(),
+        temperature: `${Math.round(currentWeather.temperature)}°C`,
+        feelsLikeTemperature: `${Math.round(currentWeather.feelsLike)}°C`,
+        humidity: `${currentWeather.humidity}%`,
+        pressure: `${Math.round(currentWeather.pressure * 0.750062)} mmHg`,
+        windSpeed: `${currentWeather.windSpeed} m/s`,
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: city.latitude,
+          longitude: city.longitude,
+        },
+      }
+    : null;
+
   const jsonLd = city
     ? {
         "@context": "https://schema.org",
@@ -124,6 +147,7 @@ export default async function WeatherCityPage({
               longitude: city.longitude,
             },
           },
+          weatherForecastSchemaBlock,
           faqSchemaBlock,
         ].filter(Boolean),
       }

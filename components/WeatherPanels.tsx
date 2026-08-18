@@ -203,24 +203,24 @@ export function CategoryTabBar({
   const activeNormalized =
     (
       {
-        tomorrow: "zavtra",
-        yesterday: "vchera",
-        weekend: "vykhodnye",
-        "3": "3-dnya",
-        "3-days": "3-dnya",
-        "7": "7-dney",
-        "7-days": "7-dney",
-        weekly: "7-dney",
-        "10": "10-dney",
-        "10-days": "10-dney",
-        "14": "14-dney",
-        "14-days": "14-dney",
-        "2-weeks": "14-dney",
-        month: "mesyats",
-        archive: "archiv",
-        pollen: "pyltsa",
-        road: "dorogi",
-        gm: "gm-aktivnost",
+        zavtra: "tomorrow",
+        vchera: "yesterday",
+        vykhodnye: "weekend",
+        "3": "3-days",
+        "3-dnya": "3-days",
+        "7": "7-days",
+        "7-dney": "7-days",
+        weekly: "7-days",
+        "10": "10-days",
+        "10-dney": "10-days",
+        "14": "14-days",
+        "14-dney": "14-days",
+        "2-weeks": "14-days",
+        mesyats: "month",
+        archiv: "archive",
+        pyltsa: "pollen",
+        dorogi: "road",
+        "gm-aktivnost": "gm",
       } as Record<string, string>
     )[active] || active;
 
@@ -228,17 +228,17 @@ export function CategoryTabBar({
   const basePath = `/weather-${rawSlug}`;
 
   const tabs = [
-    { id: "vchera", href: `${basePath}/yesterday`, label: "Вчера" },
+    { id: "yesterday", href: `${basePath}/yesterday`, label: "Вчера" },
     { id: "now", href: `${basePath}/now`, label: "Сейчас" },
     { id: "today", href: `${basePath}`, label: ru.today },
-    { id: "zavtra", href: `${basePath}/tomorrow`, label: ru.tomorrow },
-    { id: "3-dnya", href: `${basePath}/3-days`, label: ru.days3 },
-    { id: "vykhodnye", href: `${basePath}/weekend`, label: "Выходные" },
-    { id: "7-dney", href: `${basePath}/7-days`, label: ru.days7 },
-    { id: "10-dney", href: `${basePath}/10-days`, label: ru.days10 },
-    { id: "14-dney", href: `${basePath}/14-days`, label: ru.days14 },
-    { id: "mesyats", href: `${basePath}/month`, label: "Месяц" },
-    { id: "archiv", href: `${basePath}/archive`, label: "Архив" },
+    { id: "tomorrow", href: `${basePath}/tomorrow`, label: ru.tomorrow },
+    { id: "3-days", href: `${basePath}/3-days`, label: ru.days3 },
+    { id: "weekend", href: `${basePath}/weekend`, label: "Выходные" },
+    { id: "7-days", href: `${basePath}/7-days`, label: ru.days7 },
+    { id: "10-days", href: `${basePath}/10-days`, label: ru.days10 },
+    { id: "14-days", href: `${basePath}/14-days`, label: ru.days14 },
+    { id: "month", href: `${basePath}/month`, label: "Месяц" },
+    { id: "archive", href: `${basePath}/archive`, label: "Архив" },
   ];
 
   const featureTabs = [
@@ -263,7 +263,7 @@ export function CategoryTabBar({
       ),
     },
     {
-      id: "pyltsa",
+      id: "pollen",
       href: `${basePath}/pollen`,
       label: "Пыльца",
       icon: (
@@ -282,7 +282,7 @@ export function CategoryTabBar({
       ),
     },
     {
-      id: "dorogi",
+      id: "road",
       href: `${basePath}/road`,
       label: "Дороги",
       icon: (
@@ -303,7 +303,7 @@ export function CategoryTabBar({
       ),
     },
     {
-      id: "gm-aktivnost",
+      id: "gm",
       href: `${basePath}/gm`,
       label: "Г/м активность",
       icon: (

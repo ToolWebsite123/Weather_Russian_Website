@@ -50,7 +50,9 @@ import { fetchAirQuality } from "@/lib/weather/air-quality";
 import { getActiveAlerts } from "@/lib/weather/alerts";
 import { getUpcomingWeekendDays } from "@/lib/weather/weekend";
 import { ru } from "@/lib/i18n/ru";
-import { formatDateTimeRu } from "@/lib/cities";
+import { getCityLocative } from "@/lib/i18n/declension";
+import { formatDateTimeRu, formatTemp, formatWindDir, formatPressureMmHg } from "@/lib/cities";
+import { weatherCodeLabel } from "@/lib/weather/wmo";
 import { notFound } from "next/navigation";
 
 export async function CityWeatherView({
@@ -71,19 +73,28 @@ export async function CityWeatherView({
     | "weekend"
     | "vykhodnye"
     | "3"
+    | "3-days"
     | "3-dnya"
     | "7"
+    | "7-days"
     | "7-dney"
     | "10"
+    | "10-days"
     | "10-dney"
     | "14"
+    | "14-days"
     | "14-dney"
+    | "month"
     | "mesyats"
     | "archive"
+    | "yesterday"
     | "vchera"
     | "radar"
+    | "pollen"
     | "pyltsa"
+    | "road"
     | "dorogi"
+    | "gm"
     | "gm-aktivnost";
   dailyLimit?: number;
   showHourly?: boolean;
@@ -104,8 +115,8 @@ export async function CityWeatherView({
   const alerts = getActiveAlerts(weather);
 
   // Performance optimization: conditionally fetch geomagnetic / air quality only if active tab uses them
-  const needsGeomagnetic = active === "now" || active === "today" || active === "gm-aktivnost";
-  const needsAirQuality = active === "now" || active === "today" || active === "pyltsa";
+  const needsGeomagnetic = active === "now" || active === "today" || active === "gm" || active === "gm-aktivnost";
+  const needsAirQuality = active === "now" || active === "today" || active === "pollen" || active === "pyltsa";
 
   const [favorites, favorited, nearby, geomagnetic, airQuality] = await Promise.all([
     getFavoritesForSession().catch(() => []),
@@ -115,7 +126,7 @@ export async function CityWeatherView({
     needsAirQuality ? fetchAirQuality(city.latitude, city.longitude).catch(() => null) : Promise.resolve(null),
   ]);
 
-  const hasYesterdayData = (isYesterday || active === "vchera") && weather.yesterday != null;
+  const hasYesterdayData = (isYesterday || active === "yesterday" || active === "vchera") && weather.yesterday != null;
 
   let daily = weather.daily;
   if (hasYesterdayData && weather.yesterday) {
@@ -124,13 +135,13 @@ export async function CityWeatherView({
     daily = weather.daily.slice(1, 2);
   } else if (weekendOnly || active === "weekend" || active === "vykhodnye") {
     daily = getUpcomingWeekendDays(weather.daily);
-  } else if (active === "3" || active === "3-dnya") {
+  } else if (active === "3" || active === "3-days" || active === "3-dnya") {
     daily = weather.daily.slice(0, 3);
-  } else if (active === "7" || active === "7-dney") {
+  } else if (active === "7" || active === "7-days" || active === "7-dney") {
     daily = weather.daily.slice(0, 7);
-  } else if (active === "10" || active === "10-dney") {
+  } else if (active === "10" || active === "10-days" || active === "10-dney") {
     daily = weather.daily.slice(0, 10);
-  } else if (active === "14" || active === "14-dney" || active === "mesyats") {
+  } else if (active === "14" || active === "14-days" || active === "14-dney" || active === "month" || active === "mesyats") {
     daily = weather.daily.slice(0, 14);
   } else if (dailyLimit) {
     daily = weather.daily.slice(0, dailyLimit);
@@ -235,6 +246,20 @@ export async function CityWeatherView({
           />
         ) : (
           <>
+            {/* AI Direct Answer Summary Box (GEO / AEO Optimization) */}
+            <div className="rounded-2xl bg-gradient-to-r from-sky-900/90 via-slate-900 to-indigo-950 p-4 sm:p-5 text-white shadow-lg border border-sky-500/20 backdrop-blur-md animate-fade-in-up stagger-1 motion-reduce:animate-none space-y-1.5">
+              <div className="flex items-center gap-2 text-sky-400 font-semibold text-xs uppercase tracking-wider">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                </span>
+                Экспресс-прогноз погоды (AI Summary)
+              </div>
+              <p className="text-xs sm:text-sm text-slate-100 leading-relaxed font-normal">
+                Сегодня {getCityLocative(city.name)} ожидается {weatherCodeLabel(weather.daily[0]?.weatherCode ?? weather.current.weatherCode).toLowerCase()} с температурой от {formatTemp(weather.daily[0]?.tempMin ?? weather.current.temperature)} до {formatTemp(weather.daily[0]?.tempMax ?? weather.current.temperature)} (сейчас {formatTemp(weather.current.temperature)}, ощущается как {formatTemp(weather.current.feelsLike)}). Ветер {formatWindDir(weather.current.windDirection)} {weather.current.windSpeed} м/с, влажность {weather.current.humidity}%, атмосферное давление {formatPressureMmHg(weather.current.pressure)}.
+              </p>
+            </div>
+
             {/* Header Summary / Hero Card for All Tabs */}
             <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">
               {active === "now" ? (
