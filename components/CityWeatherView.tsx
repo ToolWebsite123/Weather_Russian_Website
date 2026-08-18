@@ -5,7 +5,6 @@ import {
   HourlyForecast,
   NearbyCities,
   NowWeatherHeroCard,
-  YesterdayHourlyTable,
 } from "@/components/WeatherPanels";
 import { Suspense } from "react";
 import { HistoricalComparisonCard } from "@/components/HistoricalComparisonCard";
