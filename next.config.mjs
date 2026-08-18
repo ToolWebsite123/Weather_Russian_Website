@@ -13,6 +13,26 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: "/weather-abbottabad-haiber-pahtunhva-:id",
+        destination: "/weather-abbottabad-3569",
+        permanent: true,
+      },
+      {
+        source: "/weather-abbottabad-haiber-pahtunhva-:id/:path*",
+        destination: "/weather-abbottabad-3569/:path*",
+        permanent: true,
+      },
+      {
+        source: "/weather-abbottabad-haiber-pahtunhva",
+        destination: "/weather-abbottabad-3569",
+        permanent: true,
+      },
+      {
+        source: "/weather-abbottabad-haiber-pahtunhva/:path*",
+        destination: "/weather-abbottabad-3569/:path*",
+        permanent: true,
+      },
+      {
         source: "/weather-feisalabad-pendzhab-:id",
         destination: "/weather-faisalabad-5595",
         permanent: true,

@@ -55,9 +55,63 @@ export const GISMETEO_CITY_CODES: Record<string, number> = {
   minsk: 4248,
 };
 
+export function getCanonicalBaseSlug(slug: string): string {
+  let clean = slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
+  clean = clean.replace(/-\d+$/, "").replace(/-+$/, "");
+
+  const knownAliases: Record<string, string> = {
+    "abbottabad-haiber-pahtunhva": "abbottabad",
+    "abbottabad-khayber-pakhtunkhva": "abbottabad",
+    "feisalabad-pendzhab": "faisalabad",
+    "faisalabad-pendzhab": "faisalabad",
+    "karachi-sind": "karachi",
+    "lahore-pendzhab": "lahore",
+    "islamabad-islamabad": "islamabad",
+    "rawalpindi-pendzhab": "rawalpindi",
+    "peshawar-khayber-pakhtunkhva": "peshawar",
+    "multan-pendzhab": "multan",
+    "gujranwala-pendzhab": "gujranwala",
+    "sialkot-pendzhab": "sialkot",
+    "quetta-beludzhistan": "quetta",
+    "hyderabad-sind": "hyderabad",
+    "bahawalpur-pendzhab": "bahawalpur",
+    "sargodha-pendzhab": "sargodha",
+    "sukkur-sind": "sukkur",
+    "mardan-khayber-pakhtunkhva": "mardan",
+    "gujrat-pendzhab": "gujrat",
+    "sahiwal-pendzhab": "sahiwal",
+    "dubai-dubai": "dubai",
+    "istanbul-stambul": "istanbul",
+    stambul: "istanbul",
+    moskva: "moscow",
+    spb: "saint-petersburg",
+    piter: "saint-petersburg",
+  };
+
+  if (knownAliases[clean]) return knownAliases[clean];
+
+  const regionSuffixes = [
+    "-haiber-pahtunhva",
+    "-khayber-pakhtunkhva",
+    "-pendzhab",
+    "-sind",
+    "-beludzhistan",
+    "-islamabad",
+    "-stambul",
+    "-dubai",
+  ];
+
+  for (const suffix of regionSuffixes) {
+    if (clean.endsWith(suffix) && clean.length > suffix.length) {
+      return clean.slice(0, -suffix.length);
+    }
+  }
+
+  return clean;
+}
+
 export function getCityCode(city: { slug: string; id?: number | string }): number {
-  const clean = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
-  const base = clean.replace(/-\d+$/, "");
+  const canonical = getCanonicalBaseSlug(city.slug);
 
   if (city.id != null) {
     const numId = typeof city.id === "number" ? city.id : parseInt(String(city.id), 10);
@@ -66,26 +120,24 @@ export function getCityCode(city: { slug: string; id?: number | string }): numbe
     }
   }
 
-  if (GISMETEO_CITY_CODES[base]) return GISMETEO_CITY_CODES[base];
-  if (GISMETEO_CITY_CODES[clean]) return GISMETEO_CITY_CODES[clean];
+  if (GISMETEO_CITY_CODES[canonical]) return GISMETEO_CITY_CODES[canonical];
 
-  const firstPart = base.split("-")[0];
+  const firstPart = canonical.split("-")[0];
   if (firstPart && GISMETEO_CITY_CODES[firstPart]) return GISMETEO_CITY_CODES[firstPart];
 
   // Deterministic positive 4-digit code generator for any city in the world
   let hash = 5381;
-  for (let i = 0; i < clean.length; i++) {
-    hash = (hash * 33) ^ clean.charCodeAt(i);
+  for (let i = 0; i < canonical.length; i++) {
+    hash = (hash * 33) ^ canonical.charCodeAt(i);
   }
   return (Math.abs(hash) % 8999) + 1000;
 }
 
 export function buildCityUrl(city: { slug: string; id?: number | string }, tab?: string): string {
-  const cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
-  const baseSlug = cleanSlug.replace(/-\d+$/, "");
-  const code = getCityCode({ slug: baseSlug, id: city.id });
+  const canonicalSlug = getCanonicalBaseSlug(city.slug);
+  const code = getCityCode({ slug: canonicalSlug, id: city.id });
 
-  let path = `/weather-${baseSlug}-${code}`;
+  let path = `/weather-${canonicalSlug}-${code}`;
   if (tab) {
     const cleanTab = tab.replace(/^\//, "");
     path += `/${cleanTab}`;
