@@ -194,9 +194,11 @@ export function SunArcTimeline({
 
 export function CategoryTabBar({
   slug,
+  cityId,
   active = "now",
 }: {
   slug: string;
+  cityId?: number | string;
   active?: string;
   anchorPrefix?: string;
 }) {
@@ -224,27 +226,26 @@ export function CategoryTabBar({
       } as Record<string, string>
     )[active] || active;
 
-  const rawSlug = slug.replace(/^(weather-|pogoda\/|pogoda-)/, "");
-  const basePath = `/weather-${rawSlug}`;
+  const cityObj = { slug, id: cityId };
 
   const tabs = [
-    { id: "yesterday", href: `${basePath}/yesterday`, label: "Вчера" },
-    { id: "now", href: `${basePath}/now`, label: "Сейчас" },
-    { id: "today", href: `${basePath}`, label: ru.today },
-    { id: "tomorrow", href: `${basePath}/tomorrow`, label: ru.tomorrow },
-    { id: "3-days", href: `${basePath}/3-days`, label: ru.days3 },
-    { id: "weekend", href: `${basePath}/weekend`, label: "Выходные" },
-    { id: "7-days", href: `${basePath}/7-days`, label: ru.days7 },
-    { id: "10-days", href: `${basePath}/10-days`, label: ru.days10 },
-    { id: "14-days", href: `${basePath}/14-days`, label: ru.days14 },
-    { id: "month", href: `${basePath}/month`, label: "Месяц" },
-    { id: "archive", href: `${basePath}/archive`, label: "Архив" },
+    { id: "yesterday", href: buildCityUrl(cityObj, "yesterday"), label: "Вчера" },
+    { id: "now", href: buildCityUrl(cityObj, "now"), label: "Сейчас" },
+    { id: "today", href: buildCityUrl(cityObj), label: ru.today },
+    { id: "tomorrow", href: buildCityUrl(cityObj, "tomorrow"), label: ru.tomorrow },
+    { id: "3-days", href: buildCityUrl(cityObj, "3-days"), label: ru.days3 },
+    { id: "weekend", href: buildCityUrl(cityObj, "weekend"), label: "Выходные" },
+    { id: "7-days", href: buildCityUrl(cityObj, "7-days"), label: ru.days7 },
+    { id: "10-days", href: buildCityUrl(cityObj, "10-days"), label: ru.days10 },
+    { id: "14-days", href: buildCityUrl(cityObj, "14-days"), label: ru.days14 },
+    { id: "month", href: buildCityUrl(cityObj, "month"), label: "Месяц" },
+    { id: "archive", href: buildCityUrl(cityObj, "archive"), label: "Архив" },
   ];
 
   const featureTabs = [
     {
       id: "radar",
-      href: `${basePath}/radar`,
+      href: buildCityUrl(cityObj, "radar"),
       label: "Радар",
       icon: (
         <svg
@@ -264,7 +265,7 @@ export function CategoryTabBar({
     },
     {
       id: "pollen",
-      href: `${basePath}/pollen`,
+      href: buildCityUrl(cityObj, "pollen"),
       label: "Пыльца",
       icon: (
         <svg
@@ -283,7 +284,7 @@ export function CategoryTabBar({
     },
     {
       id: "road",
-      href: `${basePath}/road`,
+      href: buildCityUrl(cityObj, "road"),
       label: "Дороги",
       icon: (
         <svg
@@ -304,7 +305,7 @@ export function CategoryTabBar({
     },
     {
       id: "gm",
-      href: `${basePath}/gm`,
+      href: buildCityUrl(cityObj, "gm"),
       label: "Г/м активность",
       icon: (
         <svg

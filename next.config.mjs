@@ -13,6 +13,26 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: "/weather-moskva",
+        destination: "/weather-moscow",
+        permanent: true,
+      },
+      {
+        source: "/weather-moskva/:path*",
+        destination: "/weather-moscow/:path*",
+        permanent: true,
+      },
+      {
+        source: "/weather-:slug--:id",
+        destination: "/weather-:slug",
+        permanent: true,
+      },
+      {
+        source: "/weather-:slug--:id/:path*",
+        destination: "/weather-:slug/:path*",
+        permanent: true,
+      },
+      {
         source: "/pogoda/:slug",
         destination: "/weather-:slug",
         permanent: true,

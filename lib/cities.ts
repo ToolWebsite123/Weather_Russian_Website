@@ -1,5 +1,16 @@
 export function buildCityUrl(city: { slug: string; id?: number | string }, tab?: string): string {
-  const cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
+  let cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
+
+  if (city.id != null) {
+    const numId = typeof city.id === "number" ? city.id : parseInt(String(city.id), 10);
+    if (typeof numId === "number" && !isNaN(numId) && numId < 0) {
+      const posIdStr = String(Math.abs(numId));
+      if (cleanSlug.endsWith(`-${posIdStr}`)) {
+        cleanSlug = cleanSlug.slice(0, -(posIdStr.length + 1)).replace(/-+$/, "");
+      }
+    }
+  }
+
   let path = `/weather-${cleanSlug}`;
   if (city.id != null) {
     const numId = typeof city.id === "number" ? city.id : parseInt(String(city.id), 10);
