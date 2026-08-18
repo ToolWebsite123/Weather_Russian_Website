@@ -13,13 +13,43 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: "/weather-feisalabad-pendzhab-:id",
+        destination: "/weather-faisalabad-5595",
+        permanent: true,
+      },
+      {
+        source: "/weather-feisalabad-pendzhab-:id/:path*",
+        destination: "/weather-faisalabad-5595/:path*",
+        permanent: true,
+      },
+      {
+        source: "/weather-feisalabad-pendzhab",
+        destination: "/weather-faisalabad-5595",
+        permanent: true,
+      },
+      {
+        source: "/weather-feisalabad-pendzhab/:path*",
+        destination: "/weather-faisalabad-5595/:path*",
+        permanent: true,
+      },
+      {
+        source: "/weather-faisalabad-pendzhab",
+        destination: "/weather-faisalabad-5595",
+        permanent: true,
+      },
+      {
+        source: "/weather-faisalabad-pendzhab/:path*",
+        destination: "/weather-faisalabad-5595/:path*",
+        permanent: true,
+      },
+      {
         source: "/weather-moskva",
-        destination: "/weather-moscow",
+        destination: "/weather-moscow-4368",
         permanent: true,
       },
       {
         source: "/weather-moskva/:path*",
-        destination: "/weather-moscow/:path*",
+        destination: "/weather-moscow-4368/:path*",
         permanent: true,
       },
       {

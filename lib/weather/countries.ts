@@ -546,8 +546,8 @@ export function findCatalogCityBySlug(slug: string): City | null {
         (base.startsWith("feisalabad") && fullSlug.startsWith("faisalabad"))
       ) {
         return {
-          id: getTransientCityId(fullSlug),
-          slug: fullSlug,
+          id: getTransientCityId(enSlug),
+          slug: enSlug,
           name: city.name,
           nameEn: city.nameEn,
           country: country.iso,
