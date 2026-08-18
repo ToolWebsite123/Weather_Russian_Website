@@ -1,26 +1,91 @@
-export function buildCityUrl(city: { slug: string; id?: number | string }, tab?: string): string {
-  let cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
+export const GISMETEO_CITY_CODES: Record<string, number> = {
+  moscow: 4368,
+  "saint-petersburg": 4079,
+  novosibirsk: 4690,
+  yekaterinburg: 4517,
+  kazan: 4355,
+  "nizhny-novgorod": 4357,
+  chelyabinsk: 4565,
+  samara: 4618,
+  omsk: 4578,
+  "rostov-on-don": 5110,
+  ufa: 4588,
+  krasnoyarsk: 4674,
+  voronezh: 5026,
+  perm: 4476,
+  volgograd: 5089,
+  krasnodar: 5136,
+  sochi: 5233,
+  tyumen: 4501,
+  irkutsk: 4786,
+  khabarovsk: 4864,
+  vladivostok: 4882,
+  faisalabad: 5595,
+  "faisalabad-pendzhab": 5595,
+  karachi: 5589,
+  "karachi-sind": 5589,
+  lahore: 5594,
+  "lahore-pendzhab": 5594,
+  islamabad: 5590,
+  "islamabad-islamabad": 5590,
+  rawalpindi: 5591,
+  "rawalpindi-pendzhab": 5591,
+  peshawar: 5592,
+  "peshawar-khayber-pakhtunkhva": 5592,
+  multan: 5593,
+  "multan-pendzhab": 5593,
+  sialkot: 5596,
+  "sialkot-pendzhab": 5596,
+  quetta: 5597,
+  "quetta-beludzhistan": 5597,
+  hyderabad: 5598,
+  "hyderabad-sind": 5598,
+  istanbul: 11780,
+  "istanbul-stambul": 11780,
+  dubai: 11822,
+  "dubai-dubai": 11822,
+  "abu-dhabi": 11823,
+  antalya: 11781,
+  baku: 5240,
+  tashkent: 5243,
+  yerevan: 5241,
+  tbilisi: 5242,
+  astana: 5190,
+  almaty: 5191,
+  minsk: 4248,
+};
 
-  if (city.id != null) {
-    const numId = typeof city.id === "number" ? city.id : parseInt(String(city.id), 10);
-    if (typeof numId === "number" && !isNaN(numId) && numId < 0) {
-      const posIdStr = String(Math.abs(numId));
-      if (cleanSlug.endsWith(`-${posIdStr}`)) {
-        cleanSlug = cleanSlug.slice(0, -(posIdStr.length + 1)).replace(/-+$/, "");
-      }
-    }
-  }
+export function getCityCode(city: { slug: string; id?: number | string }): number {
+  const clean = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
+  const base = clean.replace(/-\d+$/, "");
 
-  let path = `/weather-${cleanSlug}`;
   if (city.id != null) {
     const numId = typeof city.id === "number" ? city.id : parseInt(String(city.id), 10);
     if (typeof numId === "number" && !isNaN(numId) && numId > 0) {
-      const idStr = String(numId);
-      if (!cleanSlug.endsWith(`-${idStr}`)) {
-        path += `-${idStr}`;
-      }
+      return numId;
     }
   }
+
+  if (GISMETEO_CITY_CODES[base]) return GISMETEO_CITY_CODES[base];
+  if (GISMETEO_CITY_CODES[clean]) return GISMETEO_CITY_CODES[clean];
+
+  const firstPart = base.split("-")[0];
+  if (firstPart && GISMETEO_CITY_CODES[firstPart]) return GISMETEO_CITY_CODES[firstPart];
+
+  // Deterministic positive 4-digit code generator for any city in the world
+  let hash = 5381;
+  for (let i = 0; i < clean.length; i++) {
+    hash = (hash * 33) ^ clean.charCodeAt(i);
+  }
+  return (Math.abs(hash) % 8999) + 1000;
+}
+
+export function buildCityUrl(city: { slug: string; id?: number | string }, tab?: string): string {
+  const cleanSlug = city.slug.toLowerCase().replace(/^weather-/, "").replace(/--/g, "-").replace(/-+$/, "");
+  const baseSlug = cleanSlug.replace(/-\d+$/, "");
+  const code = getCityCode({ slug: baseSlug, id: city.id });
+
+  let path = `/weather-${baseSlug}-${code}`;
   if (tab) {
     const cleanTab = tab.replace(/^\//, "");
     path += `/${cleanTab}`;
