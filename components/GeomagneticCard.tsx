@@ -65,11 +65,11 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
   const intervals = data.intervals && data.intervals.length > 0 ? data.intervals : fallbackIntervals;
 
   return (
-    <div id="geomagnetic" className="scroll-mt-24 rounded-2xl bg-white/95 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5">
+    <div id="geomagnetic" className="scroll-mt-24 rounded-2xl glass-card p-4 sm:p-5 text-white border border-white/10 shadow-xl backdrop-blur-xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <svg
-            className="h-5 w-5 shrink-0 text-sky-700 sm:h-6 sm:w-6"
+            className="h-5 w-5 shrink-0 text-sky-400 sm:h-6 sm:w-6"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -84,10 +84,10 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
             <line x1="12" y1="9" x2="15" y2="12" />
           </svg>
           <div>
-            <h3 className="text-h3 font-semibold text-cloud-900">
+            <h3 className="text-h3 font-semibold text-white">
               Геомагнитная обстановка
             </h3>
-            <p className="text-xs text-cloud-500">Г/м: {score} {ballWord} из 9 ({statusLabel})</p>
+            <p className="text-xs text-sky-200/80">Г/м: {score} {ballWord} из 9 ({statusLabel})</p>
           </div>
         </div>
 
@@ -112,10 +112,10 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
             <div key={level} className="flex flex-col items-center gap-1">
               <div
                 className={`h-3 w-full rounded-full transition-all ${
-                  isCurrent ? `${colorClass} ring-2 ring-sky-600 scale-105` : `${colorClass} opacity-30`
+                  isCurrent ? `${colorClass} ring-2 ring-sky-300 scale-105 shadow-md` : `${colorClass} opacity-30`
                 }`}
               />
-              <span className={`text-[10px] ${isCurrent ? "font-bold text-sky-950" : "text-slate-400"}`}>
+              <span className={`text-[10px] ${isCurrent ? "font-bold text-sky-200" : "text-slate-400"}`}>
                 {level}
               </span>
             </div>
@@ -124,16 +124,16 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
       </div>
 
       {/* 3-Hour Interval Activity Breakdown */}
-      <div className="mt-4 border-t border-sky-100/80 pt-3">
+      <div className="mt-4 border-t border-white/10 pt-3">
         <div className="flex items-center justify-between gap-2 mb-2">
-          <p className="text-xs font-medium text-slate-700">
+          <p className="text-xs font-medium text-slate-300">
             Прогноз геомагнитной активности по 3 часа:
           </p>
           <span
             className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
               isFallbackUsed
-                ? "bg-amber-50 text-amber-800 border-amber-200"
-                : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                ? "bg-amber-950/60 text-amber-300 border-amber-500/30"
+                : "bg-emerald-950/60 text-emerald-300 border-emerald-500/30"
             }`}
           >
             {isFallbackUsed ? "расчётные данные" : "наблюдения NOAA SWPC"}
@@ -141,13 +141,13 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
         </div>
         <div className="grid grid-cols-8 gap-1 text-center">
           {intervals.map((item) => {
-            let barBg = "bg-emerald-100 text-emerald-800";
-            if (item.val >= 4 && item.val <= 5) barBg = "bg-amber-100 text-amber-900";
-            if (item.val >= 6) barBg = "bg-red-100 text-red-900";
+            let barBg = "bg-emerald-900/60 text-emerald-200 border border-emerald-500/20";
+            if (item.val >= 4 && item.val <= 5) barBg = "bg-amber-900/60 text-amber-200 border border-amber-500/20";
+            if (item.val >= 6) barBg = "bg-red-900/60 text-red-200 border border-red-500/20";
 
             return (
               <div key={item.time} className="flex flex-col items-center gap-1">
-                <span className="text-[10px] text-slate-500">{item.time}</span>
+                <span className="text-[10px] text-slate-400">{item.time}</span>
                 <span className={`w-full py-1 rounded text-xs font-bold ${barBg}`}>
                   {item.val}
                 </span>
@@ -158,9 +158,9 @@ export function GeomagneticCard({ data }: { data: GeomagneticData | null }) {
       </div>
 
       {data.isElevated && (
-        <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-950 ring-1 ring-amber-200">
+        <div className="mt-3 rounded-xl bg-amber-950/40 p-3 text-xs text-amber-200 border border-amber-500/30">
           <p className="font-medium">⚠️ Повышенный уровень активности ({score} {ballWord})</p>
-          <p className="mt-0.5 text-amber-900">
+          <p className="mt-0.5 text-amber-300/80">
             Возможны недомогания у метеозависимых людей.
           </p>
         </div>

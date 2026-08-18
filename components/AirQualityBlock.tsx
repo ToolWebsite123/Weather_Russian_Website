@@ -54,15 +54,15 @@ export function AirQualityBlock({ aqi, uvIndex }: { aqi: AirQuality; uvIndex?: n
   );
 
   return (
-    <section id="environmental-insights" className="scroll-mt-24 rounded-2xl bg-white/80 p-4 ring-1 ring-sky-100 shadow-sm backdrop-blur sm:p-5 space-y-3">
+    <section id="environmental-insights" className="scroll-mt-24 rounded-2xl glass-card p-4 sm:p-5 text-white border border-white/10 shadow-xl backdrop-blur-xl space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <h2 className="font-serif text-h2 font-semibold text-sky-950">
+        <h2 className="font-serif text-h2 font-semibold text-white">
           Качество воздуха
         </h2>
         {displayUv != null && (
-          <span className="text-xs text-cloud-600">
+          <span className="text-xs text-sky-200">
             УФ-индекс:{" "}
-            <strong className="text-sky-950 font-semibold tabular-nums">
+            <strong className="text-white font-semibold tabular-nums">
               {displayUv.toFixed(1)}
             </strong>
           </span>

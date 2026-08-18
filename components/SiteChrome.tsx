@@ -212,13 +212,13 @@ export function SiteHeader({
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-sky-200/60 bg-white/95 backdrop-blur-md transition-all shadow-xs">
+    <header className="sticky top-0 z-30 glass-header text-white transition-all shadow-md">
       {/* Top Navbar Row */}
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-6 shrink-0 min-w-0">
           <Link
             href="/"
-            className="flex items-center gap-1.5 font-serif text-h2 font-semibold text-sky-950 hover:text-sky-800 transition-colors shrink-0"
+            className="flex items-center gap-1.5 font-serif text-h2 font-semibold text-white hover:text-sky-300 transition-colors shrink-0"
           >
             <SunCloudLogo />
             <span className="hidden sm:inline">{ru.brand}</span>
@@ -226,21 +226,21 @@ export function SiteHeader({
 
           {/* Prominent Always-Visible Search Input */}
           <div ref={searchBoxRef} className="relative flex items-center min-w-0">
-            <div className="flex h-9 w-36 sm:w-64 md:w-80 items-center rounded-xl border border-sky-200 bg-sky-50/90 px-2.5 transition-all focus-within:border-sky-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200 shadow-xs">
-              <SearchIcon className="h-4 w-4 shrink-0 text-sky-600" />
+            <div className="flex h-9 w-36 sm:w-64 md:w-80 items-center rounded-xl border border-sky-400/30 bg-slate-900/70 px-2.5 transition-all focus-within:border-sky-400 focus-within:bg-slate-900/90 focus-within:ring-2 focus-within:ring-sky-400/40 shadow-xs">
+              <SearchIcon className="h-4 w-4 shrink-0 text-sky-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onFocus={() => setIsSearchFocused(true)}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск..."
-                className="w-full bg-transparent ml-1.5 text-xs sm:text-sm font-medium text-sky-950 outline-none placeholder:text-sky-400 truncate"
+                placeholder="Поиск города..."
+                className="w-full bg-transparent ml-1.5 text-xs sm:text-sm font-medium text-white outline-none placeholder:text-slate-400 truncate"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="text-xs text-sky-400 hover:text-sky-700 ml-1 font-bold"
+                  className="text-xs text-slate-400 hover:text-white ml-1 font-bold"
                 >
                   ✕
                 </button>
@@ -249,19 +249,19 @@ export function SiteHeader({
 
             {/* Live Search Results Dropdown */}
             {isSearchFocused && searchResults.length > 0 && (
-              <div className="absolute left-0 top-full mt-1.5 w-64 sm:w-80 rounded-xl border border-sky-100 bg-white py-1.5 shadow-xl z-50 max-h-72 overflow-y-auto">
+              <div className="absolute left-0 top-full mt-1.5 w-64 sm:w-80 rounded-xl border border-sky-500/20 bg-slate-900/95 backdrop-blur-xl py-1.5 shadow-2xl z-50 max-h-72 overflow-y-auto">
                 {searchResults.map((r) => (
                   <Link
                     key={`${r.id}-${r.slug}`}
                     href={buildCityUrl(r)}
-                    className="block px-3 py-2 text-left hover:bg-sky-50 transition-colors"
+                    className="block px-3.5 py-2.5 text-left hover:bg-sky-500/15 transition-colors border-b border-white/5 last:border-0"
                     onClick={() => {
                       setIsSearchFocused(false);
                       setSearchQuery("");
                     }}
                   >
-                    <div className="text-xs font-semibold text-sky-950">{r.name}</div>
-                    <div className="text-[11px] text-cloud-500">
+                    <div className="text-xs sm:text-sm font-semibold text-white">{r.name}</div>
+                    <div className="text-[11px] text-sky-300/80">
                       {[r.admin1, r.country].filter(Boolean).join(", ")}
                     </div>
                   </Link>
@@ -272,11 +272,11 @@ export function SiteHeader({
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <nav className="hidden lg:flex items-center gap-4 text-xs font-medium text-sky-900">
-            <Link href="/articles" className="hover:text-sky-600 transition-colors">
+          <nav className="hidden lg:flex items-center gap-4 text-xs font-medium text-slate-200">
+            <Link href="/articles" className="hover:text-sky-400 transition-colors">
               Статьи
             </Link>
-            <Link href="/gorod" className="hover:text-sky-600 transition-colors">
+            <Link href="/gorod" className="hover:text-sky-400 transition-colors">
               Все города
             </Link>
           </nav>
@@ -285,7 +285,7 @@ export function SiteHeader({
           <button
             type="button"
             onClick={toggleUnit}
-            className="flex items-center justify-center h-8 sm:h-9 rounded-xl bg-sky-100/90 border border-sky-200/80 px-2 text-xs font-bold text-sky-900 hover:bg-sky-200 transition-colors cursor-pointer"
+            className="flex items-center justify-center h-8 sm:h-9 rounded-xl bg-sky-500/15 border border-sky-400/30 px-2.5 text-xs font-bold text-sky-200 hover:bg-sky-500/25 transition-all cursor-pointer shadow-xs"
             title="Переключить единицу измерения температуры"
           >
             °{unit}
