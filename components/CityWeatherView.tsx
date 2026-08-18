@@ -247,18 +247,20 @@ export async function CityWeatherView({
         ) : (
           <>
             {/* AI Direct Answer Summary Box (GEO / AEO Optimization) */}
-            <div className="rounded-2xl bg-gradient-to-r from-sky-900/90 via-slate-900 to-indigo-950 p-4 sm:p-5 text-white shadow-lg border border-sky-500/20 backdrop-blur-md animate-fade-in-up stagger-1 motion-reduce:animate-none space-y-1.5">
-              <div className="flex items-center gap-2 text-sky-400 font-semibold text-xs uppercase tracking-wider">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
-                </span>
-                Экспресс-прогноз погоды (AI Summary)
+            {active !== "now" && (
+              <div className="rounded-2xl bg-gradient-to-r from-sky-900/90 via-slate-900 to-indigo-950 p-4 sm:p-5 text-white shadow-lg border border-sky-500/20 backdrop-blur-md animate-fade-in-up stagger-1 motion-reduce:animate-none space-y-1.5">
+                <div className="flex items-center gap-2 text-sky-400 font-semibold text-xs uppercase tracking-wider">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                  </span>
+                  Экспресс-прогноз погоды (AI Summary)
+                </div>
+                <p className="text-xs sm:text-sm text-slate-100 leading-relaxed font-normal">
+                  Сегодня {getCityLocative(city.name)} ожидается {weatherCodeLabel(weather.daily[0]?.weatherCode ?? weather.current.weatherCode).toLowerCase()} с температурой от {formatTemp(weather.daily[0]?.tempMin ?? weather.current.temperature)} до {formatTemp(weather.daily[0]?.tempMax ?? weather.current.temperature)} (сейчас {formatTemp(weather.current.temperature)}, ощущается как {formatTemp(weather.current.feelsLike)}). Ветер {formatWindDir(weather.current.windDirection)} {weather.current.windSpeed} м/с, влажность {weather.current.humidity}%, атмосферное давление {formatPressureMmHg(weather.current.pressure)}.
+                </p>
               </div>
-              <p className="text-xs sm:text-sm text-slate-100 leading-relaxed font-normal">
-                Сегодня {getCityLocative(city.name)} ожидается {weatherCodeLabel(weather.daily[0]?.weatherCode ?? weather.current.weatherCode).toLowerCase()} с температурой от {formatTemp(weather.daily[0]?.tempMin ?? weather.current.temperature)} до {formatTemp(weather.daily[0]?.tempMax ?? weather.current.temperature)} (сейчас {formatTemp(weather.current.temperature)}, ощущается как {formatTemp(weather.current.feelsLike)}). Ветер {formatWindDir(weather.current.windDirection)} {weather.current.windSpeed} м/с, влажность {weather.current.humidity}%, атмосферное давление {formatPressureMmHg(weather.current.pressure)}.
-              </p>
-            </div>
+            )}
 
             {/* Header Summary / Hero Card for All Tabs */}
             <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">
@@ -284,48 +286,6 @@ export async function CityWeatherView({
                 />
               )}
             </div>
-
-            {/* VCHERA TAB */}
-            {(active === "vchera" || isYesterday) && (
-              <div className="space-y-6 animate-fade-in-up stagger-3 motion-reduce:animate-none">
-                {hours.length > 0 && (
-                  <YesterdayHourlyTable
-                    hours={hours}
-                    timezone={weather.timezone || city.timezone || undefined}
-                  />
-                )}
-                <AstronomyCard
-                  today={weather.yesterday?.daily || weather.daily[0]}
-                  latitude={city.latitude}
-                  longitude={city.longitude}
-                  timezone={weather.timezone || city.timezone || undefined}
-                />
-              </div>
-            )}
-
-            {/* NOW TAB (Live Weather Details) */}
-            {active === "now" && (
-              <div className="space-y-6 pt-4 border-t border-sky-100/60 animate-fade-in-up stagger-3 motion-reduce:animate-none">
-                {showHourly && hours.length > 0 && (
-                  <div className="space-y-6 sm:space-y-8">
-                    <HourlyForecast hours={hours} />
-                  </div>
-                )}
-                <section id="weather-map" className="scroll-mt-24 space-y-3">
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-sky-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                    </svg>
-                    Радар осадков в режиме реального времени ({city.name})
-                  </h2>
-                  <RadarMap latitude={city.latitude} longitude={city.longitude} cityName={city.name} layer="precip" />
-                </section>
-
-                {airQuality && <AirQualityBlock aqi={airQuality} />}
-                <RoadConditionCard current={weather.current} />
-                <GeomagneticCard data={geomagnetic} />
-              </div>
-            )}
 
             {/* TODAY TAB (Comprehensive Full View) */}
             {active === "today" && (

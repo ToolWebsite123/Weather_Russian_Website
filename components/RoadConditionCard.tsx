@@ -7,17 +7,17 @@ export function RoadConditionCard({ current }: { current: CurrentWeather }) {
   return (
     <div
       id="road-conditions"
-      className="scroll-mt-24 rounded-2xl glass-card p-4 sm:p-6 text-white border border-white/10 shadow-xl backdrop-blur-xl space-y-4"
+      className="scroll-mt-24 rounded-2xl bg-white/95 p-4 ring-1 ring-sky-100/80 shadow-xs backdrop-blur sm:p-6 space-y-4"
     >
       {/* Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-sky-100/80 pb-3.5">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800/80 text-xl shadow-2xs border border-white/10">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-xl shadow-2xs ring-1 ring-sky-100">
             {road.icon}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-serif text-h3 font-bold text-white">
+              <h3 className="font-serif text-h3 font-bold text-sky-950">
                 Состояние дорог для водителей
               </h3>
               <span

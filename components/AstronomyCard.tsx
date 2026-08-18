@@ -61,11 +61,11 @@ export function AstronomyCard({
   const diffVal = sun.dayLengthDiffMinutes;
 
   return (
-    <section className="rounded-2xl glass-card p-4 sm:p-5 text-white border border-white/10 shadow-xl backdrop-blur-xl space-y-4">
+    <section className="rounded-2xl bg-white/95 p-4 ring-1 ring-sky-100/80 shadow-xs backdrop-blur sm:p-5 space-y-4">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {/* Left Column — Sun & Daylight */}
         <div className="space-y-3">
-          <h3 className="text-h3 font-semibold text-white">
+          <h3 className="text-h3 font-semibold text-cloud-900">
             Солнце и световой день
           </h3>
 
