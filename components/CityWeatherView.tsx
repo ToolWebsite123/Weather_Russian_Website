@@ -160,13 +160,26 @@ export async function CityWeatherView({
         })
         : weather.hourly;
 
+  const isFeatureTab = [
+    "radar",
+    "pollen",
+    "pyltsa",
+    "road",
+    "dorogi",
+    "gm",
+    "gm-aktivnost",
+  ].includes(active);
+
   const targetIdMap: Record<string, string> = {
     radar: "weather-map",
     pyltsa: "environmental-insights",
+    pollen: "environmental-insights",
     dorogi: "road-conditions",
+    road: "road-conditions",
     "gm-aktivnost": "geomagnetic",
+    gm: "geomagnetic",
   };
-  const targetId = targetIdMap[active];
+  const targetId = isFeatureTab ? undefined : targetIdMap[active];
 
   const featureIntros: Record<string, { title: string; desc: string; icon: string }> = {
     radar: {
@@ -179,12 +192,27 @@ export async function CityWeatherView({
       desc: `Аллергологический мониторинг помогает оценить риск возникновения симптомов поллиноза. Здесь представлена информация о концентрации пыльцы берёзы, ольхи, злаковых и сорных трав (амброзии), а также общий индекс качества воздуха в городе ${city.name}.`,
       icon: "🌱",
     },
+    pollen: {
+      title: `Аллергопрогноз и концентрация пыльцы в городе ${city.name}`,
+      desc: `Аллергологический мониторинг помогает оценить риск возникновения симптомов поллиноза. Здесь представлена информация о концентрации пыльцы берёзы, ольхи, злаковых и сорных трав (амброзии), а также общий индекс качества воздуха в городе ${city.name}.`,
+      icon: "🌱",
+    },
     dorogi: {
       title: `Погода на дорогах и условия для водителей в городе ${city.name}`,
       desc: `Оценка дорожных условий учитывает температуру дорожного покрытия, риск гололедицы, видимость на трассах и порывы ветра. Используйте эти данные для безопасного управления автомобилем в городе ${city.name} и на пригородных трассах.`,
       icon: "🚗",
     },
+    road: {
+      title: `Погода на дорогах и условия для водителей в городе ${city.name}`,
+      desc: `Оценка дорожных условий учитывает температуру дорожного покрытия, риск гололедицы, видимость на трассах и порывы ветра. Используйте эти данные для безопасного управления автомобилем в городе ${city.name} и на пригородных трассах.`,
+      icon: "🚗",
+    },
     "gm-aktivnost": {
+      title: `Геомагнитная активность и магнитные бури в городе ${city.name}`,
+      desc: `Прогноз геомагнитного фона отражает уровень возмущений магнитного поля Земли (Kp-индекс). Значения Kp ≥ 4 указывают на магнитную бурю, которая может оказывать влияние на самочувствие метеозависимых людей.`,
+      icon: "🧲",
+    },
+    gm: {
       title: `Геомагнитная активность и магнитные бури в городе ${city.name}`,
       desc: `Прогноз геомагнитного фона отражает уровень возмущений магнитного поля Земли (Kp-индекс). Значения Kp ≥ 4 указывают на магнитную бурю, которая может оказывать влияние на самочувствие метеозависимых людей.`,
       icon: "🧲",
@@ -246,7 +274,7 @@ export async function CityWeatherView({
         ) : (
           <>
             {/* AI Direct Answer Summary Box (GEO / AEO Optimization) */}
-            {active !== "now" && (
+            {active !== "now" && !isFeatureTab && (
               <div className="rounded-2xl bg-gradient-to-r from-sky-900/90 via-slate-900 to-indigo-950 p-4 sm:p-5 text-white shadow-lg border border-sky-500/20 backdrop-blur-md animate-fade-in-up stagger-1 motion-reduce:animate-none space-y-1.5">
                 <div className="flex items-center gap-2 text-sky-400 font-semibold text-xs uppercase tracking-wider">
                   <span className="relative flex h-2 w-2">
@@ -261,30 +289,32 @@ export async function CityWeatherView({
               </div>
             )}
 
-            {/* Header Summary / Hero Card for All Tabs */}
-            <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">
-              {active === "now" ? (
-                <NowWeatherHeroCard
-                  current={weather.current}
-                  today={weather.daily[0]}
-                  tomorrow={weather.daily[1]}
-                  geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
-                  timezone={weather.timezone || city.timezone || undefined}
-                />
-              ) : (
-                <CurrentWeatherCard
-                  cityName={city.name}
-                  citySlug={city.slug}
-                  current={weather.current}
-                  today={tomorrowOnly || active === "zavtra" || active === "tomorrow" ? weather.daily[1] : (hasYesterdayData && weather.yesterday ? weather.yesterday.daily : weather.daily[0])}
-                  hourly={weather.hourly}
-                  geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
-                  timezone={weather.timezone || city.timezone || undefined}
-                  fetchedAt={weather.fetchedAt}
-                  activeTab={active}
-                />
-              )}
-            </div>
+            {/* Header Summary / Hero Card for Non-Feature Tabs */}
+            {!isFeatureTab && (
+              <div className="animate-fade-in-up stagger-2 motion-reduce:animate-none">
+                {active === "now" ? (
+                  <NowWeatherHeroCard
+                    current={weather.current}
+                    today={weather.daily[0]}
+                    tomorrow={weather.daily[1]}
+                    geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
+                    timezone={weather.timezone || city.timezone || undefined}
+                  />
+                ) : (
+                  <CurrentWeatherCard
+                    cityName={city.name}
+                    citySlug={city.slug}
+                    current={weather.current}
+                    today={tomorrowOnly || active === "zavtra" || active === "tomorrow" ? weather.daily[1] : (hasYesterdayData && weather.yesterday ? weather.yesterday.daily : weather.daily[0])}
+                    hourly={weather.hourly}
+                    geomagneticKp={geomagnetic?.kp ? Math.round(geomagnetic.kp) : 2}
+                    timezone={weather.timezone || city.timezone || undefined}
+                    fetchedAt={weather.fetchedAt}
+                    activeTab={active}
+                  />
+                )}
+              </div>
+            )}
 
             {/* TODAY TAB (Comprehensive Full View) */}
             {active === "today" && (
@@ -367,7 +397,7 @@ export async function CityWeatherView({
             )}
 
             {/* PYLTSA (POLLEN) TAB */}
-            {active === "pyltsa" && (
+            {(active === "pyltsa" || active === "pollen") && (
               <div id="environmental-insights" className="animate-fade-in-up stagger-3 motion-reduce:animate-none scroll-mt-24">
                 {airQuality ? (
                   <AirQualityBlock aqi={airQuality} />
@@ -380,14 +410,14 @@ export async function CityWeatherView({
             )}
 
             {/* DOROGI (ROADS) TAB */}
-            {active === "dorogi" && (
+            {(active === "dorogi" || active === "road") && (
               <div id="road-conditions" className="animate-fade-in-up stagger-3 motion-reduce:animate-none scroll-mt-24">
                 <RoadConditionCard current={weather.current} />
               </div>
             )}
 
             {/* GM-AKTIVNOST (GEOMAGNETIC) TAB */}
-            {active === "gm-aktivnost" && (
+            {(active === "gm-aktivnost" || active === "gm") && (
               <div id="geomagnetic" className="animate-fade-in-up stagger-3 motion-reduce:animate-none scroll-mt-24">
                 <GeomagneticCard data={geomagnetic} />
               </div>
